@@ -17,7 +17,6 @@
 
 #define LOG_TAG "libyuv_converter"
 #define ALOGE(...) __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
-#define ALOGW(...) __android_log_print(ANDROID_LOG_WARN, LOG_TAG, __VA_ARGS__)
 #define ALOGI(...) __android_log_print(ANDROID_LOG_INFO, LOG_TAG, __VA_ARGS__)
 
 
@@ -49,7 +48,7 @@ Java_com_hika_accessibility_recognition_ImageHandler_00024Companion_convertRGBAt
     uint8_t* nv21Buffer = reinterpret_cast<uint8_t*>(nv21Data);
 
     // 使用libyuv进行转换
-    // 注意: 我编辑了libyuv这个第三方库的代码以便支持RGBAToNV21，直接下载没有这个函数
+    // libyuv::RGBAToNV21是本项目自己建的，直接下载没有这个函数
 
     int result = libyuv::RGBAToNV21(
             rgbaData,           // src_rgba
