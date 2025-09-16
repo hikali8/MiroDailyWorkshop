@@ -1,0 +1,5 @@
+<resources>
+    <string name="accessibility_app_name">希卡的无障碍服务</string>
+    <string name="accessibility_description">打开让希卡通过申请点击你的屏幕.</string>
+    <string name="title_activity_media_projection_requester">媒体投射请求活动</string>
+</resources>

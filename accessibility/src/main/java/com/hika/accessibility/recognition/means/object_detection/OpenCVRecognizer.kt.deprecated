@@ -1,0 +1,84 @@
+package com.hika.accessibility.recognition.means.image_similarity
+
+import android.graphics.PixelFormat
+import android.graphics.PointF
+import android.graphics.Rect
+import android.media.Image
+import com.hika.core.aidl.accessibility.TemplateImageID
+import com.hika.core.aidl.accessibility.LocationBox
+import org.opencv.android.OpenCVLoader
+import org.opencv.core.Core
+import org.opencv.core.CvType
+import org.opencv.core.Mat
+import org.opencv.imgproc.Imgproc
+
+// this is unusable. for the template matching cannot notice the size-changed picture.
+// tomorrow, we'll implement a google object-tracker.
+object OpenCVRecognizer {
+    init {
+        if (!OpenCVLoader.initLocal())
+            throw InstantiationException("OpenCV Initialization Failed.")
+    }
+
+    // 1. Convert RGB_888 (3 bytes per pixel) image into Mat. (Matrix)
+    fun getMat(image: Image): Mat {
+        // 1.1 encapsulate the r, g, b channels into one byte array. maybe optimizable
+        assert(image.format == PixelFormat.RGB_888)
+
+        val rBuffer = image.planes[0].buffer
+        val gBuffer = image.planes[1].buffer
+        val bBuffer = image.planes[2].buffer
+
+        val rLength = rBuffer.remaining()
+        val gLength = gBuffer.remaining()
+        val bLength = bBuffer.remaining()
+
+        val array = ByteArray(rLength + gLength + bLength)
+        // terrible method naming, it's "put" than "get"
+        rBuffer.get(array, 0, rLength)
+        gBuffer.get(array, rLength, gLength)
+        bBuffer.get(array, gLength, bLength)
+
+        // 1.2 put the data array into a Mat.
+        val rgbMat = Mat(image.height, image.width, CvType.CV_8UC3)
+        rgbMat.put(0, 0, array)
+        return rgbMat
+    }
+
+    // 2. Locate the position of template image by comparing
+
+    // @return Map<TemplateImageID, LocationBox>
+    fun locateImages(openCVMat: Mat, templateImageIDs: Set<TemplateImageID>)
+        : Map<TemplateImageID, LocationBox> {
+        val resultCols: Int = openCVMat.cols() - templateImageMat.cols() + 1
+        val resultRows: Int = openCVMat.rows() - templateImageMat.rows() + 1
+        val result = Mat(resultRows, resultCols, CvType.CV_32FC1)
+
+        Imgproc.matchTemplate(openCVMat,
+            templateImageMat,
+            result,
+            Imgproc.TM_SQDIFF_NORMED
+        )
+
+        // find the best range: minimum for TM_SQDIFF_NORMED
+        val minimalRange = Core.minMaxLoc(result).minLoc
+        val x = minimalRange.x.toInt()
+        val y = minimalRange.y.toInt()
+        val topLeft = PointF(minimalRange.x.toFloat(), minimalRange.y.toFloat())
+        val bottomRight = PointF(
+            topLeft.x + templateImageMat.cols(),
+            topLeft.y + templateImageMat.rows()
+        )
+
+        val box = Rect(x, y,
+            x + templateImageMat.cols(), y + templateImageMat.rows())
+
+
+        return ?
+    } // we wrote those in clouds..
+
+    // Maybe we need to pre-matriculate the template images into files. let's assume that we've already
+    //  had one template image matrix.
+    // 3. Initiate the template image matrix to compute.
+    private val templateImageMat by lazy { Mat() }
+}

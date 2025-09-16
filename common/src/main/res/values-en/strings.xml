@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="accessibility_app_name">Hika\'s accessibility service</string>
+    <string name="accessibility_description">Open and let Hika click your screen through promission.</string>
+    <string name="title_activity_media_projection_requester">Media Projection Requester Activity</string>
+</resources>

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/mobile_navigation"
+    app:startDestination="@+id/navigation_start">
+
+    <fragment
+        android:id="@+id/navigation_config"
+        android:name="com.hika.mirodaily.ui.ui.fragments.config.ConfigFragment"
+        android:label="@string/title_config"
+        tools:layout="@layout/fragment_config" />
+
+    <fragment
+        android:id="@+id/navigation_more_dots"
+        android:name="com.hika.mirodaily.ui.ui.fragments.more_dots.MoreDotsFragment"
+        android:label="@string/title_more"
+        tools:layout="@layout/fragment_more_dots" />
+
+    <fragment
+        android:id="@+id/navigation_start"
+        android:name="com.hika.mirodaily.ui.ui.fragments.start.StartFragment"
+        android:label="@string/title_start"
+        tools:layout="@layout/fragment_start" />
+</navigation>

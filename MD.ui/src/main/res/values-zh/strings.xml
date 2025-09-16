@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="accessibility_app_name">米洛的日常工坊</string>
+    <string name="title_start">启动</string>
+    <string name="title_config">配置</string>
+    <string name="title_more">更多</string>
+    <string name="go">走</string>
+    <string name="notification_message">前台通知的消息</string>
+    <string name="text_start">先打开无障碍权限 和 媒体投射权限</string>
+    <string name="notification_channel_name">前台通知的名称</string>
+    <string name="notification_title">正在: %1$s</string>
+</resources>

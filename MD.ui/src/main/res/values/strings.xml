@@ -1,0 +1,13 @@
+<resources>
+    <string name="accessibility_app_name">Miro\'s Daily Workshop</string>
+
+    <string name="title_start">Start</string>
+    <string name="title_config">Config</string>
+    <string name="title_more">More…</string>
+    <string name="go">Go</string>
+
+    <string name="notification_channel_name">前台通知的名称</string>
+    <string name="notification_title">正在: %1$s</string>
+    <string name="notification_message">前台通知的消息</string>
+    <string name="text_start">先打开无障碍权限 和 媒体投射权限</string>
+</resources>

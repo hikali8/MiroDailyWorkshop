@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center_horizontal"
+    tools:context=".ui.fragments.start.StartFragment">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="1. Accessibility Service\n You will at first see “Unable to launch the service” but you don't need to be worried.\n Everytime this app got killed the accessibility setting is closed."
+        android:textAlignment="center"/>
+
+    <Button
+        android:id="@+id/btn_accessibility"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Accessibility Setting"
+        android:textAllCaps="false"/>
+
+    <CheckBox
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Accessibility Enabled"
+        android:clickable="false"
+        android:checked="false"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:text="2. Media Projection Permission\n Everytime starts an action of capturing this needs repermission."
+        android:textAlignment="center"/>
+
+    <Button
+        android:id="@+id/btn_projection"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Media Projection"
+        android:textAllCaps="false"/>
+
+    <CheckBox
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Meidia Projection Permitted"
+        android:clickable="false"
+        android:checked="false"/>
+
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:text="3. Start Test\n The demonstrative button will be clicked and after 1s MihoyoExperience will be open to click check-in."
+        android:textAlignment="center"/>
+
+    <Button
+        android:id="@+id/btn_start"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Start Test"
+        android:textAllCaps="false"/>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="DEMONSTRATIVE"
+        android:textAllCaps="false"
+        android:textSize="10dp"
+        android:padding="0dp"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:text="4. Capture Result. \n One picture will be sharing under to show the capture result."
+        android:textAlignment="center"/>
+
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:contentDescription="TODO" />
+</LinearLayout>

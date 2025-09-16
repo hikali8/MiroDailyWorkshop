@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="hyl_跳过" translatable="false">跳过</string>
+    <string name="hyl_我知道了" translatable="false">我知道了</string>
+    <string name="hyl_点击了解" translatable="false">点击了解</string>
+    <string name="原神">原神</string>
+    <string name="崩坏3">崩坏3</string>
+    <string name="崩坏_星穹铁道">崩坏：星穹铁道</string>
+    <string name="绝区零">绝区零</string>
+    <string name="未定事件簿">未定事件簿</string>
+    <string name="崩坏学园2">崩坏学园2</string>
+    <string name="大别野">大别野</string>
+    <string name="崩坏_因缘精灵">崩坏：因缘精灵</string>
+    <string name="hyl_去看看吧" translatable="false">去看看吧</string>
+    <string name="hyl_签到" translatable="false">签到</string>
+    <string name="hyl_天" translatable="false">天</string>
+</resources>
