@@ -48,7 +48,7 @@ Java_com_hika_accessibility_recognition_ImageHandler_00024Companion_convertRGBAt
     uint8_t* nv21Buffer = reinterpret_cast<uint8_t*>(nv21Data);
 
     // 使用libyuv进行转换
-    // libyuv::RGBAToNV21是本项目自己建的，直接下载没有这个函数
+    // 注意：libyuv::RGBAToNV21是本项目自己建的，直接下载libyuv没有这个函数
 
     int result = libyuv::RGBAToNV21(
             rgbaData,           // src_rgba
