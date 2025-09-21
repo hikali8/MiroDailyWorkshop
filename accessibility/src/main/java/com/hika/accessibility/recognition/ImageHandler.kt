@@ -4,12 +4,15 @@ import android.graphics.PixelFormat
 import android.graphics.Rect
 import android.media.Image
 import android.media.ImageReader
+import android.util.Log
 import android.view.Surface
 import com.hika.accessibility.recognition.means.ocr.GoogleOCRer
 import com.hika.core.aidl.accessibility.TemplateImageID
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.tasks.await
 import java.nio.ByteBuffer
 
@@ -25,36 +28,32 @@ class ImageHandler(width: Int, height: Int, val scope: CoroutineScope) {
 
     // 2. Get the current frame on surface (internal), meanwhile control the reading interval.
     val interval = 50L     // TODO: reading interval configuration needed
-    var expirationTime: Long = -1   // -1: uninitialized
+    private var expirationTime: Long = -1   // -1: uninitialized
     private var frameUpdatingJob: Job? = null
-
-    private var frame: Image? = null
-        get() {
-            if (System.currentTimeMillis() >= expirationTime && frameUpdatingJob == null)
-                frameUpdatingJob = scope.launch {
-                    imageReader.acquireLatestImage()?.run {
-                        field?.close()  // do we really need this? through the official document.
-                        field = this
-                        expirationTime = System.currentTimeMillis() + interval
-                        frameUpdatingJob == null
-                    }
-                    // if null, acquiring failed, the next getting request should launch the acquiring
-                }
-            return field
-        }
-
+    private var recognizableTmp: Recognizable? = null
 
 
     // 3. Expose the vision for outer manipulator: deprecated
-    fun getRecognizable() = frame?.let{
-        Recognizable(it)
+    fun getRecognizable(): Recognizable? {
+        if (System.currentTimeMillis() >= expirationTime && frameUpdatingJob == null)
+            frameUpdatingJob = scope.launch {
+                imageReader.acquireLatestImage()?.apply {
+                    recognizableTmp =
+                        Recognizable(
+                            this.planes[0].buffer,
+                            this.width,
+                            this.height,
+                            this.planes[0].rowStride
+                        )
+                    expirationTime = System.currentTimeMillis() + interval
+                    close()
+                }
+                frameUpdatingJob = null
+            }
+        return recognizableTmp
     }
 
-    class Recognizable(val currentImage: Image){
-        // may change
-        val width = currentImage.width
-        val height = currentImage.height
-
+    class Recognizable(val imageBuffer: ByteBuffer, val width: Int, val height: Int, rowStride: Int){
         fun findOnOpenCV(templateImageIDs: Set<TemplateImageID>): Map<TemplateImageID, Array<Rect>>
             = throw NotImplementedError()
 
@@ -84,7 +83,8 @@ class ImageHandler(width: Int, height: Int, val scope: CoroutineScope) {
 
 //        private val openCVMat by lazy { OpenCVRecognizer.getMat(currentImage) }
         private val imageNV21_Array by lazy {
-            convertRGBAtoNV21_Array(currentImage) ?: throw Exception("NV21 conversion failed") }
+            convertRGBAtoNV21_Array(imageBuffer, rowStride, width, height)
+                ?: throw Exception("NV21 conversion failed") }
     }
 
     // 4. Convert RGBA image to NV21
@@ -99,24 +99,16 @@ class ImageHandler(width: Int, height: Int, val scope: CoroutineScope) {
             height: Int,
             nv21Array: ByteArray): Boolean
 
-        private fun convertRGBAtoNV21_Array(image: Image): ByteArray? {
-            val planes = image.planes
-            if (planes.isEmpty()) {
-                return null
-            }
-            val rgbaBuffer = planes[0].buffer
-            val rgbaStride = planes[0].rowStride
-
-            val nv21Array = ByteArray(image.width * image.height * 3 / 2)
-
-            val success = convertRGBAtoNV21(
-                rgbaBuffer,
-                rgbaStride,
-                image.width,
-                image.height,
-                nv21Array)
-
-            return if (success) nv21Array else null
+        private fun convertRGBAtoNV21_Array(rgbaBuffer: ByteBuffer, rgbaStride: Int, width: Int, height: Int): ByteArray? {
+            val nv21Array = ByteArray(width * height * 3 / 2)
+            return if (convertRGBAtoNV21(
+                        rgbaBuffer,
+                        rgbaStride,
+                        width,
+                        height,
+                        nv21Array))
+                        nv21Array
+                    else null
         }
 
 

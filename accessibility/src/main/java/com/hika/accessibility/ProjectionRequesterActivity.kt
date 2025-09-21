@@ -18,21 +18,20 @@ class ProjectionRequesterActivity : ComponentActivity() {
     private fun launchProjection(){
         val captureIntent = getSystemService(MediaProjectionManager::class.java)
             .createScreenCaptureIntent()
-        projectionPermissionLauncher.launch(captureIntent)
+        projectionRequestLauncher.launch(captureIntent)
     }
 
-    private val accessibilityCoreService by lazy{ AccessibilityCoreService.getInstance() }
+    private val accessibilityCoreService by lazy{ AccessibilityCoreService.instance.get()!! }
 
-    private val projectionPermissionLauncher = registerForActivityResult(
+    private val projectionRequestLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()){
         if (it.resultCode != RESULT_OK || it.data == null){
             Toast.makeText(this, "User denied screen sharing permission",
                 Toast.LENGTH_SHORT).show()
         }else{
             Log.d("#0x-PA", "Projection Permitted.")
-            accessibilityCoreService?.startProjection(it.resultCode, it.data!!)
+            accessibilityCoreService.startProjection(it.resultCode, it.data!!)
         }
         this.finish()
-//        accessibilityCoreService?.iProjectionSuccess?.onProjectionSuccess()
     }
 }

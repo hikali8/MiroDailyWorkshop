@@ -9,8 +9,7 @@ object Helpers {
     /**
      * Loop until the condition method gets true or the duration has reached its maximum.
      *
-     * @param condition A method to get true or false: Has the condition been satisfied? An method
-     *      expression.
+     * @param condition A method to get true or false.
      * @param interval Interval of cyclical check. Default is 100. Probably not accurate.
      * @param durationMillis Maximal duration time of loop. Default is 1000 (ms).
      *
@@ -33,8 +32,8 @@ object Helpers {
                 delay(delta)
                 expectedTime += interval
             }else{
-                // ensure the step length must be the multiplier of interval
-                // if it's already late, immediately run the next loop
+                // since it's already late, immediately run the next loop
+                // but ensure the step length is really the multiplier of interval
                 expectedTime = currentTime + interval + delta % interval
             }
         }

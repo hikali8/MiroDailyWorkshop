@@ -33,13 +33,13 @@ class ASReceiver: Service(){
     // 1. Expose the interface received by this
     companion object{
 
-        fun click(x: Float, y: Float, startTime: Long = 0, duration: Long = 100)
+        fun click(x: Float, y: Float, duration: Long = 100, startTime: Long = 0)
             = iAccessibilityService?.click(PointF(x, y), startTime, duration)
 
-        fun swipe(pointFrom: PointF, pointTo: PointF, startTime: Long = 0, duration: Long = 100)
+        fun swipe(pointFrom: PointF, pointTo: PointF, duration: Long = 100, startTime: Long = 0)
             = iAccessibilityService?.swipe(pointFrom, pointTo, startTime, duration)
 
-        fun clickLocationBox(locationBox: Rect, startTime: Long = 0, duration: Long = 50)
+        fun clickLocationBox(locationBox: Rect, duration: Long = 50, startTime: Long = 0)
             = iAccessibilityService?.click(PointF(
                 (locationBox.left..locationBox.right).random().toFloat(),
                 (locationBox.top..locationBox.bottom).random().toFloat()
@@ -63,7 +63,7 @@ class ASReceiver: Service(){
             }
 
 
-        suspend fun getTextInRegionAsync(region: Rect?)
+        suspend fun getTextInRegionAsync(region: Rect? = null)
             = suspendCancellableCoroutine { continuation ->
                 iAccessibilityService?.getTextInRegion(region,
                     object: ITextReply.Stub(){

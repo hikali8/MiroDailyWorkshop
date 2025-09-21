@@ -16,9 +16,8 @@ import java.lang.ref.WeakReference
  */
 class AccessibilityCoreService() : AccessibilityServicePart4_ScreenWatching() {
     // 4. Service Core: Instance and Click
-    companion object{
-        private var instance: WeakReference<AccessibilityCoreService>? = null
-        fun getInstance() = instance?.get()
+    companion object {
+        var instance = WeakReference<AccessibilityCoreService>(null)
     }
 
     override fun onServiceConnected() {
@@ -85,7 +84,7 @@ class AccessibilityCoreService() : AccessibilityServicePart4_ScreenWatching() {
     // on Ego Disconnected
     override fun onDestroy() {
         onVisitorDisconnected()
-        instance = null
+        instance.clear()
         super.onDestroy()
     }
 

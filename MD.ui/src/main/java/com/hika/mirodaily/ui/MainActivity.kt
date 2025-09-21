@@ -117,37 +117,6 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
-//        iAccessibilityService!!.setListenerOnProjectionSuccess(object : IProjectionSuccess.Stub(){
-//            override fun onProjectionSuccess() {
-//                lifecycleScope.launch {
-//                    Log.d("#0x-MA", "Swipe off the popout")
-//                    delay(1000)
-//                    val accessibility_app_name = this@MainActivity.getString(R.string.accessibility_app_name)
-//                    // swipe off the annoying notification popout
-//                    var text: ParcelableText? = null
-//                    var location: List<ParcelableSymbol>? = null
-//                    if (Helpers.waitFor(30) {
-//                        text = ASReceiver.getTextInRegionAsync(null)
-//                        location = text.matchSymbols(accessibility_app_name)
-//                        !location.isEmpty()
-//                    }){
-//                        Log.d("#0x-MA", "swipe.")
-//                        val first = location!!.first()
-//                        val last = location.last()
-//                        ASReceiver.swipe(
-//                            PointF(first.boundingBox!!.left.toFloat(),
-//                                first.boundingBox!!.top.toFloat()
-//                            ),
-//                            PointF(last.boundingBox!!.right.toFloat(),
-//                                last.boundingBox!!.top.toFloat()
-//                            )
-//                        )
-//                    }else{
-//                        Log.d("#0x-MA", "failed. text condition: $text, ${text!!.text}")
-//                    }
-//                }
-//            }
-//        })
 
         val intent = Intent().apply {
             setClassName(AccessibilityPackageName,

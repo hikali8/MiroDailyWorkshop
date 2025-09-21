@@ -200,7 +200,6 @@ class ParcelableSymbol : ParcelableTextBase {
         override fun createFromParcel(parcel: Parcel) = ParcelableSymbol(parcel)
         override fun newArray(size: Int) = arrayOfNulls<ParcelableSymbol>(size)
     }
-
 }
 
 
@@ -231,6 +230,8 @@ open class ParcelableTextBase(
         override fun createFromParcel(parcel: Parcel) = ParcelableSymbol(parcel)
         override fun newArray(size: Int) = arrayOfNulls<ParcelableSymbol>(size)
     }
+
+    override fun toString() = text
 }
 
 
