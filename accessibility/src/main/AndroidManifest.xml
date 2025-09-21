@@ -33,7 +33,7 @@
         </service>
         <activity
             android:name="com.hika.accessibility.ProjectionRequesterActivity"
-            android:exported="true">
+            android:exported="false">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
             </intent-filter>
