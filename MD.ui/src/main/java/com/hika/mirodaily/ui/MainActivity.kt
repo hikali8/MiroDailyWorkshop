@@ -1,158 +1,165 @@
 package com.hika.mirodaily.ui
 
-import android.content.ComponentName
+import android.Manifest
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.content.Context
 import android.content.Intent
+import android.graphics.PixelFormat
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.os.PowerManager
 import android.provider.Settings
-import android.util.Log
-import android.widget.Toast
-import com.google.android.material.bottomnavigation.BottomNavigationView
+import android.view.Gravity
+import android.view.View
+import android.view.WindowManager
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.lifecycleScope
-import androidx.navigation.findNavController
-import androidx.navigation.ui.AppBarConfiguration
-import androidx.navigation.ui.setupActionBarWithNavController
-import androidx.navigation.ui.setupWithNavController
-import com.hika.mirodaily.core.AccessibilityClassName
-import com.hika.mirodaily.core.AccessibilityPackageName
-import com.hika.core.Helpers
-import com.hika.mirodaily.core.ProjectionRequesterClassName
-import com.hika.mirodaily.core.START_BROADCAST
-import com.hika.mirodaily.core.iAccessibilityService
-import com.hika.mirodaily.ui.databinding.ActivityMainBinding
-import kotlinx.coroutines.launch
-
+import androidx.core.app.ActivityCompat
+import com.hika.accessibility.AccessibilityCoreService // ← 关键：确保能 import 到
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var binding: ActivityMainBinding
+    private var overlayView: View? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+        // 1) 通知权限（Android 13+）
+        if (Build.VERSION.SDK_INT >= 33) requestPostNotificationsIfNeeded()
 
-        val navView: BottomNavigationView = binding.navView
+        // 2) 电池优化白名单
+        requestIgnoreBatteryOptimizationsIfNeeded()
 
-        val navController = findNavController(R.id.nav_host_fragment_activity_main)
-        // Passing each menu ID as a set of Ids because each
-        // menu should be considered as top level destinations.
-        val appBarConfiguration = AppBarConfiguration(
-            setOf(
-                R.id.navigation_start, R.id.navigation_config, R.id.navigation_more_dots
-            )
-        )
-        setupActionBarWithNavController(navController, appBarConfiguration)
-        navView.setupWithNavController(navController)
+        // 3) 悬浮窗权限
+        requestOverlayIfNeeded()
 
+        // 创建低重要度渠道（供前台服务用）
+        ensureLowImportanceChannel()
     }
 
-    // 1. Enable the Accessibility Setting
-    fun enableAccessibilitySetting() {
-        // 1.1 检查无障碍服务是否已能用
-        if (isAccessibilitySettingEnabled() == true) {
-            Toast.makeText(this, "Accessibility Setting Enabled",
-                Toast.LENGTH_SHORT).show()
-            return
-        }
-        // 1.2 open the accessibility settings
-        startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
-        Toast.makeText(this, "请启用无障碍服务", Toast.LENGTH_LONG).show()
-        //然后我们是要等返回窗口后，才通知：已经打开了权限，或者复选框自己检测设置之类
+    override fun onResume() {
+        super.onResume()
+        showOverlay()
     }
 
-    private fun isAccessibilitySettingEnabled(): Boolean? {
-        val enabledServices = Settings.Secure.getString(
-            contentResolver,
-            Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
-        )
-        return enabledServices?.contains(ComponentName(AccessibilityPackageName,
-            AccessibilityClassName
-        ).flattenToString())
+    override fun onDestroy() {
+        removeOverlay()
+        super.onDestroy()
     }
 
-    // 2. Request Media Projection Permission while Accessibility Service initialized
-    fun requestProjection(){
-        if (iAccessibilityService != null){
-            launchProjection()
-            return
-        }
-        Toast.makeText(this, "Binding to accessibility service...",
-            Toast.LENGTH_SHORT).show()
-        Log.d("#0x-MA","Not receiving accessibility connection. Trying to bind " +
-                "accessibility service...")
-        Log.d("#0x-MA", "Before that we will open the service connector first.")
-        startConnector()
+    // -------- 权限引导 --------
 
-        accessibilityBindBroadcast()
-        lifecycleScope.launch {
-            if ( Helpers.loopFor { iAccessibilityService != null } ){
-                launchProjection()
+    private fun requestPostNotificationsIfNeeded() {
+        if (Build.VERSION.SDK_INT >= 33) {
+            val nm = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            if (!nm.areNotificationsEnabled()) {
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+                    1001
+                )
             }
+        }
+    }
+
+    private fun requestIgnoreBatteryOptimizationsIfNeeded() {
+        val pm = getSystemService(Context.POWER_SERVICE) as PowerManager
+        if (!pm.isIgnoringBatteryOptimizations(packageName)) {
+            try {
+                startActivity(
+                    Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
+                        .setData(Uri.parse("package:$packageName"))
+                )
+            } catch (_: Exception) { }
+        }
+    }
+
+    private fun requestOverlayIfNeeded() {
+        if (!Settings.canDrawOverlays(this)) {
+            try {
+                startActivity(
+                    Intent(
+                        Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                        Uri.parse("package:$packageName")
+                    )
+                )
+            } catch (_: Exception) { }
+        }
+    }
+
+    private fun ensureLowImportanceChannel() {
+        if (Build.VERSION.SDK_INT >= 26) {
+            val nm = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            val id = "autotest"
+            if (nm.getNotificationChannel(id) == null) {
+                nm.createNotificationChannel(
+                    NotificationChannel(id, "AutoTest", NotificationManager.IMPORTANCE_LOW)
+                )
+            }
+        }
+    }
+
+    // -------- 悬浮窗 --------
+
+    private fun showOverlay() {
+        if (overlayView != null) return
+        if (!Settings.canDrawOverlays(this)) return
+
+        val tv = TextView(this).apply {
+            text = labelForService()
+            setPadding(24, 16, 24, 16)
+            setBackgroundColor(0x66000000)
+            setTextColor(0xFFFFFFFF.toInt())
+            textSize = 12f
+            setOnClickListener {
+                val svc = AccessibilityCoreService.getInstance()
+                if (svc != null) {
+                    svc.togglePaused()
+                    text = labelForService()
+                } else {
+                    // 无障碍还没启用，帮用户跳设置页
+                    try { startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)) } catch (_: Exception) {}
+                }
+            }
+            setOnLongClickListener {
+                try { startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)) } catch (_: Exception) {}
+                true
+            }
+        }
+
+        val params = WindowManager.LayoutParams(
+            WindowManager.LayoutParams.WRAP_CONTENT,
+            WindowManager.LayoutParams.WRAP_CONTENT,
+            if (Build.VERSION.SDK_INT >= 26)
+                WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
             else
-                Toast.makeText(this@MainActivity, "Failed to bind accessibility service...",
-                    Toast.LENGTH_SHORT).show()
+                @Suppress("DEPRECATION")
+                WindowManager.LayoutParams.TYPE_PHONE,
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                    WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
+            PixelFormat.TRANSLUCENT
+        ).apply {
+            gravity = Gravity.TOP or Gravity.START
+            x = 24; y = 120
         }
+
+        val wm = getSystemService(Context.WINDOW_SERVICE) as WindowManager
+        wm.addView(tv, params)
+        overlayView = tv
     }
 
-    private fun startConnector(){
-        val intent = Intent(this@MainActivity, com.hika.mirodaily.core.ASReceiver::class.java)
-        val res = startForegroundService(intent)
-        Log.d("#0x-MA", "Tried to start connector with: $res")
+    private fun removeOverlay() {
+        val wm = getSystemService(Context.WINDOW_SERVICE) as WindowManager
+        overlayView?.let {
+            try { wm.removeView(it) } catch (_: Exception) {}
+        }
+        overlayView = null
     }
 
-    private fun accessibilityBindBroadcast(){
-        val intent = Intent(START_BROADCAST).apply {
-            setPackage(AccessibilityPackageName) // 指定目标包名
-            putExtra("timestamp", System.currentTimeMillis())
-        }
-        this.sendBroadcast(intent)
-    }
-
-    private fun launchProjection(){
-        if (iAccessibilityService!!.isProjectionStarted()){
-            Toast.makeText(this, "All permission completed.",
-                Toast.LENGTH_SHORT).show()
-            return
-        }
-
-//        iAccessibilityService!!.setListenerOnProjectionSuccess(object : IProjectionSuccess.Stub(){
-//            override fun onProjectionSuccess() {
-//                lifecycleScope.launch {
-//                    Log.d("#0x-MA", "Swipe off the popout")
-//                    delay(1000)
-//                    val accessibility_app_name = this@MainActivity.getString(R.string.accessibility_app_name)
-//                    // swipe off the annoying notification popout
-//                    var text: ParcelableText? = null
-//                    var location: List<ParcelableSymbol>? = null
-//                    if (Helpers.waitFor(30) {
-//                        text = ASReceiver.getTextInRegionAsync(null)
-//                        location = text.matchSymbols(accessibility_app_name)
-//                        !location.isEmpty()
-//                    }){
-//                        Log.d("#0x-MA", "swipe.")
-//                        val first = location!!.first()
-//                        val last = location.last()
-//                        ASReceiver.swipe(
-//                            PointF(first.boundingBox!!.left.toFloat(),
-//                                first.boundingBox!!.top.toFloat()
-//                            ),
-//                            PointF(last.boundingBox!!.right.toFloat(),
-//                                last.boundingBox!!.top.toFloat()
-//                            )
-//                        )
-//                    }else{
-//                        Log.d("#0x-MA", "failed. text condition: $text, ${text!!.text}")
-//                    }
-//                }
-//            }
-//        })
-
-        val intent = Intent().apply {
-            setClassName(AccessibilityPackageName,
-                ProjectionRequesterClassName)
-        }
-        startActivity(intent)
+    private fun labelForService(): String {
+        val paused = AccessibilityCoreService.getInstance()?.isPaused() ?: false
+        return if (paused) "MD • 已暂停（点我恢复）" else "MD • 运行中（点我暂停）"
     }
 }
