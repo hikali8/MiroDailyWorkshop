@@ -153,7 +153,7 @@ class DailyCheckIn(val context: Context, val scope: CoroutineScope) {
             PointF(width / 2F, height * 0.8F),
             80
         )
-        delay(1000)
+        delay(500)
 
         // click check-in button
         val hyl_签到 = context.getString(R.string.hyl_签到)
@@ -173,8 +173,8 @@ class DailyCheckIn(val context: Context, val scope: CoroutineScope) {
                 if(!ASReceiver.listenToActivityClassNameAsync(
                         "com.mihoyo.hyperion.web2.MiHoYoWebActivity"))
                     return@launch
-                delay(3000)
-                // click the lastest 天
+                delay(4000)
+                // click all of 天
                 val hyl_天 = context.getString(R.string.hyl_天)
                 var locations: List<List<ParcelableSymbol>>? = null
                 if (Helpers.loopFor(interval = 200) {
