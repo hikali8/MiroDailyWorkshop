@@ -1,4 +1,4 @@
-MiroDailyWorkshop · 米洛日常工坊，一个基于计算机视觉技术，意图让安卓PVE游戏环境自动化测试变得更好的项目。
+MiroDailyWorkshop · 米洛日常工坊，一个基于计算机视觉技术，意图让安卓PVE环境变得更好的项目。
 
 
 
