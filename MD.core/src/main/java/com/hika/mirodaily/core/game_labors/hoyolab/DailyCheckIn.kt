@@ -66,7 +66,7 @@ class DailyCheckIn(val context: Context, val scope: CoroutineScope) {
         // 1. close ad pages
         val adPages = arrayOf(context.getString(R.string.hyl_我知道了), context.getString(R.string.hyl_去看看吧))
         var location: List<ParcelableSymbol>? = null
-        while (Helpers.loopFor(3000) {
+        while (Helpers.loopUntil(3000) {
             val text = ASReceiver.getTextInRegionAsync(null)
             location = text.containsAny(adPages)
             !location.isEmpty()
@@ -115,7 +115,7 @@ class DailyCheckIn(val context: Context, val scope: CoroutineScope) {
         var text: ParcelableText? = null
         var location: List<ParcelableSymbol>? = null
 
-        if (Helpers.loopFor {
+        if (Helpers.loopUntil {
             text = ASReceiver.getTextInRegionAsync(regionLimitation)
             location = text.containsAny(naviWords)
             !location.isEmpty()
@@ -146,6 +146,17 @@ class DailyCheckIn(val context: Context, val scope: CoroutineScope) {
 
     // 3. find check-in button
     suspend fun findCheckInButton(){
+        // wait for "正在加载中" to disappear
+        val keyword = "正在加载中"
+
+        var location: List<ParcelableSymbol>? = null
+        var text: ParcelableText? = null
+        Helpers.loopUntil {
+            text = ASReceiver.getTextInRegionAsync()
+            location = text!!.matchSequence(keyword)
+            location!!.isEmpty()
+        }
+
         Log.d("#0x-DCI", "swip downward to find check-in button.")
         // swipe downward
         ASReceiver.swipe(
@@ -159,9 +170,7 @@ class DailyCheckIn(val context: Context, val scope: CoroutineScope) {
         val hyl_签到 = context.getString(R.string.hyl_签到)
         val upperScreen = Rect(0, 0, width, height / 2)
 
-        var location: List<ParcelableSymbol>? = null
-        var text: ParcelableText? = null
-        if(Helpers.loopFor {
+        if(Helpers.loopUntil {
             text = ASReceiver.getTextInRegionAsync(upperScreen)
             location = text.matchSequence(hyl_签到)
             !location.isEmpty()
@@ -177,7 +186,7 @@ class DailyCheckIn(val context: Context, val scope: CoroutineScope) {
                 // click all of 天
                 val hyl_天 = context.getString(R.string.hyl_天)
                 var locations: List<List<ParcelableSymbol>>? = null
-                if (Helpers.loopFor(interval = 200) {
+                if (Helpers.loopUntil(interval = 200) {
                     val text = ASReceiver.getTextInRegionAsync()
                     locations = text.findAll(hyl_天)
                     !locations.isEmpty()

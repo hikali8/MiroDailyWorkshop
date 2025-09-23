@@ -14,7 +14,7 @@ object Helpers {
      * @param durationMillis Maximal duration time of loop. Default is 1000 (ms).
      *
      */
-    suspend fun loopFor(
+    suspend fun loopUntil(
         durationMillis: Long = 1000,
         interval: Long = 200,
         condition: suspend () -> Boolean

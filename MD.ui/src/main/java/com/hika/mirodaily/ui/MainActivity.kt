@@ -87,7 +87,7 @@ class MainActivity : AppCompatActivity() {
 
         accessibilityBindBroadcast()
         lifecycleScope.launch {
-            if ( Helpers.loopFor { iAccessibilityService != null } ){
+            if ( Helpers.loopUntil { iAccessibilityService != null } ){
                 launchProjection()
             }
             else
