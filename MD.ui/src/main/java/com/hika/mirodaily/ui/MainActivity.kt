@@ -13,9 +13,9 @@ import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
+import com.hika.core.loopUntil
 import com.hika.mirodaily.core.AccessibilityClassName
 import com.hika.mirodaily.core.AccessibilityPackageName
-import com.hika.core.Helpers
 import com.hika.mirodaily.core.ProjectionRequesterClassName
 import com.hika.mirodaily.core.START_BROADCAST
 import com.hika.mirodaily.core.iAccessibilityService
@@ -87,7 +87,7 @@ class MainActivity : AppCompatActivity() {
 
         accessibilityBindBroadcast()
         lifecycleScope.launch {
-            if ( Helpers.loopUntil { iAccessibilityService != null } ){
+            if ( loopUntil { iAccessibilityService != null } ){
                 launchProjection()
             }
             else
