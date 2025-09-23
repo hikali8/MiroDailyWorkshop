@@ -16,21 +16,21 @@ suspend fun loopUntil(
     condition: suspend () -> Boolean
 ): Boolean {
     var currentTime = System.currentTimeMillis()
-    var expectedTime = currentTime + interval
+    var expectingTime = currentTime + interval
     val terminalTime = currentTime + durationMillis
-    while (expectedTime <= terminalTime) {
+    while (expectingTime <= terminalTime) {
         if (condition())
             return true
 
         currentTime = System.currentTimeMillis()
-        val delta = expectedTime - currentTime
+        val delta = expectingTime - currentTime
         if (delta > 0) {
             delay(delta)
-            expectedTime += interval
+            expectingTime += interval
         }else{
             // since it's already late, immediately run the next loop
-            // but ensure the step length is really the multiplier of interval
-            expectedTime = currentTime + interval + delta % interval
+            // but ensure the step length is the multiplier of interval
+            expectingTime = currentTime + interval + delta % interval
         }
     }
     return false
