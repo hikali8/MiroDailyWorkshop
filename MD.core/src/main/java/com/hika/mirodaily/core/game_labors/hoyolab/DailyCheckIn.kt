@@ -151,7 +151,7 @@ class DailyCheckIn(val context: Context, val scope: CoroutineScope) {
 
         var location: List<ParcelableSymbol>? = null
         var text: ParcelableText? = null
-        Helpers.loopUntil {
+        Helpers.loopUntil(5000) {
             text = ASReceiver.getTextInRegionAsync()
             location = text!!.matchSequence(keyword)
             location!!.isEmpty()
