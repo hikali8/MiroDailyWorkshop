@@ -8,6 +8,8 @@ import android.graphics.Rect
 import android.util.Log
 import com.hika.core.aidl.accessibility.ParcelableSymbol
 import com.hika.core.aidl.accessibility.ParcelableText
+import com.hika.core.interfaces.Logger
+import com.hika.core.interfaces.Level
 import com.hika.core.loopUntil
 import com.hika.mirodaily.core.ASReceiver
 import com.hika.mirodaily.core.R
@@ -32,15 +34,20 @@ import kotlin.properties.Delegates
  */
 
 
-class DailyCheckIn(val context: Context, val scope: CoroutineScope) {
+class DailyCheckIn(val context: Context, val scope: CoroutineScope, val logger: Logger) {
+    //0. entry
+    fun start(): Job {
+        return openApp()
+    }
+
     //1. Open the app
     val intent = Intent(Intent.ACTION_MAIN).apply {
         setClassName("com.mihoyo.hyperion", "com.mihoyo.hyperion.main.HyperionMainActivity")
         setFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED or Intent.FLAG_ACTIVITY_NEW_TASK)
         addCategory(Intent.CATEGORY_LAUNCHER)
     }
-    fun openApp(): Job {
 
+    private inline fun openApp(): Job {
         val job = scope.launch {
             iAccessibilityService?.clearClassNameListeners()
             prepareToEnterHyperionMainActivity()
@@ -49,7 +56,7 @@ class DailyCheckIn(val context: Context, val scope: CoroutineScope) {
         try {
             context.startActivity(intent)
         }catch (_: ActivityNotFoundException){
-            Log.e("#0x-DCI", "HyperionMainActivity Not Found")
+            logger("HyperionMainActivity Not Found", Level.Erro)
             job.cancel()
             onTaskFinished()
         }
@@ -59,8 +66,8 @@ class DailyCheckIn(val context: Context, val scope: CoroutineScope) {
     suspend fun prepareToEnterHyperionMainActivity(){
         if(!ASReceiver.listenToActivityClassNameAsync(
                 "com.mihoyo.hyperion.main.HyperionMainActivity"))
-            Log.d("#0x-DCI", "Failed to hear class name, suppose it's already entered.")
-        Log.d("#0x-DCI", "HyperionMainActivity")
+            logger("Failed to hear class name, suppose it's already entered.")
+        logger("HyperionMainActivity")
         delay(500)
 
         // 1. close ad pages
@@ -71,11 +78,11 @@ class DailyCheckIn(val context: Context, val scope: CoroutineScope) {
             location = text.containsAny(adPages)
             !location.isEmpty()
         }){
-            Log.d("#0x-DCI", "Saw $adPages.")
+            logger("Saw $adPages.")
             ASReceiver.clickLocationBox(location!!.first().boundingBox!!)
             delay(500)
         }
-        Log.d("#0x-DCI", "All ADs closed.")
+        logger("All ADs closed.")
 
         findNaviBar()
     }
@@ -87,7 +94,7 @@ class DailyCheckIn(val context: Context, val scope: CoroutineScope) {
     suspend fun findNaviBar(){
         val screenSize = iAccessibilityService?.screenSize
         if (screenSize == null){
-            Log.e("#0x-DCI", "No screen-size gotten.")
+            logger("No screen-size gotten.", Level.Erro)
             return
         }
         width = screenSize.x
@@ -122,11 +129,11 @@ class DailyCheckIn(val context: Context, val scope: CoroutineScope) {
         }){
             val box = location!!.first().boundingBox!!
             barHeight = (box.top + box.bottom) / 2 .toFloat()
-            Log.d("#0x-DCI", "Saw tab strings. Lastest seen:\n${text!!.text}")
+            logger("Saw tab strings. Lastest seen:\n${text!!.text}")
         }else{
-            Log.e("#0x-DCI", "Failed to see any tab strings. Roughly estimate the location.")
+            logger("Failed to see any tab strings. Roughly estimate the location.", Level.Erro)
             barHeight = height * 0.1F
-            Log.e("#0x-DCI", "Lastest seen: ${text!!.text}.")
+            logger("Lastest seen: ${text!!.text}.", Level.Erro)
         }
         // from 10% -> 80%
         ASReceiver.swipe(
@@ -134,7 +141,7 @@ class DailyCheckIn(val context: Context, val scope: CoroutineScope) {
             PointF(width * 0.8F, barHeight),
             50
         )
-        Log.d("#0x-DCI", "swiped")
+        logger("swiped")
         delay(500)
 
         // click the leftest
@@ -157,7 +164,7 @@ class DailyCheckIn(val context: Context, val scope: CoroutineScope) {
             location!!.isEmpty()
         }
 
-        Log.d("#0x-DCI", "swip downward to find check-in button.")
+        logger("swip downward to find check-in button.")
         // swipe downward
         ASReceiver.swipe(
             PointF(width / 2F, height / 2F),
@@ -175,8 +182,8 @@ class DailyCheckIn(val context: Context, val scope: CoroutineScope) {
             location = text.matchSequence(hyl_签到)
             !location.isEmpty()
         }){
-            Log.d("#0x-DCI", "Saw $hyl_签到. Click the button. Params condition:")
-            Log.d("#0x-DCI", text!!.text)
+            logger("Saw $hyl_签到. Click the button. Params condition:")
+            logger(text!!.text)
 
             scope.launch {
                 if(!ASReceiver.listenToActivityClassNameAsync(
@@ -193,17 +200,15 @@ class DailyCheckIn(val context: Context, val scope: CoroutineScope) {
                 }){
                     var str = "Saw $hyl_天. Click each of them, and go back, go to the next tab. locations: $locations\n"
                     str += "click: "
-//                    Log.d("#0x-DCI", "Saw $hyl_天. Click each of them, and go back, go to the next tab. locations: $locations")
                     assert(locations != null)
-//                    Log.d("$0x-DCI", "locations: $locations")
                     for (location in locations!!){
                         ASReceiver.clickLocationBox(location.first().boundingBox!!)
                         str += location.first().boundingBox!!.toString()
                         delay(50)
                     }
-                    Log.w("$0x-DCI", str)
+                    logger(str, Level.Warn)
                 }else{
-                    Log.e("#0x-DCI", "Not Saw $hyl_天. Go back and go to the next tab.")
+                    logger("Not Saw $hyl_天. Go back and go to the next tab.", Level.Erro)
                 }
                 delay(1000)
 
@@ -216,8 +221,8 @@ class DailyCheckIn(val context: Context, val scope: CoroutineScope) {
             ASReceiver.clickLocationBox(location!!.first().boundingBox!!)
             return
         }else{
-            Log.d("#0x-DCI", "Not Saw $hyl_签到. Go to the next tab. Params condition:")
-            Log.d("#0x-DCI", text!!.text)
+            logger("Not Saw $hyl_签到. Go to the next tab. Params condition:")
+            logger(text!!.text)
         }
         goToNextTab()
     }
@@ -226,7 +231,7 @@ class DailyCheckIn(val context: Context, val scope: CoroutineScope) {
     var leftTabs = 10   // At most 10 tabs it can go
     suspend fun goToNextTab(){
         if (leftTabs < 1) {
-            Log.d("#0x-DCI", "Check-in finished")
+            logger("Check-in finished")
             return
         }
         leftTabs--

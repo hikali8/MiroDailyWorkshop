@@ -1,26 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/floatWindowContainer"
     android:layout_width="wrap_content"
-    android:layout_height="200dp"
-    android:background="#50F0"
+    android:layout_height="wrap_content"
+    android:background="#80F0"
     android:orientation="vertical"
     android:gravity="center">
 
     <TextView
-        android:id="@+id/tvFloatTitle"
+        android:id="@+id/logText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="悬浮窗"
+        tools:text="Floating Window Content (Preview)"
         android:textColor="@android:color/white"
         android:textSize="16sp"
         android:layout_marginBottom="8dp"/>
-
-    <Button
-        android:id="@+id/btnClose"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="调试信息"
-        android:textSize="12sp"/>
-
 </LinearLayout>

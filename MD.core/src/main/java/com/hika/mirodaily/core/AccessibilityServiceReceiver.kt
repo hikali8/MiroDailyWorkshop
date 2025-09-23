@@ -46,7 +46,7 @@ class ASReceiver: Service(){
             ), startTime, duration)
 
         /**
-         * send delegation to act as long as the className is met.
+         * resume as long as the className is met or the maximalMillis has been met.
          */
         @OptIn(ExperimentalCoroutinesApi::class)
         suspend fun listenToActivityClassNameAsync(

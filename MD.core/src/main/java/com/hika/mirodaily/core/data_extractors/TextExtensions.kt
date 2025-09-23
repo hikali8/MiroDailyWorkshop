@@ -3,6 +3,7 @@ package com.hika.mirodaily.core.data_extractors
 import android.util.Log
 import com.hika.core.aidl.accessibility.ParcelableSymbol
 import com.hika.core.aidl.accessibility.ParcelableText
+import com.hika.core.countSpaces
 
 fun ParcelableText.matchSequence(sequence: String): List<ParcelableSymbol> {
     if (this.isEmpty() || sequence !in this.text)
@@ -75,12 +76,4 @@ fun ParcelableText.containsAny(sequences: Array<String>): List<ParcelableSymbol>
         }
     }
     return emptyList()
-}
-
-private fun countSpaces(string: String, startFrom: Int, length: Int): Int{
-    var count = 0
-    for (i in startFrom until startFrom + length)
-        if (string[i].isWhitespace())
-            count++
-    return count
 }

@@ -2,6 +2,8 @@ package com.hika.core
 
 import kotlinx.coroutines.delay
 
+// Helpers: Methods to help logic control
+
 /**
  * Loop until the condition method gets true or the duration has reached its maximum.
  *
