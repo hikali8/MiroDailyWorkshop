@@ -53,7 +53,7 @@ fun ParcelableText.findAll(sequence: String): List<List<ParcelableSymbol>> {
     return foundSequences
 }
 
-fun ParcelableText.containAny(sequences: Array<String>): List<ParcelableSymbol> {
+fun ParcelableText.containsAny(sequences: Array<String>): List<ParcelableSymbol> {
     if (this.isEmpty())
         return emptyList()
     for (sequence in sequences){

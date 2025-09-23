@@ -38,8 +38,7 @@ class ImageHandler(width: Int, height: Int, val scope: CoroutineScope) {
         if (System.currentTimeMillis() >= expirationTime && frameUpdatingJob == null)
             frameUpdatingJob = scope.launch {
                 imageReader.acquireLatestImage()?.apply {
-                    recognizableTmp =
-                        Recognizable(
+                    recognizableTmp = Recognizable(
                             this.planes[0].buffer,
                             this.width,
                             this.height,

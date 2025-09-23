@@ -16,7 +16,7 @@ object Helpers {
      */
     suspend fun loopFor(
         durationMillis: Long = 1000,
-        interval: Long = 100,
+        interval: Long = 200,
         condition: suspend () -> Boolean
     ): Boolean {
         var currentTime = System.currentTimeMillis()

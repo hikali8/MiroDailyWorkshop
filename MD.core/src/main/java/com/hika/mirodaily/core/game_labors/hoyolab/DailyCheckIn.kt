@@ -12,7 +12,7 @@ import com.hika.core.aidl.accessibility.ParcelableText
 import com.hika.mirodaily.core.ASReceiver
 import com.hika.mirodaily.core.R
 import com.hika.mirodaily.core.data_extractors.findAll
-import com.hika.mirodaily.core.data_extractors.containAny
+import com.hika.mirodaily.core.data_extractors.containsAny
 import com.hika.mirodaily.core.data_extractors.matchSequence
 import com.hika.mirodaily.core.iAccessibilityService
 import kotlinx.coroutines.CoroutineScope
@@ -66,9 +66,9 @@ class DailyCheckIn(val context: Context, val scope: CoroutineScope) {
         // 1. close ad pages
         val adPages = arrayOf(context.getString(R.string.hyl_我知道了), context.getString(R.string.hyl_去看看吧))
         var location: List<ParcelableSymbol>? = null
-        while (Helpers.loopFor {
+        while (Helpers.loopFor(3000) {
             val text = ASReceiver.getTextInRegionAsync(null)
-            location = text.containAny(adPages)
+            location = text.containsAny(adPages)
             !location.isEmpty()
         }){
             Log.d("#0x-DCI", "Saw $adPages.")
@@ -117,7 +117,7 @@ class DailyCheckIn(val context: Context, val scope: CoroutineScope) {
 
         if (Helpers.loopFor {
             text = ASReceiver.getTextInRegionAsync(regionLimitation)
-            location = text.containAny(naviWords)
+            location = text.containsAny(naviWords)
             !location.isEmpty()
         }){
             val box = location!!.first().boundingBox!!
