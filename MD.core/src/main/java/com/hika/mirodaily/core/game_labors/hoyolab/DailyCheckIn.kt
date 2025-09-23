@@ -146,8 +146,8 @@ class DailyCheckIn(val context: Context, val scope: CoroutineScope) {
 
     // 3. find check-in button
     suspend fun findCheckInButton(){
-        // wait for "正在加载中" to disappear
-        val keyword = "正在加载中"
+        // wait for "加载中" to disappear
+        val keyword = "加载中"
 
         var location: List<ParcelableSymbol>? = null
         var text: ParcelableText? = null
