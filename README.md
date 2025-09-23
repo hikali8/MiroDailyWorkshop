@@ -30,7 +30,7 @@ MiroDailyWorkshop · 米洛日常工坊，一个基于计算机视觉技术，�
 
 
 
-## 工程大体结构和说明 / Project Structure & Descriptions
+## 工程大体结构和说明 / Project Basic Structure & Descriptions
 
 本工程有两个应用：accessibility和MD.ui。accessibility用于实现无障碍服务，MD.ui用于实现主界面。
 
