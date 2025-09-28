@@ -36,9 +36,7 @@ import kotlin.properties.Delegates
 
 class DailyCheckIn(val context: Context, val scope: CoroutineScope, val logger: Logger) {
     //0. entry
-    fun start(): Job {
-        return openApp()
-    }
+    fun start() = openApp()
 
     //1. Open the app
     val intent = Intent(Intent.ACTION_MAIN).apply {
@@ -68,13 +66,14 @@ class DailyCheckIn(val context: Context, val scope: CoroutineScope, val logger: 
                 "com.mihoyo.hyperion.main.HyperionMainActivity"))
             logger("Failed to hear class name, suppose it's already entered.")
         logger("HyperionMainActivity")
-        delay(500)
+        delay(1000)
 
         // 1. close ad pages
         val adPages = arrayOf(context.getString(R.string.hyl_我知道了), context.getString(R.string.hyl_去看看吧))
         var location: List<ParcelableSymbol>? = null
-        while (loopUntil(3000) {
-            val text = ASReceiver.getTextInRegionAsync(null)
+        var text: ParcelableText? = null
+        while (loopUntil {
+            text = ASReceiver.getTextInRegionAsync()
             location = text.containsAny(adPages)
             !location.isEmpty()
         }){
@@ -82,7 +81,8 @@ class DailyCheckIn(val context: Context, val scope: CoroutineScope, val logger: 
             ASReceiver.clickLocationBox(location!!.first().boundingBox!!)
             delay(500)
         }
-        logger("All ADs closed.")
+        logger("All ADs closed. last seen:\n" + text!!.text)
+        Log.d("#0x-DCI", "last seen:" + text.text)
 
         findNaviBar()
     }
