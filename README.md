@@ -18,6 +18,10 @@ MiroDailyWorkshop · 米洛日常工坊，一个基于计算机视觉技术，�
 
 5. 完善UI界面
 
+主要问题（优先）：
+
+1. 有概率不识别某些特殊颜色对比下的字符。考虑实现一个debug窗口，显示截图情况。
+
 
 
 ## 🙌参与者 / Committers
@@ -49,3 +53,4 @@ MiroDailyWorkshop · 米洛日常工坊，一个基于计算机视觉技术，�
 + 说明：安卓机器学习是通过**Google ML Kit**实现（Google Machine-Learning Kit）（[ML Kit  |  Google for Developers](https://developers.google.cn/ml-kit/guides?hl=zh-cn)），安卓屏幕捕获是通过**Media projection**实现（[Media projection  |  Android media  |  Android Developers](https://developer.android.google.cn/media/grow/media-projection?hl=en)），等等。
 
 本工程仅作学习用途。
+

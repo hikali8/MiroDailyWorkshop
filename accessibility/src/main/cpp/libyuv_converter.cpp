@@ -47,10 +47,10 @@ Java_com_hika_accessibility_recognition_ImageHandler_00024Companion_convertRGBAt
     // 转换为uint8_t*
     uint8_t* nv21Buffer = reinterpret_cast<uint8_t*>(nv21Data);
 
-    // 使用libyuv进行转换
-    // 注意：libyuv::RGBAToNV21是本项目自己建的，直接下载libyuv没有这个函数
+    // use libyuv to convert
+    // ABGR still is RGBA (little order), Google made it unclearly
 
-    int result = libyuv::RGBAToNV21(
+    int result = libyuv::ABGRToNV21(
             rgbaData,           // src_rgba
             rgba_stride,        // src_stride_rgba
             nv21Buffer,         // dst_y

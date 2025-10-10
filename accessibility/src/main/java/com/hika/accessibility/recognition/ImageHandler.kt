@@ -80,8 +80,8 @@ class ImageHandler(width: Int, height: Int, val scope: CoroutineScope) {
                     )
             ).await()
 
-//        private val openCVMat by lazy { OpenCVRecognizer.getMat(currentImage) }
-        private val imageNV21_Array by lazy {
+//        val openCVMat by lazy { OpenCVRecognizer.getMat(currentImage) }
+        val imageNV21_Array by lazy {
             convertRGBAtoNV21_Array(imageBuffer, rowStride, width, height)
                 ?: throw Exception("NV21 conversion failed") }
     }

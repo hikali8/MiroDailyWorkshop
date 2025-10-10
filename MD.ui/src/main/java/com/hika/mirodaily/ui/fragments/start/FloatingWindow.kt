@@ -7,10 +7,8 @@ import android.graphics.Color
 import android.graphics.PixelFormat
 import android.provider.Settings
 import android.text.Spannable
-import android.text.SpannableString
 import android.text.SpannableStringBuilder
 import android.text.style.BackgroundColorSpan
-import android.text.style.LeadingMarginSpan
 import android.util.Log
 import android.view.Gravity
 import android.view.LayoutInflater
@@ -20,7 +18,6 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.core.net.toUri
-import androidx.core.text.subscript
 import com.hika.core.interfaces.Level
 import com.hika.core.interfaces.Logger
 import com.hika.mirodaily.ui.databinding.FloatingWindowBinding
@@ -37,9 +34,10 @@ class FloatingWindow(val context: Context,
         WindowManager.LayoutParams.WRAP_CONTENT,
         WindowManager.LayoutParams.WRAP_CONTENT,
         WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
-        WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
-                WindowManager.LayoutParams.FLAG_SECURE or
-                WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
+        WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+                or WindowManager.LayoutParams.FLAG_SECURE
+//                or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
+        ,
         PixelFormat.TRANSLUCENT
     ).apply {
         gravity = Gravity.TOP or Gravity.START
@@ -132,14 +130,15 @@ class FloatingWindow(val context: Context,
 
     // 3. Close floating window (not hide or destroy, which should be done by the parent)
     fun close(){
-        windowManager.removeView(binding.root)
+        if (isFloatingWindowOpen())
+            windowManager.removeView(binding.root)
     }
 
 
     // 4. println for floating window
     val lineWidth = 30
     val indent = 17  // should not appear
-    val logger = object: Logger() {
+    val logger = object: Logger {
         override val maxLines = 20
 
         override fun println(text: String, color: Level) {

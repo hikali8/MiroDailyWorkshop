@@ -69,16 +69,21 @@ class DailyCheckIn(val context: Context, val scope: CoroutineScope, val logger: 
         delay(1000)
 
         // 1. close ad pages
-        val adPages = arrayOf(context.getString(R.string.hyl_我知道了), context.getString(R.string.hyl_去看看吧))
+        val adPages = arrayOf("青少年", "去看看")
         var location: List<ParcelableSymbol>? = null
         var text: ParcelableText? = null
         while (loopUntil {
             text = ASReceiver.getTextInRegionAsync()
             location = text.containsAny(adPages)
-            !location.isEmpty()
+            location?.isEmpty() != true
         }){
             logger("Saw $adPages.")
-            ASReceiver.clickLocationBox(location!!.first().boundingBox!!)
+            location = text!!.matchSequence("知道了")
+
+            if (location.isEmpty())
+                continue
+
+            ASReceiver.clickLocationBox(location.first().boundingBox!!)
             delay(500)
         }
         logger("All ADs closed. last seen:\n" + text!!.text)
