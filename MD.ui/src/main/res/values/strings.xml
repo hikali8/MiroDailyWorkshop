@@ -10,4 +10,8 @@
     <string name="notification_title">正在: %1$s</string>
     <string name="notification_message">前台通知的消息</string>
     <string name="text_start">先打开无障碍权限 和 媒体投射权限</string>
+    <string name="tip_order_enable">请按顺序开启所有权限以确保测试功能正常运行</string>
+    <string name="tip_restart_after_permission">开启权限后可能需要重启应用才能生效</string>
+    <string name="tip_manual_confirm">部分权限在系统设置中可能需要手动确认</string>
+
 </resources>

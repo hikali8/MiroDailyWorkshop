@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 基础色 -->
+    <color name="purple_200">#BB86FC</color>
+    <color name="purple_500">#8B87FF</color>
+    <color name="purple_700">#5E43D6</color>
+    <color name="teal_200">#66E7D7</color>
+    <color name="teal_700">#2AB3A4</color>
+    <color name="black">#000000</color>
+
+    <!-- 品牌与文本 -->
+    <color name="brand_purple">#8B87FF</color>
+    <color name="white">#FFFFFF</color>
+
+    <!-- 夜间背景 -->
+    <color name="bg_page">#121316</color>
+    <color name="card_bg">#202125</color>
+    <color name="topbar_bg">#121212</color>
+
+    <!-- 文本与分割线 -->
+    <color name="text_primary">#E5E7EB</color>
+    <color name="text_secondary">#9CA3AF</color>
+    <color name="divider_light">#2A2D33</color>
+
+    <!-- 状态点 & 按钮禁用 -->
+    <color name="dot_grey">#4B5563</color>
+    <color name="dot_ok">#22C55E</color>
+    <color name="btn_disabled_bg">#2A2D33</color>
+    <color name="btn_disabled_text">#9CA3AF</color>
+</resources>

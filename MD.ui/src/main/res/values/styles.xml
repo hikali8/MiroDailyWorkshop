@@ -1,0 +1,46 @@
+<resources>
+    <style name="TextTitleLg">
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:textSize">20sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="TextTitleSm">
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="TextBodySm">
+        <item name="android:textColor">@color/text_secondary</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+
+    <style name="CardBlock">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">12dp</item>
+        <item name="android:foreground">@drawable/ripple_foreground</item>
+        <item name="cardCornerRadius">24dp</item>
+        <item name="cardUseCompatPadding">true</item>
+        <item name="cardElevation">2dp</item>
+    </style>
+
+    <style name="PrimaryActionButton" parent="Widget.MaterialComponents.Button">
+        <item name="android:minHeight">36dp</item>
+        <item name="android:paddingStart">16dp</item>
+        <item name="android:paddingEnd">16dp</item>
+        <item name="cornerRadius">12dp</item>
+        <item name="backgroundTint">@color/brand_purple</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+
+    <style name="SecondaryDisabledButton" parent="Widget.MaterialComponents.Button">
+        <item name="android:minHeight">36dp</item>
+        <item name="cornerRadius">12dp</item>
+        <item name="backgroundTint">@color/btn_disabled_bg</item>
+        <item name="android:textColor">@color/btn_disabled_text</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+</resources>
