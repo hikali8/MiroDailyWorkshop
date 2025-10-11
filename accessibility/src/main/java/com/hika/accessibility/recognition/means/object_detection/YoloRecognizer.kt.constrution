@@ -1,0 +1,259 @@
+package com.hika.accessibility.recognition.means.object_detection
+
+import android.content.res.AssetManager
+import android.graphics.RectF
+import ncnn.Net
+import java.lang.Float
+import java.nio.ByteBuffer
+import kotlin.Boolean
+import kotlin.Comparator
+import kotlin.Exception
+import kotlin.FloatArray
+import kotlin.Int
+import kotlin.String
+import kotlin.arrayOf
+import kotlin.collections.ArrayList
+import kotlin.collections.MutableList
+import kotlin.collections.sort
+import kotlin.collections.toFloatArray
+import kotlin.floatArrayOf
+import kotlin.math.max
+import kotlin.math.min
+
+
+class YOLOv11NCNN {
+    private val net: Net = Net()
+    private var initialized = false
+
+    // 用于非极大值抑制的检测结果类
+    class DetectionResult(var className: String?, var confidence: Float, var rect: RectF)
+
+    fun init(assetManager: AssetManager?): Boolean {
+        try {
+            net.load_param(assetManager, "model.param")
+            net.load_model(assetManager, "model.bin")
+            initialized = true
+            return true
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return false
+        }
+    }
+
+    fun detect(
+        buffer: ByteBuffer?,
+        width: Int,
+        height: Int,
+        rowStride: Int
+    ): MutableList<DetectionResult?> {
+        if (!initialized) {
+            return ArrayList<DetectionResult?>()
+        }
+
+
+        // 将RGBA数据转换为ncnn.Mat
+        val rgba: ncnn.Mat = Mat(width, height, 4, buffer)
+
+
+        // 转换为RGB
+        val rgb: ncnn.Mat = Mat()
+        ncnn.extract_feature(rgba, rgb, 4, 3, null)
+
+
+        // 预处理
+        val input: ncnn.Mat = preprocess(rgb)
+
+
+        // 推理
+        val extractor: ncnn.Extractor = net.create_extractor()
+        extractor.set_light_mode(true)
+        extractor.set_num_threads(4)
+
+        extractor.input("in0", input) // 输入节点名称，根据你的模型调整
+        val output: ncnn.Mat = Mat()
+        extractor.extract("out0", output) // 输出节点名称，根据你的模型调整
+
+
+        // 后处理
+        return postprocess(output, width, height)
+    }
+
+    private fun preprocess(rgb: ncnn.Mat): ncnn.Mat {
+        // 调整大小到模型输入尺寸
+        val resized: ncnn.Mat = Mat()
+        ncnn.resize_bilinear(rgb, resized, INPUT_SIZE, INPUT_SIZE)
+
+
+        // 归一化 (根据你的训练预处理调整)
+        val input: ncnn.Mat = Mat()
+        ncnn.substract_mean_normalize(
+            resized, input,
+            floatArrayOf(0f, 0f, 0f),  // mean
+            floatArrayOf(1 / 255f, 1 / 255f, 1 / 255f)
+        ) // norm
+
+        rgb.release()
+        resized.release()
+
+        return input
+    }
+
+    private fun postprocess(
+        output: ncnn.Mat,
+        origWidth: Int,
+        origHeight: Int
+    ): MutableList<DetectionResult?> {
+        val results: MutableList<DetectionResult?> = ArrayList<DetectionResult?>()
+
+
+        // 解析输出 - 这里需要根据你的YOLOv11输出格式调整
+        // 通常YOLO输出格式为: [batch, num_detections, 4 + 1 + num_classes]
+        val outputData: FloatArray = output.toFloatArray()
+
+
+        // 假设输出是1D数组，需要根据实际输出形状解析
+        val numDetections: Int = output.w // 或者 output.h，取决于输出形状
+
+        for (i in 0..<numDetections) {
+            // 解析边界框和置信度
+            // 这里需要根据你的模型输出格式调整索引
+            val x = outputData[i * (5 + NUM_CLASSES) + 0]
+            val y = outputData[i * (5 + NUM_CLASSES) + 1]
+            val w = outputData[i * (5 + NUM_CLASSES) + 2]
+            val h = outputData[i * (5 + NUM_CLASSES) + 3]
+            val conf = outputData[i * (5 + NUM_CLASSES) + 4]
+
+            if (conf < CONF_THRESHOLD) continue
+
+
+            // 找到最大概率的类别
+            var classId = -1
+            var maxClassProb = 0f
+            for (j in 0..<NUM_CLASSES) {
+                val prob = outputData[i * (5 + NUM_CLASSES) + 5 + j]
+                if (prob > maxClassProb) {
+                    maxClassProb = prob
+                    classId = j
+                }
+            }
+
+            if (classId == -1) continue
+
+            val finalConf = conf * maxClassProb
+            if (finalConf < CONF_THRESHOLD) continue
+
+
+            // 转换坐标到原始图像尺寸
+            val scaleX = origWidth.toFloat() / INPUT_SIZE
+            val scaleY = origHeight.toFloat() / INPUT_SIZE
+
+            var left = (x - w / 2) * scaleX
+            var top = (y - h / 2) * scaleY
+            var right = (x + w / 2) * scaleX
+            var bottom = (y + h / 2) * scaleY
+
+
+            // 确保坐标在图像范围内
+            left = max(0f, min(origWidth.toFloat(), left))
+            top = max(0f, min(origHeight.toFloat(), top))
+            right = max(0f, min(origWidth.toFloat(), right))
+            bottom = max(0f, min(origHeight.toFloat(), bottom))
+
+            val className = getClassName(classId)
+            results.add(
+                DetectionResult(
+                    className, finalConf,
+                    RectF(left, top, right, bottom)
+                )
+            )
+        }
+
+
+        // 应用非极大值抑制
+        return applyNMS(results)
+    }
+
+    private fun applyNMS(detections: MutableList<DetectionResult?>): MutableList<DetectionResult?> {
+        val results: MutableList<DetectionResult?> = ArrayList<DetectionResult?>()
+        val remaining: MutableList<DetectionResult> = ArrayList<DetectionResult>(detections)
+
+
+        // 按置信度排序
+        remaining.sort(Comparator { a: DetectionResult?, b: DetectionResult? ->
+            Float.compare(
+                b!!.confidence,
+                a!!.confidence
+            )
+        })
+
+        while (!remaining.isEmpty()) {
+            val best = remaining.get(0)
+            results.add(best)
+            remaining.removeAt(0)
+
+
+            // 移除与最佳检测框IoU大于阈值的框
+            val iterator = remaining.iterator()
+            while (iterator.hasNext()) {
+                val detection = iterator.next()
+                val iou = calculateIoU(best.rect, detection.rect)
+                if (iou > NMS_THRESHOLD) {
+                    iterator.remove()
+                }
+            }
+        }
+
+        return results
+    }
+
+    private fun calculateIoU(rect1: RectF, rect2: RectF): kotlin.Float {
+        val interLeft = max(rect1.left, rect2.left)
+        val interTop = max(rect1.top, rect2.top)
+        val interRight = min(rect1.right, rect2.right)
+        val interBottom = min(rect1.bottom, rect2.bottom)
+
+        if (interRight < interLeft || interBottom < interTop) {
+            return 0f
+        }
+
+        val interArea = (interRight - interLeft) * (interBottom - interTop)
+        val area1 = (rect1.right - rect1.left) * (rect1.bottom - rect1.top)
+        val area2 = (rect2.right - rect2.left) * (rect2.bottom - rect2.top)
+
+        return interArea / (area1 + area2 - interArea)
+    }
+
+    private fun getClassName(classId: Int): String {
+        // 根据你的类别映射返回类名
+        // 这里需要根据你的训练数据集调整
+        val classNames = arrayOf<String>(
+            "person", "bicycle", "car", "motorcycle", "airplane", "bus", "train", "truck",
+            "boat", "traffic light", "fire hydrant", "stop sign", "parking meter", "bench",
+            "bird", "cat", "dog", "horse", "sheep", "cow", "elephant", "bear", "zebra",
+            "giraffe", "backpack", "umbrella", "handbag", "tie", "suitcase", "frisbee",
+            "skis", "snowboard", "sports ball", "kite", "baseball bat", "baseball glove",
+            "skateboard", "surfboard", "tennis racket", "bottle", "wine glass", "cup",
+            "fork", "knife", "spoon", "bowl", "banana", "apple", "sandwich", "orange",
+            "broccoli", "carrot", "hot dog", "pizza", "donut", "cake", "chair", "couch",
+            "potted plant", "bed", "dining table", "toilet", "tv", "laptop", "mouse",
+            "remote", "keyboard", "cell phone", "microwave", "oven", "toaster", "sink",
+            "refrigerator", "book", "clock", "vase", "scissors", "teddy bear", "hair drier",
+            "toothbrush"
+        )
+
+        return if (classId < classNames.size) classNames[classId] else "unknown"
+    }
+
+    fun release() {
+        net.clear()
+        initialized = false
+    }
+
+    companion object {
+        // YOLO参数 - 根据你的模型调整这些值
+        private const val INPUT_SIZE = 640 // 根据你的模型调整
+        private const val NUM_CLASSES = 80 // 根据你的类别数调整
+        private const val CONF_THRESHOLD = 0.25f
+        private const val NMS_THRESHOLD = 0.45f
+    }
+}

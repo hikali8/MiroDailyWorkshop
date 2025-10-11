@@ -295,16 +295,6 @@ int RGBAToJ400(const uint8_t* src_rgba,
                int width,
                int height);
 
-// Convert RGBA To NV21.
-int RGBAToNV21(const uint8_t* src_rgba,
-               int src_stride_rgba,
-               uint8_t* dst_y,
-               int dst_stride_y,
-               uint8_t* dst_vu,
-               int dst_stride_vu,
-               int width,
-               int height);
-
 // Convert ARGB to I400.
 LIBYUV_API
 int ARGBToI400(const uint8_t* src_argb,
