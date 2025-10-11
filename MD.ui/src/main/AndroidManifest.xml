@@ -11,7 +11,6 @@
     <!-- Needed to display the overlay_logs over other apps -->
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
 
-
     <application
         android:label="@string/accessibility_app_name"
         android:allowBackup="true"
@@ -20,7 +19,7 @@
         android:icon="@mipmap/ic_launcher"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.MyApplication">
+        android:theme="@style/Theme.MiroDailyUI">
         <activity
             android:name="com.hika.mirodaily.ui.MainActivity"
             android:exported="true">

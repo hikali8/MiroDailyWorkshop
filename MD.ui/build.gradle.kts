@@ -15,6 +15,8 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        vectorDrawables.useSupportLibrary = true // ADD: 矢量图支持（我们用了好多 vector）
     }
 
     buildTypes {
@@ -26,16 +28,22 @@ android {
             )
         }
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
-    kotlinOptions {
-        jvmTarget = "11"
-    }
+    kotlinOptions { jvmTarget = "11" }
+
     buildFeatures {
         viewBinding = true
         aidl = true
+    }
+
+    packaging {                           // ADD: 规避三方库里 META-INF 冲突（偶发 aapt 报错）
+        resources {
+            excludes += "/META-INF/{AL2.0,LGPL2.1}"
+        }
     }
 }
 
@@ -49,6 +57,13 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.navigation.fragment.ktx)
     implementation(libs.androidx.navigation.ui.ktx)
+
+    // ADD: Activity Result & Fragment KTX（StartFragment 里用到了）
+    implementation("androidx.activity:activity-ktx:1.9.2")
+    implementation("androidx.fragment:fragment-ktx:1.8.4")
+    // 如果你的 version catalog 里没有上面两个别名，用坐标替代：
+    // implementation("androidx.activity:activity-ktx:1.9.2")
+    // implementation("androidx.fragment:fragment-ktx:1.8.4")
 
     api(project(":MD.core"))
     implementation(project(":common"))
