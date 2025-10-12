@@ -5,6 +5,7 @@ import com.hika.core.aidl.accessibility.ParcelableSymbol
 import com.hika.core.aidl.accessibility.ParcelableText
 import com.hika.core.countSpaces
 
+// match the first position where the sequence appears
 fun ParcelableText.matchSequence(sequence: String): List<ParcelableSymbol> {
     if (this.isEmpty() || sequence !in this.text)
         return emptyList()
@@ -25,6 +26,7 @@ fun ParcelableText.matchSequence(sequence: String): List<ParcelableSymbol> {
     return emptyList()
 }
 
+// find all the positions where the sequence has appeared
 fun ParcelableText.findAll(sequence: String): List<List<ParcelableSymbol>> {
     if (this.isEmpty() || sequence !in this.text)
         return emptyList()
@@ -54,6 +56,7 @@ fun ParcelableText.findAll(sequence: String): List<List<ParcelableSymbol>> {
     return foundSequences
 }
 
+// return the first position where one of the sequences appears first time
 fun ParcelableText.containsAny(sequences: Array<String>): List<ParcelableSymbol> {
     if (this.isEmpty())
         return emptyList()
@@ -76,4 +79,29 @@ fun ParcelableText.containsAny(sequences: Array<String>): List<ParcelableSymbol>
         }
     }
     return emptyList()
+}
+
+// return the first position where one of the sequences appears first time and the index of the sequence
+fun ParcelableText.containsAnyWithNum(sequences: Array<String>): Pair<List<ParcelableSymbol>, Int> {
+    if (this.isEmpty())
+        return Pair(emptyList(), -1)
+    for ((i, sequence) in sequences.withIndex()){
+        if (sequence !in this.text)
+            continue
+        for (block in this.textBlocks){
+            val text = block.text
+            val index = text.indexOf(sequence)
+            if (index != -1) {
+                val actualIndex = index - countSpaces(text, 0, index)
+                val actualLength = sequence.length - countSpaces(text, index, sequence.length)
+                try {
+                    return Pair(block.symbols.subList(actualIndex, actualIndex + actualLength), i)
+                }catch (e: Exception){
+                    Log.e("#0x-TE", "Error indexing $sequence at $actualIndex (original $index) in: $text \n actual symbols are: ${block.symbols}")
+                    throw e
+                }
+            }
+        }
+    }
+    return Pair(emptyList(), -1)
 }

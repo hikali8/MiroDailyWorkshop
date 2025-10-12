@@ -14,7 +14,6 @@ import androidx.core.app.NotificationCompat
 
 import com.hika.core.aidl.accessibility.IAccessibilityService
 import com.hika.core.aidl.accessibility.IASReceiver
-import com.hika.core.aidl.accessibility.ITextReply
 import com.hika.core.aidl.accessibility.IReply
 import com.hika.core.aidl.accessibility.ParcelableText
 import kotlinx.coroutines.CoroutineScope
@@ -63,16 +62,8 @@ class ASReceiver: Service(){
             }
 
 
-        suspend fun getTextInRegionAsync(region: Rect? = null)
-            = suspendCancellableCoroutine { continuation ->
-                iAccessibilityService?.getTextInRegion(region,
-                    object: ITextReply.Stub(){
-                        override fun reply(parcelableText: ParcelableText) {
-                            continuation.resume(parcelableText, null)
-                        }
-                    }
-                )
-            }
+        fun getTextInRegion(region: Rect? = null)
+            = iAccessibilityService?.getTextInRegion(region)
 
         // 2. Get a scope in this service to run codes in this service
         var coroutineScope: CoroutineScope? = null

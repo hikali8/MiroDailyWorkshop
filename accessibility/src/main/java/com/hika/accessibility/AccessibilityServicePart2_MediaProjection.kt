@@ -27,8 +27,8 @@ abstract class AccessibilityServicePart2_Projection: AccessibilityServicePart1_C
     //       it, we have to promote this service to foreground after activity requests it.
     fun startProjection(resultCode: Int, resultData: Intent) {
         promoteThisToForeground()
-        getMediaProjection(resultCode, resultData)
-        if (mediaProjection == null) {
+        getProjectionToken(resultCode, resultData)
+        if (projectionToken == null) {
             return
         }
         getDisplayAndImage()
@@ -70,26 +70,26 @@ abstract class AccessibilityServicePart2_Projection: AccessibilityServicePart1_C
     }
 
     // 2.2 Get Media Projection token
-    var mediaProjection: MediaProjection? = null
+    var projectionToken: MediaProjection? = null
         private set
 
-    private fun getMediaProjection(resultCode: Int, resultData: Intent){
-        if (mediaProjection != null){
+    private fun getProjectionToken(resultCode: Int, resultData: Intent){
+        if (projectionToken != null){
             return
         }
 
-        mediaProjection = getSystemService(MediaProjectionManager::class.java)
+        projectionToken = getSystemService(MediaProjectionManager::class.java)
             .getMediaProjection(resultCode, resultData)
-        if (mediaProjection == null){
+        if (projectionToken == null){
             Log.e("#0x-AS", "媒体投影令牌获取失败")
             return
         }
         Log.i("#0x-AS", "媒体投影已启动")
         // register media projection callbacks
-        mediaProjection!!.registerCallback(object : MediaProjection.Callback(){
+        projectionToken!!.registerCallback(object : MediaProjection.Callback(){
             override fun onStop() {
                 Log.w("#0x-AS", "媒体投影已停止")
-                mediaProjection = null
+                projectionToken = null
             }
 
             override fun onCapturedContentResize(_width: Int, _height: Int) {
@@ -108,14 +108,14 @@ abstract class AccessibilityServicePart2_Projection: AccessibilityServicePart1_C
     var height = 0
 
     private fun getDisplayAndImage(){
-        var metrics = WindowMetricsCalculator.getOrCreate()
+        val metrics = WindowMetricsCalculator.getOrCreate()
             .computeCurrentWindowMetrics(this)
         width = metrics.bounds.width()
         height = metrics.bounds.height()
 
-        imageHandler = ImageHandler(width, height, coroutineScope)
+        imageHandler = ImageHandler(width, height, coroutineScope, this)
 
-        virtualDisplay = mediaProjection!!.createVirtualDisplay(
+        virtualDisplay = projectionToken!!.createVirtualDisplay(
             "ScreenCapture",
             width,
             height,
@@ -128,8 +128,14 @@ abstract class AccessibilityServicePart2_Projection: AccessibilityServicePart1_C
 
     inner class VirtualDisplayCallback: VirtualDisplay.Callback(){
         override fun onStopped() {
+            // Media Projection stopped
             virtualDisplay?.release()
+            projectionToken?.stop()
             imageHandler?.release()
+
+            virtualDisplay = null
+            projectionToken = null
+            imageHandler = null
             super.onStopped()
         }
     }
@@ -137,11 +143,17 @@ abstract class AccessibilityServicePart2_Projection: AccessibilityServicePart1_C
 
     // 2.4 Interface Exposure And clean-ups
     abstract inner class IAccessibilityExposed_Part2: IAccessibilityExposed_Part1(){
-        override fun isProjectionStarted() = mediaProjection != null
+        override fun isProjectionStarted() = projectionToken != null
 
         override fun stopProjection(){
             virtualDisplay?.release()
-            mediaProjection?.stop()
+            projectionToken?.stop()
+            imageHandler?.release()
+
+            virtualDisplay = null
+            projectionToken = null
+            imageHandler = null
+
         }
 
         override fun setListenerOnProjectionSuccess(_iProjectionSuccess: IProjectionSuccess) {

@@ -36,7 +36,7 @@ class FloatingWindow(val context: Context,
         WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
         WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
                 or WindowManager.LayoutParams.FLAG_SECURE
-//                or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
+                or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE    // if this could be touched, operations will be distorted
         ,
         PixelFormat.TRANSLUCENT
     ).apply {

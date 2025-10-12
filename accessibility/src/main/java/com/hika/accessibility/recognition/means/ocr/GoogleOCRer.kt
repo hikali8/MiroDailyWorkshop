@@ -4,7 +4,7 @@ import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.chinese.ChineseTextRecognizerOptions;
 import com.google.mlkit.vision.text.TextRecognition
 
-object GoogleOCRer {
+class GoogleOCRer {
     // When using Chinese script library
     private val recognizer = TextRecognition.getClient(
         ChineseTextRecognizerOptions.Builder().build()

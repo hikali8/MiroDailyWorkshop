@@ -1,0 +1,12 @@
+package com.hika.core.aidl.accessibility
+
+import android.graphics.Rect
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
+
+@Parcelize
+class DetectedObject(
+    val objectName: String,
+    val regionBox: Rect,
+    val confidence: Float
+) : Parcelable

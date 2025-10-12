@@ -22,7 +22,7 @@
 
 extern "C"
 JNIEXPORT jboolean JNICALL
-Java_com_hika_accessibility_recognition_ImageHandler_00024Companion_convertRGBAtoNV21(
+Java_com_hika_accessibility_recognition_ImageHandler_convertRGBAtoNV21(
         JNIEnv* env,
         jobject thiz,
         jobject rgba_buffer,
@@ -31,7 +31,7 @@ Java_com_hika_accessibility_recognition_ImageHandler_00024Companion_convertRGBAt
         jint height,
         jbyteArray nv21_array) {
     // 获取RGBA缓冲区的直接指针
-    uint8_t* rgbaData = static_cast<uint8_t*>(env->GetDirectBufferAddress(rgba_buffer));
+    auto* rgbaData = static_cast<uint8_t*>(env->GetDirectBufferAddress(rgba_buffer));
     if (!rgbaData) {
         ALOGE("Failed to get RGBA buffer address");
         return JNI_FALSE;
@@ -45,7 +45,7 @@ Java_com_hika_accessibility_recognition_ImageHandler_00024Companion_convertRGBAt
     }
 
     // 转换为uint8_t*
-    uint8_t* nv21Buffer = reinterpret_cast<uint8_t*>(nv21Data);
+    auto* nv21Buffer = reinterpret_cast<uint8_t*>(nv21Data);
 
     // use libyuv to convert
     // ABGR still is RGBA (little order), Google made it unclearly
@@ -61,7 +61,7 @@ Java_com_hika_accessibility_recognition_ImageHandler_00024Companion_convertRGBAt
             height              // height
     );
 
-    // 释放NV21数组
+    // 释放NV21数组指针
     env->ReleaseByteArrayElements(nv21_array, nv21Data, 0);
 
     if (result != 0) {

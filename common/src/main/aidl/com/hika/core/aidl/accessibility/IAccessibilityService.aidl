@@ -8,7 +8,7 @@ import android.graphics.Rect;
 
 import com.hika.core.aidl.accessibility.IProjectionSuccess;
 import com.hika.core.aidl.accessibility.IReply;
-import com.hika.core.aidl.accessibility.ITextReply;
+import com.hika.core.aidl.accessibility.DetectedObject;
 import com.hika.core.aidl.accessibility.ParcelableText;
 
 // from accessibility service to main app
@@ -25,11 +25,10 @@ interface IAccessibilityService {
     );
     oneway void clearClassNameListeners();
 
-//    oneway void getObjectInRegion(in @nullable Rect region); // implement later
-//    oneway void cancelObjectGetting();
-    oneway void getTextInRegion(in @nullable Rect region, in ITextReply iText);
+    DetectedObject[] getObjectInRegion(in String detectorName, in @nullable Rect region); // implement later
+    oneway void cancelAllObjectGetting();
+    ParcelableText getTextInRegion(in @nullable Rect region);
     oneway void cancelAllTextGetting();
-//    ParcelableText getTextInRegionSync(in @nullable Rect region);
 
     oneway void click(in PointF point, long startTime, long duration);
     oneway void swipe(in PointF pointFrom, in PointF pointTo, long startTime, long duration);

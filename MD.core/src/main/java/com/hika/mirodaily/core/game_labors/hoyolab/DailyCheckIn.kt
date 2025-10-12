@@ -6,6 +6,7 @@ import android.content.Intent
 import android.graphics.PointF
 import android.graphics.Rect
 import android.util.Log
+import com.hika.core.aidl.accessibility.DetectedObject
 import com.hika.core.aidl.accessibility.ParcelableSymbol
 import com.hika.core.aidl.accessibility.ParcelableText
 import com.hika.core.interfaces.Logger
@@ -13,8 +14,8 @@ import com.hika.core.interfaces.Level
 import com.hika.core.loopUntil
 import com.hika.mirodaily.core.ASReceiver
 import com.hika.mirodaily.core.R
-import com.hika.mirodaily.core.data_extractors.findAll
 import com.hika.mirodaily.core.data_extractors.containsAny
+import com.hika.mirodaily.core.data_extractors.containsAnyWithNum
 import com.hika.mirodaily.core.data_extractors.matchSequence
 import com.hika.mirodaily.core.iAccessibilityService
 import kotlinx.coroutines.CoroutineScope
@@ -73,21 +74,22 @@ class DailyCheckIn(val context: Context, val scope: CoroutineScope, val logger: 
         var location: List<ParcelableSymbol>? = null
         var text: ParcelableText? = null
         while (loopUntil {
-            text = ASReceiver.getTextInRegionAsync()
-            location = text.containsAny(adPages)
-            location?.isEmpty() != true
+            text = ASReceiver.getTextInRegion()
+            location = text?.containsAny(adPages)
+            location?.isNotEmpty() == true
         }){
             logger("Saw $adPages.")
             location = text!!.matchSequence("知道了")
 
-            if (location.isEmpty())
+            if (location?.isNotEmpty() != true)
                 continue
 
-            ASReceiver.clickLocationBox(location.first().boundingBox!!)
+            ASReceiver.clickLocationBox(location!!.first().boundingBox!!)
             delay(500)
         }
-        logger("All ADs closed. last seen:\n" + text!!.text)
-        Log.d("#0x-DCI", "last seen:" + text.text)
+
+        logger("All ADs closed. last seen:\n" + text?.text)
+        Log.d("#0x-DCI", "last seen:" + text?.text)
 
         findNaviBar()
     }
@@ -123,14 +125,14 @@ class DailyCheckIn(val context: Context, val scope: CoroutineScope, val logger: 
 
         // find navi-bar and swipe to the leftest
         val regionLimitation = Rect(0, 0, width, (height * 0.2).toInt())
-        val naviWords = arrayOf("崩坏", "原神", "星穹", "铁道", "绝区", "大别野", "大別野", "因缘")
+        val naviWords = arrayOf("崩坏", "原神", "星穹", "铁道", "绝区", "大别野", "大別野", "因缘", "未定")
         var text: ParcelableText? = null
         var location: List<ParcelableSymbol>? = null
 
         if (loopUntil {
-            text = ASReceiver.getTextInRegionAsync(regionLimitation)
-            location = text.containsAny(naviWords)
-            !location.isEmpty()
+            text = ASReceiver.getTextInRegion(regionLimitation)
+            location = text?.containsAny(naviWords)
+            location?.isNotEmpty() == true
         }){
             val box = location!!.first().boundingBox!!
             barHeight = (box.top + box.bottom) / 2 .toFloat()
@@ -164,9 +166,9 @@ class DailyCheckIn(val context: Context, val scope: CoroutineScope, val logger: 
         var location: List<ParcelableSymbol>? = null
         var text: ParcelableText? = null
         loopUntil(5000) {
-            text = ASReceiver.getTextInRegionAsync()
+            text = ASReceiver.getTextInRegion()
             location = text!!.matchSequence(keyword)
-            location!!.isEmpty()
+            location?.isNotEmpty() != true
         }
 
         logger("swip downward to find check-in button.")
@@ -183,9 +185,9 @@ class DailyCheckIn(val context: Context, val scope: CoroutineScope, val logger: 
         val upperScreen = Rect(0, 0, width, height / 2)
 
         if(loopUntil {
-            text = ASReceiver.getTextInRegionAsync(upperScreen)
-            location = text.matchSequence(hyl_签到)
-            !location.isEmpty()
+            text = ASReceiver.getTextInRegion(upperScreen)
+            location = text?.matchSequence(hyl_签到)
+            location?.isNotEmpty() == true
         }){
             logger("Saw $hyl_签到. Click the button. Params condition:")
             logger(text!!.text)
@@ -195,26 +197,50 @@ class DailyCheckIn(val context: Context, val scope: CoroutineScope, val logger: 
                         "com.mihoyo.hyperion.web2.MiHoYoWebActivity"))
                     return@launch
                 delay(4000)
-                // click all of 天
-                val hyl_天 = context.getString(R.string.hyl_天)
-                var locations: List<List<ParcelableSymbol>>? = null
+
+                // Check in
+//                val checkInWords = arrayOf("原神", "星穹", "学园", "崩坏3", "绝区", "未定")
+                var detectedObjects: Array<DetectedObject>? = null
+
                 if (loopUntil(interval = 200) {
-                    val text = ASReceiver.getTextInRegionAsync()
-                    locations = text.findAll(hyl_天)
-                    !locations.isEmpty()
+                    detectedObjects = iAccessibilityService?.getObjectInRegion("", null)
+                    detectedObjects?.isNotEmpty() == true
                 }){
-                    var str = "Saw $hyl_天. Click each of them, and go back, go to the next tab. locations: $locations\n"
+                    var str = "Saw check-in button. Click each of them, and go back, go to the next tab. location: $location\n"
                     str += "click: "
-                    assert(locations != null)
-                    for (location in locations!!){
-                        ASReceiver.clickLocationBox(location.first().boundingBox!!)
-                        str += location.first().boundingBox!!.toString()
+                    for (obj in detectedObjects!!){
+                        ASReceiver.clickLocationBox(obj.regionBox)
+                        str += obj.regionBox.toString() + ' '
                         delay(50)
                     }
                     logger(str, Level.Warn)
                 }else{
-                    logger("Not Saw $hyl_天. Go back and go to the next tab.", Level.Erro)
+                    logger("Not Saw check-in button. Go back and go to the next tab.", Level.Erro)
                 }
+
+
+//                // click all of 天
+//                val hyl_天 = context.getString(R.string.hyl_天)
+//                var locations: List<List<ParcelableSymbol>>? = null
+//                if (loopUntil(interval = 200) {
+//                    val text = ASReceiver.getTextInRegion()
+//                    locations = text?.findAll(hyl_天)
+//                    locations?.isNotEmpty() == true
+//                }){
+//                    var str = "Saw $hyl_天. Click each of them, and go back, go to the next tab. locations: $locations\n"
+//                    str += "click: "
+//                    assert(locations != null)
+//                    for (location in locations!!){
+//                        ASReceiver.clickLocationBox(location.first().boundingBox!!)
+//                        str += location.first().boundingBox!!.toString()
+//                        delay(50)
+//                    }
+//                    logger(str, Level.Warn)
+//                }else{
+//                    logger("Not Saw $hyl_天. Go back and go to the next tab.", Level.Erro)
+//                }
+
+
                 delay(1000)
 
                 context.startActivity(intent)

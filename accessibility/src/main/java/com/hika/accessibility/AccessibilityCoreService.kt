@@ -4,9 +4,11 @@ import android.accessibilityservice.GestureDescription
 import android.content.Intent
 import android.graphics.Path
 import android.graphics.PointF
+import android.graphics.Rect
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import com.hika.core.aidl.accessibility.DetectedObject
 import com.hika.core.aidl.accessibility.IProjectionSuccess
 import java.lang.ref.WeakReference
 
@@ -31,6 +33,7 @@ class AccessibilityCoreService() : AccessibilityServicePart4_ScreenWatching() {
     override val iAccessibilityExposed by lazy { IAccessibilityExposed() }
 
     inner class IAccessibilityExposed: IAccessibilityExposed_Part4(){
+
         override fun click(point: PointF, startTime: Long, duration: Long)
             = this@AccessibilityCoreService.click(point, startTime, duration)
 
