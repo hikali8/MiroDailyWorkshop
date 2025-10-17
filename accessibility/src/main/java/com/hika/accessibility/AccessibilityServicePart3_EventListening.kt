@@ -3,7 +3,6 @@ package com.hika.accessibility
 import android.util.Log
 import android.view.accessibility.AccessibilityEvent
 import com.hika.core.aidl.accessibility.IReply
-import kotlinx.coroutines.launch
 
 
 abstract class AccessibilityServicePart3_EventListening: AccessibilityServicePart2_Projection() {
@@ -17,7 +16,7 @@ abstract class AccessibilityServicePart3_EventListening: AccessibilityServicePar
             private set
 
         fun onTrigger(isValid: Boolean){
-            Log.d("#0x-AC3", "triggered with: $isValid")
+            Log.d("#0x-AS3", "triggered with: $isValid")
             if (isRunning)
                 onListened(isValid)
             isRunning = false
@@ -34,9 +33,9 @@ abstract class AccessibilityServicePart3_EventListening: AccessibilityServicePar
             maximumMillis: Long,
             iReply: IReply
         ) {
-            Log.d("#0x-AC3", "Received Class Name: $className")
+            Log.d("#0x-AS3", "Received Class Name: $className")
             if (maximumMillis < 200){
-                Log.e("#0x-AC3", "Error: the maximumMillis must be greater than 200 ms.")
+                Log.e("#0x-AS3", "Error: the maximumMillis must be greater than 200 ms.")
                 return
             }
 

@@ -181,5 +181,6 @@ class ImageHandler(width: Int, height: Int, val scope: CoroutineScope, val conte
     // 3. clean-ups
     fun release(){
         imageReader.close()
+        ncnnDetector.release()
     }
 }

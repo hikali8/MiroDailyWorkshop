@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.PointF
 import android.graphics.Rect
-import android.util.Log
 import com.hika.core.aidl.accessibility.DetectedObject
 import com.hika.core.aidl.accessibility.ParcelableSymbol
 import com.hika.core.aidl.accessibility.ParcelableText
@@ -16,12 +15,14 @@ import com.hika.mirodaily.core.ASReceiver
 import com.hika.mirodaily.core.R
 import com.hika.mirodaily.core.data_extractors.containsAny
 import com.hika.mirodaily.core.data_extractors.containsAnyWithNum
+import com.hika.mirodaily.core.data_extractors.findAll
 import com.hika.mirodaily.core.data_extractors.matchSequence
 import com.hika.mirodaily.core.iAccessibilityService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.math.log
 import kotlin.properties.Delegates
 
 /** series of things to do:
@@ -89,8 +90,6 @@ class DailyCheckIn(val context: Context, val scope: CoroutineScope, val logger: 
         }
 
         logger("All ADs closed. last seen:\n" + text?.text)
-        Log.d("#0x-DCI", "last seen:" + text?.text)
-
         findNaviBar()
     }
 
@@ -160,130 +159,166 @@ class DailyCheckIn(val context: Context, val scope: CoroutineScope, val logger: 
 
     // 3. find check-in button
     suspend fun findCheckInButton(){
-        // wait for "加载中" to disappear
-        val keyword = "加载中"
+        // repetitively finish check-in of several tabs
+        var i = 12
+        while (true) {
+            // wait for "加载中" to disappear
+            val keyword = "加载中"
 
-        var location: List<ParcelableSymbol>? = null
-        var text: ParcelableText? = null
-        loopUntil(5000) {
-            text = ASReceiver.getTextInRegion()
-            location = text!!.matchSequence(keyword)
-            location?.isNotEmpty() != true
+            var location: List<ParcelableSymbol>? = null
+            var text: ParcelableText? = null
+            loopUntil(5000) {
+                text = ASReceiver.getTextInRegion()
+                location = text!!.matchSequence(keyword)
+                location?.isNotEmpty() != true
+            }
+
+            logger("swip downward to find check-in button.")
+            // swipe downward
+            ASReceiver.swipe(
+                PointF(width / 2F, height / 2F),
+                PointF(width / 2F, height * 0.8F),
+                80
+            )
+            delay(500)
+
+            // click check-in button
+            val hyl_签到 = context.getString(R.string.hyl_签到)
+            val upperScreen = Rect(0, 0, width, height / 2)
+
+            if (loopUntil {
+                    text = ASReceiver.getTextInRegion(upperScreen)
+                    location = text?.matchSequence(hyl_签到)
+                    location?.isNotEmpty() == true
+                }) {
+                logger("Saw $hyl_签到. Click the button. Params condition:")
+                logger(text!!.text)
+
+                delay(200)
+
+                clickCheckInEntry(location!!.first().boundingBox!!)
+                delay(1000)
+
+                // go back, go to the next tab
+                context.startActivity(intent)
+                delay(500)
+
+            } else {
+                logger("Not Saw $hyl_签到. Go to the next tab. Params condition:")
+                logger(text!!.text)
+            }
+
+            // on main activity page, go to the next tab
+            if (i < 1) {
+                logger("Check-in finished after 12 tabs")
+                return
+            }
+            i--
+
+            // swipe up
+            ASReceiver.swipe(
+                PointF(width / 2F, height / 2F),
+                PointF(width / 2F, height * 0.2F)
+            )
+            delay(500)
+
+            // swipe left
+            ASReceiver.swipe(
+                PointF(width * 0.8F, barHeight),
+                PointF(width * 0.2F, barHeight)
+            )
+            delay(500)
         }
+    }
 
-        logger("swip downward to find check-in button.")
-        // swipe downward
-        ASReceiver.swipe(
-            PointF(width / 2F, height / 2F),
-            PointF(width / 2F, height * 0.8F),
-            80
-        )
-        delay(500)
+    //4. Click Check-In Entry
+    suspend fun clickCheckInEntry(checkInEntryBox: Rect){
+        var i = 3
+        while (true){
+            ASReceiver.clickLocationBox(checkInEntryBox)
+            delay(1000)
 
-        // click check-in button
-        val hyl_签到 = context.getString(R.string.hyl_签到)
-        val upperScreen = Rect(0, 0, width, height / 2)
-
-        if(loopUntil {
-            text = ASReceiver.getTextInRegion(upperScreen)
-            location = text?.matchSequence(hyl_签到)
-            location?.isNotEmpty() == true
-        }){
-            logger("Saw $hyl_签到. Click the button. Params condition:")
-            logger(text!!.text)
-
-            scope.launch {
-                if(!ASReceiver.listenToActivityClassNameAsync(
-                        "com.mihoyo.hyperion.web2.MiHoYoWebActivity"))
-                    return@launch
-                delay(4000)
-
-                // Check in
-//                val checkInWords = arrayOf("原神", "星穹", "学园", "崩坏3", "绝区", "未定")
-                var detectedObjects: Array<DetectedObject>? = null
-
-                if (loopUntil(interval = 200) {
-                    detectedObjects = iAccessibilityService?.getObjectInRegion("", null)
-                    detectedObjects?.isNotEmpty() == true
+            // detect if the "每日签到" has appeared to judge if the check-in page has been entered.
+            var location: List<ParcelableSymbol>? = null
+            var text: ParcelableText? = null
+            if(loopUntil(3000) {
+                    text = ASReceiver.getTextInRegion()
+                    location = text?.matchSequence("每日签到")
+                    location?.isNotEmpty() == true
                 }){
-                    var str = "Saw check-in button. Click each of them, and go back, go to the next tab. location: $location\n"
-                    str += "click: "
-                    for (obj in detectedObjects!!){
-                        ASReceiver.clickLocationBox(obj.regionBox)
-                        str += obj.regionBox.toString() + ' '
-                        delay(50)
-                    }
-                    logger(str, Level.Warn)
-                }else{
-                    logger("Not Saw check-in button. Go back and go to the next tab.", Level.Erro)
-                }
+                // Check in
 
-
-//                // click all of 天
-//                val hyl_天 = context.getString(R.string.hyl_天)
-//                var locations: List<List<ParcelableSymbol>>? = null
+                // NCNN object recognition mode, but didn't succeed
+////                val checkInWords = arrayOf("原神", "星穹", "学园", "崩坏3", "绝区", "未定")
+//                var detectedObjects: Array<DetectedObject>? = null
+//
 //                if (loopUntil(interval = 200) {
-//                    val text = ASReceiver.getTextInRegion()
-//                    locations = text?.findAll(hyl_天)
-//                    locations?.isNotEmpty() == true
+//                    detectedObjects = iAccessibilityService?.getObjectInRegion("", null)
+//                    detectedObjects?.isNotEmpty() == true
 //                }){
-//                    var str = "Saw $hyl_天. Click each of them, and go back, go to the next tab. locations: $locations\n"
+//                    var str = "Saw check-in button. Click each of them, and go back, go to the next tab. location: $location\n"
 //                    str += "click: "
-//                    assert(locations != null)
-//                    for (location in locations!!){
-//                        ASReceiver.clickLocationBox(location.first().boundingBox!!)
-//                        str += location.first().boundingBox!!.toString()
+//                    for (obj in detectedObjects!!){
+//                        ASReceiver.clickLocationBox(obj.regionBox)
+//                        str += obj.regionBox.toString() + ' '
 //                        delay(50)
 //                    }
 //                    logger(str, Level.Warn)
 //                }else{
-//                    logger("Not Saw $hyl_天. Go back and go to the next tab.", Level.Erro)
+//                    logger("Not Saw check-in button. Go back and go to the next tab.", Level.Erro)
 //                }
 
 
-                delay(1000)
+                // click all of 天s and retry for 3 times if failed
+                var j = 3
+                while (true){
+                    val hyl_天 = context.getString(R.string.hyl_天)
+                    var locations: List<List<ParcelableSymbol>>? = null
+                    if (loopUntil {
+                            text = ASReceiver.getTextInRegion()
+                            locations = text?.findAll(hyl_天)
+                            locations?.isNotEmpty() == true
+                        }){
+                        var str = "Saw $hyl_天. Click each of them. locations: $locations\n"
+                        str += "click: "
+                        assert(locations != null)
+                        for (location in locations!!){
+                            ASReceiver.clickLocationBox(location.first().boundingBox!!)
+                            str += location.first().boundingBox!!.toString()
+                            delay(50)
+                        }
+                        logger(str, Level.Warn)
 
-                context.startActivity(intent)
-                delay(500)
+                        // then, see if the 签到成功 has appeared
+                        text = ASReceiver.getTextInRegion()
+                        location = text?.matchSequence("签到成功")
+                        if (location?.isNotEmpty() == true){
+                            logger("Saw 签到成功. Go back, go to the next tab.")
+                            return
+                        }
+                        logger("Not saw 签到成功. retry.")
+                    }
+                    if (j < 1){
+                        logger("Failed too many times in searching $hyl_天. go back, go to the next tab.")
+                        return
+                    }
+                    j--
 
-                goToNextTab()
+                    logger("Not Saw $hyl_天. Retry after 1s.", Level.Erro)
+                    delay(1000)
+                }
+                // unreachable
             }
+            if (i < 1){
+                logger("Failed too many times in searching 每日签到. go to the next tab.")
+                break
+            }
+            i--
 
-            ASReceiver.clickLocationBox(location!!.first().boundingBox!!)
-            return
-        }else{
-            logger("Not Saw $hyl_签到. Go to the next tab. Params condition:")
-            logger(text!!.text)
+            logger("Not Saw 每日签到. Fear that it wasn't able to click check-in entry. Re-click it after 1s.")
+            delay(1000)
         }
-        goToNextTab()
     }
-
-    // 4. go to the next tab.
-    var leftTabs = 10   // At most 10 tabs it can go
-    suspend fun goToNextTab(){
-        if (leftTabs < 1) {
-            logger("Check-in finished")
-            return
-        }
-        leftTabs--
-
-        // swipe up
-        ASReceiver.swipe(
-            PointF(width / 2F, height / 2F),
-            PointF(width / 2F, height * 0.2F)
-        )
-        delay(500)
-
-        // swipe left
-        ASReceiver.swipe(
-            PointF(width * 0.8F, barHeight),
-            PointF(width * 0.2F, barHeight)
-        )
-        delay(500)
-
-        findCheckInButton()
-    }
-
 
     //5. Clean-Up: On Task finished
     private fun onTaskFinished(){

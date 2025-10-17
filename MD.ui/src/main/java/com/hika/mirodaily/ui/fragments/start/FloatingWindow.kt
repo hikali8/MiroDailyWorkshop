@@ -42,7 +42,7 @@ class FloatingWindow(val context: Context,
     ).apply {
         gravity = Gravity.TOP or Gravity.START
         x = 100
-        y = 500
+        y = 1500
     }
 
     private val binding = FloatingWindowBinding.inflate(inflater)
@@ -136,10 +136,10 @@ class FloatingWindow(val context: Context,
 
 
     // 4. println for floating window
-    val lineWidth = 30
+    val lineWidth = 40
     val indent = 17  // should not appear
     val logger = object: Logger {
-        override val maxLines = 20
+        override val maxLines = 15
 
         override fun println(text: String, color: Level) {
             // line break

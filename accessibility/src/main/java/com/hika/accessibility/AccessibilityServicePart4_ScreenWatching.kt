@@ -14,7 +14,7 @@ abstract class AccessibilityServicePart4_ScreenWatching: AccessibilityServicePar
     // 4. Image Watching
 
     // 4.1 Multi-Task manager
-    val detectJob = mutableListOf<Deferred<Array<DetectedObject>?>>()
+    val detectJobs = mutableListOf<Deferred<Array<DetectedObject>?>>()
     val textJobs = mutableListOf<Deferred<Text?>>()
 
     // 4.2 Interfaces and implements: Received Watching Delegation Dispatch
@@ -28,24 +28,25 @@ abstract class AccessibilityServicePart4_ScreenWatching: AccessibilityServicePar
             val deferred = coroutineScope.async {
                 imageHandler?.getRecognizable()?.findOnNCNNDetector(detectorName, region)
             }
-            detectJob.add(deferred)
+            detectJobs.add(deferred)
             return runBlocking {
-                try {
-                    deferred.await()!!
-                }catch (_: Exception) {
-                    // 如果，返回空的结果
-                    emptyArray<DetectedObject>()
-                }
+//                try {
+//                    deferred.await()!!
+//                }catch (_: Exception) {
+//                    // 如果，返回空的结果
+//                    emptyArray<DetectedObject>()
+//                }
+                deferred.await()!!
             }
         }
 
         override fun cancelAllObjectGetting() {
-            detectJob.forEach { it.cancel() }
-            detectJob.clear()
+            detectJobs.forEach { it.cancel() }
+            detectJobs.clear()
         }
 
         override fun getTextInRegion(region: Rect?): ParcelableText {
-            // we have still to use coroutine, for the screen capturing is limited
+            // we have still to use coroutine, as the screen capturing is limited
             val deferred = coroutineScope.async {
                 imageHandler?.getRecognizable()?.findOnGoogleOCRerInRangeAsync(region)
             }
