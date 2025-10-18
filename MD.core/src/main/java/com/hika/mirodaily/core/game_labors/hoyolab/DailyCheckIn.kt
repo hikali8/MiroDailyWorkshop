@@ -242,11 +242,21 @@ class DailyCheckIn(val context: Context, val scope: CoroutineScope, val logger: 
             var location: List<ParcelableSymbol>? = null
             var text: ParcelableText? = null
             if(loopUntil(3000) {
+                text = ASReceiver.getTextInRegion()
+                location = text?.matchSequence("每日签到")
+                location?.isNotEmpty() == true
+            }){
+                // Check in
+                // give up if no account attached
+                if (loopUntil {
                     text = ASReceiver.getTextInRegion()
-                    location = text?.matchSequence("每日签到")
+                    location = text?.matchSequence("请选择")
                     location?.isNotEmpty() == true
                 }){
-                // Check in
+                    logger("Empty Account. go to the next.")
+                    return
+                }
+
 
                 // NCNN object recognition mode, but didn't succeed
 ////                val checkInWords = arrayOf("原神", "星穹", "学园", "崩坏3", "绝区", "未定")
@@ -269,25 +279,25 @@ class DailyCheckIn(val context: Context, val scope: CoroutineScope, val logger: 
 //                }
 
 
-                // click all of 天s and retry for 3 times if failed
-                var j = 3
+                // click all of 天s and retry for 5 times if failed
+                var j = 5
                 while (true){
                     val hyl_天 = context.getString(R.string.hyl_天)
                     var locations: List<List<ParcelableSymbol>>? = null
                     if (loopUntil {
-                            text = ASReceiver.getTextInRegion()
-                            locations = text?.findAll(hyl_天)
-                            locations?.isNotEmpty() == true
-                        }){
-                        var str = "Saw $hyl_天. Click each of them. locations: $locations\n"
-                        str += "click: "
+                        text = ASReceiver.getTextInRegion()
+                        locations = text?.findAll(hyl_天)
+                        locations?.isNotEmpty() == true
+                    }){
+                        logger("Saw $hyl_天. Click each of them. locations: $locations\n")
+                        var str = "click: "
                         assert(locations != null)
                         for (location in locations!!){
                             ASReceiver.clickLocationBox(location.first().boundingBox!!)
                             str += location.first().boundingBox!!.toString()
                             delay(50)
                         }
-                        logger(str, Level.Warn)
+                        logger(str)
 
                         // then, see if the 签到成功 has appeared
                         text = ASReceiver.getTextInRegion()
@@ -304,7 +314,7 @@ class DailyCheckIn(val context: Context, val scope: CoroutineScope, val logger: 
                     }
                     j--
 
-                    logger("Not Saw $hyl_天. Retry after 1s.", Level.Erro)
+                    logger("Not Saw $hyl_天. Retry after 1s. Seen:\n${text?.text}", Level.Erro)
                     delay(1000)
                 }
                 // unreachable
