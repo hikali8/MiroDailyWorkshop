@@ -75,10 +75,10 @@ class DailyCheckIn(val context: Context, val scope: CoroutineScope, val logger: 
         var location: List<ParcelableSymbol>? = null
         var text: ParcelableText? = null
         while (loopUntil {
-            text = ASReceiver.getTextInRegion()
-            location = text?.containsAny(adPages)
-            location?.isNotEmpty() == true
-        }){
+                text = ASReceiver.getTextInRegion()
+                location = text?.containsAny(adPages)
+                location?.isNotEmpty() == true
+            }){
             logger("Saw $adPages.")
             location = text!!.matchSequence("知道了")
 
@@ -129,10 +129,10 @@ class DailyCheckIn(val context: Context, val scope: CoroutineScope, val logger: 
         var location: List<ParcelableSymbol>? = null
 
         if (loopUntil {
-            text = ASReceiver.getTextInRegion(regionLimitation)
-            location = text?.containsAny(naviWords)
-            location?.isNotEmpty() == true
-        }){
+                text = ASReceiver.getTextInRegion(regionLimitation)
+                location = text?.containsAny(naviWords)
+                location?.isNotEmpty() == true
+            }){
             val box = location!!.first().boundingBox!!
             barHeight = (box.top + box.bottom) / 2 .toFloat()
             logger("Saw tab strings. Lastest seen:\n${text!!.text}")
@@ -242,17 +242,18 @@ class DailyCheckIn(val context: Context, val scope: CoroutineScope, val logger: 
             var location: List<ParcelableSymbol>? = null
             var text: ParcelableText? = null
             if(loopUntil(3000) {
-                text = ASReceiver.getTextInRegion()
-                location = text?.matchSequence("每日签到")
-                location?.isNotEmpty() == true
-            }){
+                    text = ASReceiver.getTextInRegion()
+                    location = text?.matchSequence("每日签到")
+                    location?.isNotEmpty() == true
+                }){
+                delay(1000)
                 // Check in
                 // give up if no account attached
                 if (loopUntil {
-                    text = ASReceiver.getTextInRegion()
-                    location = text?.matchSequence("请选择")
-                    location?.isNotEmpty() == true
-                }){
+                        text = ASReceiver.getTextInRegion()
+                        location = text?.matchSequence("请选择")
+                        location?.isNotEmpty() == true
+                    }){
                     logger("Empty Account. go to the next.")
                     return
                 }
@@ -285,10 +286,10 @@ class DailyCheckIn(val context: Context, val scope: CoroutineScope, val logger: 
                     val hyl_天 = context.getString(R.string.hyl_天)
                     var locations: List<List<ParcelableSymbol>>? = null
                     if (loopUntil {
-                        text = ASReceiver.getTextInRegion()
-                        locations = text?.findAll(hyl_天)
-                        locations?.isNotEmpty() == true
-                    }){
+                            text = ASReceiver.getTextInRegion()
+                            locations = text?.findAll(hyl_天)
+                            locations?.isNotEmpty() == true
+                        }){
                         logger("Saw $hyl_天. Click each of them. locations: $locations\n")
                         var str = "click: "
                         assert(locations != null)
