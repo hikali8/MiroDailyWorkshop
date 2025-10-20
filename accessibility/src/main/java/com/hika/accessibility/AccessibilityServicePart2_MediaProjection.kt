@@ -70,8 +70,7 @@ abstract class AccessibilityServicePart2_Projection: AccessibilityServicePart1_C
     }
 
     // 2.2 Get Media Projection token
-    var projectionToken: MediaProjection? = null
-        private set
+    private var projectionToken: MediaProjection? = null
 
     private fun getProjectionToken(resultCode: Int, resultData: Intent){
         if (projectionToken != null){
