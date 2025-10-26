@@ -140,7 +140,7 @@ ncnn::Mat preprocess(const unsigned char* rgba_data, int width, int height) {
 
 //    ncnn::copy_make_border();
 
-    // 归一化
+    // 归一化: Reasonably suspect that the color changing was not considered by the model.
     const float norm_vals[3] = {1/255.f, 1/255.f, 1/255.f};
     padded.substract_mean_normalize(nullptr, norm_vals);
 

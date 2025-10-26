@@ -1,5 +1,6 @@
 package com.hika.accessibility
 
+import android.accessibilityservice.AccessibilityGestureEvent
 import android.accessibilityservice.GestureDescription
 import android.content.Intent
 import android.graphics.Path
@@ -89,6 +90,10 @@ class AccessibilityCoreService() : AccessibilityServicePart4_ScreenWatching() {
         onVisitorDisconnected()
         instance.clear()
         super.onDestroy()
+    }
+
+    override fun onGesture(gestureEvent: AccessibilityGestureEvent): Boolean {
+        return super.onGesture(gestureEvent)
     }
 
     // ignore
