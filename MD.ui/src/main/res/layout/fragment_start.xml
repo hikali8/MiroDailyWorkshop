@@ -1,414 +1,474 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/bg_page"
     android:orientation="vertical"
+    android:fillViewport="true"
     android:clipToPadding="false">
-
-    <!-- 顶部栏 -->
-    <com.google.android.material.appbar.MaterialToolbar
-        android:id="@+id/topBar"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:background="@color/topbar_bg"
-        app:title="游戏测试工具"
-        app:titleTextColor="@color/text_primary"
-        app:navigationIcon="@drawable/ic_arrow_left_24"
-        app:menu="@menu/menu_start_more" />
-
-    <ScrollView
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:fillViewport="true"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp"
         android:clipToPadding="false">
 
-        <LinearLayout
+        <!-- ======= 卡片 1：无障碍 ======= -->
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="16dp"
-            android:clipToPadding="false">
+            app:cardBackgroundColor="@color/card_bg"
+            app:cardCornerRadius="24dp"
+            app:cardUseCompatPadding="true"
+            app:cardElevation="8dp">
 
-            <!-- ======= 卡片 1：无障碍 ======= -->
-            <com.google.android.material.card.MaterialCardView
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                app:cardBackgroundColor="@color/card_bg"
-                app:cardCornerRadius="24dp"
-                app:cardUseCompatPadding="true"
-                app:cardElevation="8dp">
-
-                <RelativeLayout
-                    android:layout_width="match_parent"
+                android:minHeight="96dp"
+                android:layout_margin="16dp">
+                <!-- 图标 -->
+                <FrameLayout
+                    android:id="@+id/icon1"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:minHeight="96dp"
-                    android:paddingBottom="16dp">
+                    android:background="@drawable/bg_icon_container"
+                    android:padding="12dp"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintLeft_toLeftOf="parent">
 
-                    <FrameLayout
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        android:layout_margin="16dp"
-                        android:background="@drawable/bg_icon_container"
-                        android:padding="12dp">
-
-                        <ImageView
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:src="@drawable/ic_accessibility_24"
-                            android:tint="@color/brand_purple" />
-                    </FrameLayout>
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
+                    <ImageView
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="80dp"
-                        android:layout_marginEnd="16dp"
-                        android:layout_marginTop="16dp"
-                        android:orientation="vertical">
+                        android:src="@drawable/ic_accessibility_24"
+                        app:tint="@color/brand_purple" />
+                </FrameLayout>
 
-                        <RelativeLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content">
+                <!-- 标题 -->
+                <TextView
+                    android:id="@+id/title1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="无障碍服务"
+                    android:textColor="@color/text_primary"
+                    android:textStyle="bold"
+                    android:textSize="14sp"
+                    android:layout_marginStart="16dp"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintLeft_toRightOf="@+id/icon1"/>
 
-                            <!-- 补齐宽高 -->
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="无障碍服务"
-                                android:textColor="@color/text_primary"
-                                android:textStyle="bold"
-                                android:textSize="14sp" />
+                <!-- 核定点 -->
+                <ImageView
+                    android:id="@+id/dot1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/dot_state_grey"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintRight_toRightOf="parent"/>
 
-                            <ImageView
-                                android:id="@+id/dot_accessibility"
-                                android:layout_width="12dp"
-                                android:layout_height="12dp"
-                                android:layout_alignParentEnd="true"
-                                android:layout_centerVertical="true"
-                                android:src="@drawable/dot_state_grey" />
-                        </RelativeLayout>
+                <!-- 说明 -->
+                <TextView
+                    android:id="@+id/description1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="用于自动化测试和辅助功能"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="14sp"
+                    app:layout_constraintTop_toBottomOf="@id/title1"
+                    app:layout_constraintLeft_toLeftOf="@+id/title1"/>
 
-                        <!-- 补齐宽高 -->
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
-                            android:text="用于自动化测试和辅助功能"
-                            android:textColor="@color/text_secondary"
-                            android:textSize="14sp" />
+                <!-- 按钮 -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_accessibility"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:layout_marginTop="12dp"
+                    android:text="立即开启"
+                    android:textAllCaps="false"
+                    android:textColor="@android:color/white"
+                    app:cornerRadius="12dp"
+                    app:backgroundTint="@color/brand_purple"
+                    app:layout_constraintLeft_toLeftOf="@+id/title1"
+                    app:layout_constraintTop_toBottomOf="@id/description1"/>
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </com.google.android.material.card.MaterialCardView>
 
-                        <com.google.android.material.button.MaterialButton
-                            android:id="@+id/btn_accessibility"
-                            android:layout_width="wrap_content"
-                            android:layout_height="36dp"
-                            android:layout_marginTop="12dp"
-                            android:text="立即开启"
-                            android:textAllCaps="false"
-                            android:textColor="@android:color/white"
-                            app:cornerRadius="12dp"
-                            app:backgroundTint="@color/brand_purple" />
-                    </LinearLayout>
-                </RelativeLayout>
-            </com.google.android.material.card.MaterialCardView>
+        <!-- ======= 卡片 2：媒体投影 ======= -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardBackgroundColor="@color/card_bg"
+            app:cardCornerRadius="24dp"
+            app:cardUseCompatPadding="true"
+            app:cardElevation="8dp">
 
-            <!-- ======= 卡片 2：媒体投影 ======= -->
-            <com.google.android.material.card.MaterialCardView
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                app:cardBackgroundColor="@color/card_bg"
-                app:cardCornerRadius="24dp"
-                app:cardUseCompatPadding="true"
-                app:cardElevation="8dp">
-
-                <RelativeLayout
-                    android:layout_width="match_parent"
+                android:minHeight="96dp"
+                android:layout_margin="16dp">
+                <!-- 图标 -->
+                <FrameLayout
+                    android:id="@+id/icon2"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:minHeight="96dp"
-                    android:paddingBottom="16dp">
+                    android:background="@drawable/bg_icon_container"
+                    android:padding="12dp"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintLeft_toLeftOf="parent">
 
-                    <FrameLayout
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        android:layout_margin="16dp"
-                        android:background="@drawable/bg_icon_container"
-                        android:padding="12dp">
-
-                        <ImageView
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:src="@drawable/ic_projection_24"
-                            android:tint="@color/brand_purple" />
-                    </FrameLayout>
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
+                    <ImageView
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="80dp"
-                        android:layout_marginEnd="16dp"
-                        android:layout_marginTop="16dp"
-                        android:orientation="vertical">
+                        android:src="@drawable/ic_projection_24"
+                        app:tint="@color/brand_purple" />
+                </FrameLayout>
 
-                        <RelativeLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content">
+                <!-- 标题 -->
+                <TextView
+                    android:id="@+id/title2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="媒体投影"
+                    android:textColor="@color/text_primary"
+                    android:textStyle="bold"
+                    android:textSize="14sp"
+                    android:layout_marginStart="16dp"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintLeft_toRightOf="@+id/icon2"/>
 
-                            <!-- 补齐宽高 -->
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="媒体投影"
-                                android:textColor="@color/text_primary"
-                                android:textStyle="bold"
-                                android:textSize="14sp" />
+                <!-- 核定点 -->
+                <ImageView
+                    android:id="@+id/dot2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/dot_state_grey"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintRight_toRightOf="parent"/>
 
-                            <ImageView
-                                android:id="@+id/dot_projection"
-                                android:layout_width="12dp"
-                                android:layout_height="12dp"
-                                android:layout_alignParentEnd="true"
-                                android:layout_centerVertical="true"
-                                android:src="@drawable/dot_state_grey" />
-                        </RelativeLayout>
+                <!-- 说明 -->
+                <TextView
+                    android:id="@+id/description2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="用于屏幕录制和投屏功能"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="14sp"
+                    app:layout_constraintTop_toBottomOf="@id/title2"
+                    app:layout_constraintLeft_toLeftOf="@+id/title2"/>
 
-                        <!-- 补齐宽高 -->
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
-                            android:text="用于屏幕录制和投屏功能"
-                            android:textColor="@color/text_secondary"
-                            android:textSize="14sp" />
+                <!-- 按钮 -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_projection"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:layout_marginTop="12dp"
+                    android:text="立即开启"
+                    android:textAllCaps="false"
+                    android:textColor="@android:color/white"
+                    app:cornerRadius="12dp"
+                    app:backgroundTint="@color/brand_purple"
+                    app:layout_constraintLeft_toLeftOf="@+id/title2"
+                    app:layout_constraintTop_toBottomOf="@id/description2"/>
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </com.google.android.material.card.MaterialCardView>
 
-                        <com.google.android.material.button.MaterialButton
-                            android:id="@+id/btn_projection"
-                            android:layout_width="wrap_content"
-                            android:layout_height="36dp"
-                            android:layout_marginTop="12dp"
-                            android:text="立即开启"
-                            android:textAllCaps="false"
-                            android:textColor="@android:color/white"
-                            app:cornerRadius="12dp"
-                            app:backgroundTint="@color/brand_purple" />
-                    </LinearLayout>
-                </RelativeLayout>
-            </com.google.android.material.card.MaterialCardView>
+        <!-- ======= 卡片 3：悬浮窗 ======= -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardBackgroundColor="@color/card_bg"
+            app:cardCornerRadius="24dp"
+            app:cardUseCompatPadding="true"
+            app:cardElevation="8dp">
 
-            <!-- ======= 卡片 3：悬浮窗 ======= -->
-            <com.google.android.material.card.MaterialCardView
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                app:cardBackgroundColor="@color/card_bg"
-                app:cardCornerRadius="24dp"
-                app:cardUseCompatPadding="true"
-                app:cardElevation="8dp">
-
-                <RelativeLayout
-                    android:layout_width="match_parent"
+                android:minHeight="96dp"
+                android:layout_margin="16dp">
+                <!-- 图标 -->
+                <FrameLayout
+                    android:id="@+id/icon3"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:minHeight="96dp"
-                    android:paddingBottom="16dp">
+                    android:background="@drawable/bg_icon_container"
+                    android:padding="12dp"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintLeft_toLeftOf="parent">
 
-                    <FrameLayout
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        android:layout_margin="16dp"
-                        android:background="@drawable/bg_icon_container"
-                        android:padding="12dp">
-
-                        <ImageView
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:src="@drawable/ic_overlay_24"
-                            android:tint="@color/brand_purple" />
-                    </FrameLayout>
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
+                    <ImageView
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="80dp"
-                        android:layout_marginEnd="16dp"
-                        android:layout_marginTop="16dp"
-                        android:orientation="vertical">
+                        android:src="@drawable/ic_overlay_24"
+                        app:tint="@color/brand_purple" />
+                </FrameLayout>
 
-                        <RelativeLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content">
+                <!-- 标题 -->
+                <TextView
+                    android:id="@+id/title3"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="悬浮窗开启"
+                    android:textColor="@color/text_primary"
+                    android:textStyle="bold"
+                    android:textSize="14sp"
+                    android:layout_marginStart="16dp"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintLeft_toRightOf="@+id/icon3"/>
 
-                            <!-- 补齐宽高 -->
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="悬浮窗开启"
-                                android:textColor="@color/text_primary"
-                                android:textStyle="bold"
-                                android:textSize="14sp" />
+                <!-- 核定点 -->
+                <ImageView
+                    android:id="@+id/dot3"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/dot_state_grey"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintRight_toRightOf="parent"/>
 
-                            <ImageView
-                                android:id="@+id/dot_overlay"
-                                android:layout_width="12dp"
-                                android:layout_height="12dp"
-                                android:layout_alignParentEnd="true"
-                                android:layout_centerVertical="true"
-                                android:src="@drawable/dot_state_grey" />
-                        </RelativeLayout>
+                <!-- 说明 -->
+                <TextView
+                    android:id="@+id/description3"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="用于显示测试覆盖层和工具面板"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="14sp"
+                    app:layout_constraintTop_toBottomOf="@id/title3"
+                    app:layout_constraintLeft_toLeftOf="@+id/title3"/>
 
-                        <!-- 补齐宽高 -->
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
-                            android:text="用于显示测试覆盖层和工具面板"
-                            android:textColor="@color/text_secondary"
-                            android:textSize="14sp" />
+                <!-- 按钮 -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_overlay"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:layout_marginTop="12dp"
+                    android:text="立即开启"
+                    android:textAllCaps="false"
+                    android:textColor="@android:color/white"
+                    app:cornerRadius="12dp"
+                    app:backgroundTint="@color/brand_purple"
+                    app:layout_constraintLeft_toLeftOf="@+id/title3"
+                    app:layout_constraintTop_toBottomOf="@id/description3"/>
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </com.google.android.material.card.MaterialCardView>
 
-                        <com.google.android.material.button.MaterialButton
-                            android:id="@+id/btn_overlay"
-                            android:layout_width="wrap_content"
-                            android:layout_height="36dp"
-                            android:layout_marginTop="12dp"
-                            android:text="立即开启"
-                            android:textAllCaps="false"
-                            android:textColor="@android:color/white"
-                            app:cornerRadius="12dp"
-                            app:backgroundTint="@color/brand_purple" />
-                    </LinearLayout>
-                </RelativeLayout>
-            </com.google.android.material.card.MaterialCardView>
+        <!-- ======= 卡片 4：手势录制 ======= -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardBackgroundColor="@color/card_bg"
+            app:cardCornerRadius="24dp"
+            app:cardUseCompatPadding="true"
+            app:cardElevation="8dp">
 
-            <!-- ======= 卡片 4：开启测试 ======= -->
-            <com.google.android.material.card.MaterialCardView
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                app:cardBackgroundColor="@color/card_bg"
-                app:cardCornerRadius="24dp"
-                app:cardUseCompatPadding="true"
-                app:cardElevation="8dp">
-
-                <RelativeLayout
-                    android:layout_width="match_parent"
+                android:minHeight="96dp"
+                android:layout_margin="16dp">
+                <!-- 图标 -->
+                <FrameLayout
+                    android:id="@+id/icon4"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:minHeight="96dp"
-                    android:paddingBottom="16dp">
+                    android:background="@drawable/bg_icon_container"
+                    android:padding="12dp"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintLeft_toLeftOf="parent">
 
-                    <FrameLayout
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        android:layout_margin="16dp"
-                        android:background="@drawable/bg_icon_container"
-                        android:padding="12dp">
-
-                        <ImageView
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:src="@drawable/ic_run_24"
-                            android:tint="@color/brand_purple" />
-                    </FrameLayout>
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
+                    <ImageView
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="80dp"
-                        android:layout_marginEnd="16dp"
-                        android:layout_marginTop="16dp"
-                        android:orientation="vertical">
+                        android:src="@drawable/ic_run_24"
+                        app:tint="@color/brand_purple" />
+                </FrameLayout>
 
-                        <RelativeLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content">
+                <!-- 标题 -->
+                <TextView
+                    android:id="@+id/title4"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="手势录制"
+                    android:textColor="@color/text_primary"
+                    android:textStyle="bold"
+                    android:textSize="14sp"
+                    android:layout_marginStart="16dp"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintLeft_toRightOf="@+id/icon4"/>
 
-                            <!-- 补齐宽高 -->
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="开启测试"
-                                android:textColor="@color/text_primary"
-                                android:textStyle="bold"
-                                android:textSize="14sp" />
+                <!-- 启动对象选择框 -->
+                <Spinner
+                    android:id="@+id/spinner_apps"
+                    android:layout_width="0dp"
+                    android:layout_height="40dp"
+                    android:layout_marginTop="4dp"
+                    android:layout_marginEnd="16dp"
+                    android:background="@drawable/bg_spinner"
+                    app:layout_constraintLeft_toLeftOf="@+id/title4"
+                    app:layout_constraintTop_toBottomOf="@id/title4"
+                    app:layout_constraintRight_toRightOf="parent"/>
 
-                            <ImageView
-                                android:id="@+id/dot_start"
-                                android:layout_width="12dp"
-                                android:layout_height="12dp"
-                                android:layout_alignParentEnd="true"
-                                android:layout_centerVertical="true"
-                                android:src="@drawable/dot_state_grey" />
-                        </RelativeLayout>
+                <!-- 说明 -->
+                <TextView
+                    android:id="@+id/description4"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="启动自动化测试流程"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="14sp"
+                    app:layout_constraintLeft_toLeftOf="@+id/title4"
+                    app:layout_constraintTop_toBottomOf="@id/spinner_apps"/>
 
-                        <!-- 补齐宽高 -->
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
-                            android:text="启动游戏自动化测试流程"
-                            android:textColor="@color/text_secondary"
-                            android:textSize="14sp" />
+                <!-- 按钮 -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_record"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:layout_marginTop="12dp"
+                    android:text="等待权限"
+                    android:textAllCaps="false"
+                    android:textColor="@android:color/white"
+                    app:cornerRadius="12dp"
+                    app:backgroundTint="@color/brand_purple"
+                    app:layout_constraintLeft_toLeftOf="@+id/title4"
+                    app:layout_constraintTop_toBottomOf="@id/description4"/>
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </com.google.android.material.card.MaterialCardView>
 
-                        <com.google.android.material.button.MaterialButton
-                            android:id="@+id/btn_start"
-                            android:layout_width="wrap_content"
-                            android:layout_height="36dp"
-                            android:layout_marginTop="12dp"
-                            android:text="等待权限"
-                            android:enabled="false"
-                            android:textAllCaps="false"
-                            android:textColor="@color/text_secondary"
-                            app:cornerRadius="12dp"
-                            app:backgroundTint="#E5E7EB" />
-                    </LinearLayout>
-                </RelativeLayout>
-            </com.google.android.material.card.MaterialCardView>
+        <!-- ======= 卡片 5：开启测试 ======= -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardBackgroundColor="@color/card_bg"
+            app:cardCornerRadius="24dp"
+            app:cardUseCompatPadding="true"
+            app:cardElevation="8dp">
 
-            <!-- ======= 使用说明 ======= -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:text="使用说明"
-                android:textColor="@color/text_primary"
-                android:textStyle="bold"
-                android:textSize="14sp" />
-
-            <com.google.android.material.card.MaterialCardView
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                app:cardBackgroundColor="@color/card_bg"
-                app:cardCornerRadius="24dp"
-                app:cardUseCompatPadding="true"
-                app:cardElevation="8dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
+                android:minHeight="96dp"
+                android:layout_margin="16dp">
+                <!-- 图标 -->
+                <FrameLayout
+                    android:id="@+id/icon5"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="16dp">
+                    android:background="@drawable/bg_icon_container"
+                    android:padding="12dp"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintLeft_toLeftOf="parent">
 
-                    <!-- 下面这三个 include 的父是 LinearLayout，不是 RelativeLayout。
-                         但为了稳妥，include 也建议显式给宽/高。 -->
-                    <include
-                        android:layout_width="match_parent"
+                    <ImageView
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        layout="@layout/row_bullet"/>
-                    <include
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        layout="@layout/row_bullet"/>
-                    <include
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        layout="@layout/row_bullet"/>
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
+                        android:src="@drawable/ic_run_24"
+                        app:tint="@color/brand_purple" />
+                </FrameLayout>
 
-        </LinearLayout>
-    </ScrollView>
-</LinearLayout>
+                <!-- 标题 -->
+                <TextView
+                    android:id="@+id/title5"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="开启测试"
+                    android:textColor="@color/text_primary"
+                    android:textStyle="bold"
+                    android:textSize="14sp"
+                    android:layout_marginStart="16dp"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintLeft_toRightOf="@+id/icon5"/>
+
+                <!-- 启动对象选择框 -->
+                <Spinner
+                    android:id="@+id/spinner_targets"
+                    android:layout_width="0dp"
+                    android:layout_height="40dp"
+                    android:layout_marginTop="4dp"
+                    android:layout_marginEnd="16dp"
+                    android:background="@drawable/bg_spinner"
+                    app:layout_constraintLeft_toLeftOf="@+id/title5"
+                    app:layout_constraintTop_toBottomOf="@id/title5"
+                    app:layout_constraintRight_toRightOf="parent"/>
+
+                <!-- 说明 -->
+                <TextView
+                    android:id="@+id/description5"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="启动自动化测试流程"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="14sp"
+                    app:layout_constraintLeft_toLeftOf="@+id/title5"
+                    app:layout_constraintTop_toBottomOf="@id/spinner_targets"/>
+
+                <!-- 按钮 -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_start"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:layout_marginTop="12dp"
+                    android:text="等待权限"
+                    android:textAllCaps="false"
+                    android:textColor="@android:color/white"
+                    app:cornerRadius="12dp"
+                    app:backgroundTint="@color/brand_purple"
+                    app:layout_constraintLeft_toLeftOf="@+id/title5"
+                    app:layout_constraintTop_toBottomOf="@id/description5"/>
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- ======= 使用说明 ======= -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="使用说明：依次开启三个权限，然后按照顺序开启测试"
+            android:textColor="@color/text_primary"
+            android:textStyle="bold"
+            android:textSize="14sp" />
+
+<!--        <com.google.android.material.card.MaterialCardView-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_marginTop="8dp"-->
+<!--            app:cardBackgroundColor="@color/card_bg"-->
+<!--            app:cardCornerRadius="24dp"-->
+<!--            app:cardUseCompatPadding="true"-->
+<!--            app:cardElevation="8dp">-->
+
+<!--            <LinearLayout-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:orientation="vertical"-->
+<!--                android:padding="16dp">-->
+
+<!--                &lt;!&ndash; 下面这三个 include 的父是 LinearLayout，不是 RelativeLayout。-->
+<!--                     但为了稳妥，include 也建议显式给宽/高。 &ndash;&gt;-->
+<!--                <include-->
+<!--                    android:layout_width="match_parent"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    layout="@layout/row_bullet"/>-->
+<!--                <include-->
+<!--                    android:layout_width="match_parent"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:layout_marginTop="8dp"-->
+<!--                    layout="@layout/row_bullet"/>-->
+<!--                <include-->
+<!--                    android:layout_width="match_parent"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:layout_marginTop="8dp"-->
+<!--                    layout="@layout/row_bullet"/>-->
+<!--            </LinearLayout>-->
+<!--        </com.google.android.material.card.MaterialCardView>-->
+
+    </LinearLayout>
+</ScrollView>

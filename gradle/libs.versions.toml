@@ -23,6 +23,7 @@ opencv = "4.12.0"
 playServicesMlkitTextRecognition = "19.0.1"
 playServicesMlkitTextRecognitionCommon = "19.1.0"
 window = "1.4.0"
+constraintlayoutVersion = "2.2.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -54,6 +55,7 @@ opencv = { module = "org.opencv:opencv", version.ref = "opencv" }
 play-services-mlkit-text-recognition = { module = "com.google.android.gms:play-services-mlkit-text-recognition", version.ref = "playServicesMlkitTextRecognition" }
 text-recognition-chinese = { module = "com.google.mlkit:text-recognition-chinese", version = "16.0.1" }
 play-services-mlkit-text-recognition-common = { group = "com.google.android.gms", name = "play-services-mlkit-text-recognition-common", version.ref = "playServicesMlkitTextRecognitionCommon" }
+constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayoutVersion" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

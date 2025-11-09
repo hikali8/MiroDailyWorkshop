@@ -9,6 +9,8 @@ import android.graphics.Rect
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import android.view.KeyEvent
+import android.view.MotionEvent
 import com.hika.core.aidl.accessibility.DetectedObject
 import com.hika.core.aidl.accessibility.IProjectionSuccess
 import java.lang.ref.WeakReference
@@ -18,7 +20,7 @@ import java.lang.ref.WeakReference
  *  accessibility settings.
  */
 class AccessibilityCoreService() : AccessibilityServicePart4_ScreenWatching() {
-    // 4. Service Core: Instance and Click
+    // 5. Service Core: Instance and Click
     companion object {
         var instance = WeakReference<AccessibilityCoreService>(null)
     }
@@ -30,7 +32,7 @@ class AccessibilityCoreService() : AccessibilityServicePart4_ScreenWatching() {
     }
 
 
-    // 4.1. Expose this Accessibility-Service's Interface.
+    // 5.1. Expose this Accessibility-Service's Interface.
     override val iAccessibilityExposed by lazy { IAccessibilityExposed() }
 
     inner class IAccessibilityExposed: IAccessibilityExposed_Part4(){
@@ -77,7 +79,50 @@ class AccessibilityCoreService() : AccessibilityServicePart4_ScreenWatching() {
         }
     }
 
-    // 4.2. Clean-Ups
+    // 5.3. Tap / Gesture Capture
+
+    /**
+     * When to record
+     * 1. User clicks "Record"
+     * 2. Motion Capturing started
+     * 3. On every motion captured, record motion and the timestamp, save into memory (value)
+     * 4. User presses volume + and power
+     * 5. Stop motion capturing. Correct the time to starting from zero.
+     * 6. Save to file (csv).
+     */
+
+    /**
+     * When to replay
+     * 1. User clicks "Start".
+     * 2. Open the app.
+     * 3. Read the file.
+     * 4. While the initial condition satisfied, replay the file.
+     * 5. Stop if the file is over, or if the volume + and power is pressed.
+     * 6. Print the log.
+     */
+
+
+
+    var isToCaptureTap = true
+    override fun onMotionEvent(event: MotionEvent) {
+//        if (isToCaptureTap){
+//            when(event.action){
+//                MotionEvent.ACTION_DOWN ->
+//                    ;
+//                MotionEvent.ACTION_UP ->
+//                    ;
+//            }
+//
+//        }
+        super.onMotionEvent(event)
+    }
+
+    override fun onKeyEvent(event: KeyEvent?): Boolean {
+        return super.onKeyEvent(event)
+    }
+
+
+    // 5.2. Clean-Ups
 
     // on Master Disconnected
     override fun onUnbind(intent: Intent?): Boolean {
@@ -90,10 +135,6 @@ class AccessibilityCoreService() : AccessibilityServicePart4_ScreenWatching() {
         onVisitorDisconnected()
         instance.clear()
         super.onDestroy()
-    }
-
-    override fun onGesture(gestureEvent: AccessibilityGestureEvent): Boolean {
-        return super.onGesture(gestureEvent)
     }
 
     // ignore

@@ -10,6 +10,7 @@ import android.content.ServiceConnection
 import android.os.Build
 import android.os.IBinder
 import android.util.Log
+import android.view.KeyEvent
 import androidx.core.content.ContextCompat
 import com.hika.core.aidl.accessibility.IASReceiver
 import com.hika.core.aidl.accessibility.IAccessibilityService
@@ -69,10 +70,10 @@ abstract class AccessibilityServicePart1_ConnectToMainProc: AccessibilityService
         val registerFlag = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             RECEIVER_EXPORTED
         }else { 2 }
-        ContextCompat.registerReceiver(this, broadcastReceiver, filter, registerFlag)
+        ContextCompat.registerReceiver(this, connectionReceiver, filter, registerFlag)
     }
 
-    private val broadcastReceiver = object: BroadcastReceiver() {
+    val connectionReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             Log.d("#0x-AS", "Received Broadcast")
             if (!isValidBroadcast(intent))
@@ -107,6 +108,22 @@ abstract class AccessibilityServicePart1_ConnectToMainProc: AccessibilityService
         return true
     }
 
+    private inner class VuPButtonReceiver: BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            if (Intent.ACTION_MEDIA_BUTTON.equals(intent.getAction())) {
+                val keyEvent: KeyEvent? = intent.getParcelableExtra(Intent.EXTRA_KEY_EVENT);
+                if (keyEvent != null && keyEvent.getAction() == KeyEvent.ACTION_DOWN) {
+                    val keyCode: Int = keyEvent.getKeyCode();
+                    if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN || keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
+                        Log.d("VolumePowerReceiver", "Volume key pressed");
+                    } else if (keyCode == KeyEvent.KEYCODE_POWER) {
+                        Log.d("VolumePowerReceiver", "Power key pressed");
+                    }
+                }
+            }
+        }
+    }
+
 
     // 1.3 Expose the Accessibility-Service's Interface to main proc. (implemented gradually)
     abstract val iAccessibilityExposed: IAccessibilityService.Stub
@@ -123,7 +140,7 @@ abstract class AccessibilityServicePart1_ConnectToMainProc: AccessibilityService
     }
 
     override fun onDestroy() {
-        unregisterReceiver(broadcastReceiver)
+        unregisterReceiver(connectionReceiver)
         super.onDestroy()
     }
 }

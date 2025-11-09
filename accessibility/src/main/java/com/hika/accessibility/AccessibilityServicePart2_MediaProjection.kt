@@ -42,6 +42,7 @@ abstract class AccessibilityServicePart2_Projection: AccessibilityServicePart1_C
             .setContentText("无障碍服务正在监控屏幕")
             .setSmallIcon(R.drawable.ic_launcher_foreground) // 必须设置有效图标
             .setPriority(NotificationCompat.PRIORITY_LOW)
+            .setOngoing(true) // 设置为常驻通知，用户无法手动清除
             .build()
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {

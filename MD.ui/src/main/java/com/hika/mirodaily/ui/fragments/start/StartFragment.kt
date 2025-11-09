@@ -14,7 +14,6 @@ import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import com.google.android.material.button.MaterialButton
 import com.hika.mirodaily.core.iAccessibilityService
 import com.hika.mirodaily.core.game_labors.hoyolab.DailyCheckIn
 import com.hika.mirodaily.ui.MainActivity
@@ -23,6 +22,7 @@ import com.hika.mirodaily.ui.databinding.FragmentStartBinding
 import com.hika.mirodaily.ui.fragments.start.FloatingWindow
 import kotlinx.coroutines.Job
 import android.database.ContentObserver
+import android.widget.ArrayAdapter
 
 class StartFragment : Fragment() {
 
@@ -52,6 +52,16 @@ class StartFragment : Fragment() {
             floatingWindow.open()
         }
         binding.btnStart.setOnClickListener(::onStartClick)
+
+        // items to record
+        var appList = listOf("原神", "崩铁", "绝区零")
+        binding.spinnerApps.adapter =
+            ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, appList)
+
+        // items to proceed
+        appList = listOf("手势1", "手势2")
+        binding.spinnerTargets.adapter =
+            ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, appList)
 
         return binding.root
     }
@@ -116,19 +126,19 @@ class StartFragment : Fragment() {
         val projection = iAccessibilityService?.isProjectionStarted() == true
 
         // 三个小圆点（灰/绿）
-        binding.dotAccessibility.setImageResource(
+        binding.dot1.setImageResource(
             if (acc) R.drawable.dot_state_ok else R.drawable.dot_state_grey
         )
-        binding.dotOverlay.setImageResource(
+        binding.dot2.setImageResource(
             if (overlay) R.drawable.dot_state_ok else R.drawable.dot_state_grey
         )
-        binding.dotProjection.setImageResource(
+        binding.dot3.setImageResource(
             if (projection) R.drawable.dot_state_ok else R.drawable.dot_state_grey
         )
 
         // “开启测试”按钮：仅要求 无障碍+悬浮窗 就绪即可点
         val ready = acc && overlay
-        (binding.btnStart as MaterialButton).apply {
+        binding.btnStart.apply {
             isEnabled = ready
             if (ready) {
                 text = "立即开启"
@@ -166,8 +176,6 @@ class StartFragment : Fragment() {
     }
 
     private fun isOverlayEnabled(): Boolean {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            Settings.canDrawOverlays(requireContext())
-        } else true
+        return Settings.canDrawOverlays(requireContext())
     }
 }
