@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.PointF
 import android.graphics.Rect
-import com.hika.core.aidl.accessibility.DetectedObject
 import com.hika.core.aidl.accessibility.ParcelableSymbol
 import com.hika.core.aidl.accessibility.ParcelableText
 import com.hika.core.interfaces.Logger
@@ -14,7 +13,6 @@ import com.hika.core.loopUntil
 import com.hika.mirodaily.core.ASReceiver
 import com.hika.mirodaily.core.R
 import com.hika.mirodaily.core.data_extractors.containsAny
-import com.hika.mirodaily.core.data_extractors.containsAnyWithNum
 import com.hika.mirodaily.core.data_extractors.findAll
 import com.hika.mirodaily.core.data_extractors.matchSequence
 import com.hika.mirodaily.core.iAccessibilityService
@@ -22,7 +20,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlin.math.log
 import kotlin.properties.Delegates
 
 /** series of things to do:
@@ -37,17 +34,18 @@ import kotlin.properties.Delegates
 
 
 class DailyCheckIn(val context: Context, val scope: CoroutineScope, val logger: Logger) {
-    //0. entry
-    fun start() = openApp()
+    val packageName = "com.mihoyo.hyperion"
+    val className = "com.mihoyo.hyperion.main.HyperionMainActivity"
 
-    //1. Open the app
+    //1. Entry: Open the app
     val intent = Intent(Intent.ACTION_MAIN).apply {
-        setClassName("com.mihoyo.hyperion", "com.mihoyo.hyperion.main.HyperionMainActivity")
+        // what name of app to go in
+        setClassName(packageName, className)
         setFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED or Intent.FLAG_ACTIVITY_NEW_TASK)
         addCategory(Intent.CATEGORY_LAUNCHER)
     }
 
-    private inline fun openApp(): Job {
+    fun start(): Job {
         val job = scope.launch {
             iAccessibilityService?.clearClassNameListeners()
             prepareToEnterHyperionMainActivity()
@@ -64,8 +62,7 @@ class DailyCheckIn(val context: Context, val scope: CoroutineScope, val logger: 
     }
 
     suspend fun prepareToEnterHyperionMainActivity(){
-        if(!ASReceiver.listenToActivityClassNameAsync(
-                "com.mihoyo.hyperion.main.HyperionMainActivity"))
+        if(!ASReceiver.listenToActivityClassNameAsync(className))
             logger("Failed to hear class name, suppose it's already entered.")
         logger("HyperionMainActivity")
         delay(1000)

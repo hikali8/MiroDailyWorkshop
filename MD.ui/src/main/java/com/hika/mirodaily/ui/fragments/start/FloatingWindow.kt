@@ -35,9 +35,7 @@ class FloatingWindow(val context: Context,
         WindowManager.LayoutParams.WRAP_CONTENT,
         WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
         WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
-                or WindowManager.LayoutParams.FLAG_SECURE
-                or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE    // if this could be touched, operations will be distorted
-        ,
+                or WindowManager.LayoutParams.FLAG_SECURE,
         PixelFormat.TRANSLUCENT
     ).apply {
         gravity = Gravity.TOP or Gravity.START
@@ -75,39 +73,38 @@ class FloatingWindow(val context: Context,
         // 添加视图到WindowManager
         try {
             windowManager.addView(binding.root, layoutParams)
-
-            // 设置拖拽功能
-            binding.floatWindowContainer.setOnTouchListener { v, event ->
-                when (event.action) {
-                    MotionEvent.ACTION_DOWN -> {
-                        // 记录初始位置
-                        initialX = layoutParams.x
-                        initialY = layoutParams.y
-                        initialTouchX = event.rawX
-                        initialTouchY = event.rawY
-                        true
-                    }
-                    MotionEvent.ACTION_MOVE -> {
-                        // 计算偏移量并更新位置
-                        layoutParams.x = initialX + (event.rawX - initialTouchX).toInt()
-                        layoutParams.y = initialY + (event.rawY - initialTouchY).toInt()
-                        windowManager.updateViewLayout(binding.root, layoutParams)
-                        true
-                    }
-                    else -> false
-                }
-            }
-
             Toast.makeText(context, "悬浮窗已显示", Toast.LENGTH_SHORT).show()
         } catch (e: Exception) {
             e.printStackTrace()
             Toast.makeText(context, "显示悬浮窗失败: ${e.message}", Toast.LENGTH_SHORT).show()
         }
+
+        // 设置拖拽功能
+        binding.floatWindow.setOnTouchListener { v, event ->
+            when (event.action) {
+                MotionEvent.ACTION_DOWN -> {
+                    // 记录初始位置
+                    initialX = layoutParams.x
+                    initialY = layoutParams.y
+                    initialTouchX = event.rawX
+                    initialTouchY = event.rawY
+                    true
+                }
+                MotionEvent.ACTION_MOVE -> {
+                    // 计算偏移量并更新位置
+                    layoutParams.x = initialX + (event.rawX - initialTouchX).toInt()
+                    layoutParams.y = initialY + (event.rawY - initialTouchY).toInt()
+                    windowManager.updateViewLayout(binding.root, layoutParams)
+                    true
+                }
+                else -> false
+            }
+        }
     }
 
-    private fun isFloatingWindowOpen() = binding.root.isAttachedToWindow
+    private inline fun isFloatingWindowOpen() = binding.root.isAttachedToWindow
 
-    private fun hasOverlayPermission() = Settings.canDrawOverlays(context)
+    private inline fun hasOverlayPermission() = Settings.canDrawOverlays(context)
 
     private fun requestOverlayPermission() {
         val intent = Intent(
@@ -125,6 +122,13 @@ class FloatingWindow(val context: Context,
         } else {
             // 可以在这里添加提示，告诉用户需要权限
         }
+    }
+
+    // 2.1. Reset the coordinate of window
+    fun resetCoordinate(x: Int, y: Int){
+        layoutParams.x = x
+        layoutParams.y = y
+        windowManager.updateViewLayout(binding.root, layoutParams)
     }
 
 

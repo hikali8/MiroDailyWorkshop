@@ -1,8 +1,10 @@
 package com.hika.accessibility
 
+import android.Manifest
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.content.pm.ServiceInfo
 import android.graphics.Point
 import android.hardware.display.DisplayManager
@@ -10,9 +12,12 @@ import android.hardware.display.VirtualDisplay
 import android.media.projection.MediaProjection
 import android.media.projection.MediaProjectionManager
 import android.os.Build
+import android.provider.Settings
 import android.util.DisplayMetrics
 import android.util.Log
+import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import androidx.window.layout.WindowMetricsCalculator
 import com.hika.accessibility.recognition.ImageHandler
 import com.hika.core.aidl.accessibility.IProjectionSuccess
@@ -41,8 +46,8 @@ abstract class AccessibilityServicePart2_Projection: AccessibilityServicePart1_C
             .setContentTitle("服务运行中: Mihoro, is Miro")
             .setContentText("无障碍服务正在监控屏幕")
             .setSmallIcon(R.drawable.ic_launcher_foreground) // 必须设置有效图标
-            .setPriority(NotificationCompat.PRIORITY_LOW)
-            .setOngoing(true) // 设置为常驻通知，用户无法手动清除
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+//            .setOngoing(true) // 设置为常驻通知，用户无法手动清除
             .build()
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -54,6 +59,22 @@ abstract class AccessibilityServicePart2_Projection: AccessibilityServicePart1_C
             )
         } else {
             startForeground(NOTIFICATION_ID, notification)
+        }
+
+        // Issue the new notification.
+        NotificationManagerCompat.from(this).apply {
+            if (areNotificationsEnabled()) {
+                notify(NOTIFICATION_ID, notification)
+                return
+            }
+
+            val toOpenSetting = Intent().apply {
+                action = Settings.ACTION_APP_NOTIFICATION_SETTINGS
+                putExtra(Settings.EXTRA_APP_PACKAGE, packageName)
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            }
+            startActivity(toOpenSetting)
+            Log.e("0x-AS2", "Failed to issue a notification. You must enable the notification of Hica to show notifications")
         }
     }
 
