@@ -43,7 +43,7 @@ Java_com_hika_accessibility_recognition_ImageHandler_convertRGBAtoNV21(
     auto* nv21Buffer = reinterpret_cast<uint8_t*>(nv21Data);
 
     // use libyuv to convert
-    // ABGR still is RGBA (little order), Google made it unclearly
+    // ABGR is truly RGBA (little order), Google made it unclear
 
     int result = libyuv::ABGRToNV21(
             rgbaData,           // src_rgba
