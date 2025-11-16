@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <accessibility-service xmlns:android="http://schemas.android.com/apk/res/android"
-    android:canPerformGestures="true"
-    android:accessibilityEventTypes="typeWindowsChanged|typeWindowStateChanged"
-    android:accessibilityFlags="flagDefault|flagRetrieveInteractiveWindows|flagRequestFilterKeyEvents"
+    android:accessibilityFlags="flagDefault"
     android:accessibilityFeedbackType="feedbackGeneric"
     android:notificationTimeout="100"
-    android:canRetrieveWindowContent="true"
+    android:canPerformGestures="true"
     android:canRequestFilterKeyEvents="true"
     android:description="@string/accessibility_description" />
-    <!--we cannot get "content" from the games, as they are all the rendered pictures/shapes.
-        but, we are able to capture the screen, and it's by default reachable since android 11 on this service.-->
+    <!--    android:accessibilityFlags="flagDefault|flagRetrieveInteractiveWindows|flagRequestFilterKeyEvents"-->
+    <!--    android:accessibilityEventTypes="typeWindowsChanged|typeWindowStateChanged"-->
+    <!--    android:canRetrieveWindowContent="true"-->
+    <!--    android:canRequestTouchExplorationMode="true"-->

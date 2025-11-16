@@ -1,5 +1,6 @@
 package com.hika.accessibility
 
+import android.accessibilityservice.AccessibilityServiceInfo
 import android.util.Log
 import android.view.accessibility.AccessibilityEvent
 import com.hika.core.aidl.accessibility.IReply
@@ -46,32 +47,42 @@ abstract class AccessibilityServicePart3_EventListening: AccessibilityServicePar
             if (latestExpirationTime < expirationTime){
                 latestExpirationTime = expirationTime
             }
-            refreshListeningAbility()
+            addWCOnEvent()
         }
 
         override fun clearClassNameListeners() {
             latestExpirationTime = -1
-            refreshListeningAbility()
+            clearWCOnEvent()
             classNameMap.clear()
         }
     }
 
     // 3.1 Listen only if necessary
-    private fun refreshListeningAbility() {
-        if (latestExpirationTime < 0)
-            serviceInfo.eventTypes = 0
-        else
-            serviceInfo.eventTypes = AccessibilityEvent.TYPE_WINDOWS_CHANGED
-                                   + AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED
+    fun addWCOnEvent(){
+        serviceInfo.eventTypes = (serviceInfo.eventTypes or
+                AccessibilityEvent.TYPE_WINDOWS_CHANGED or
+                AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED)
+        serviceInfo.flags = (serviceInfo.flags or
+                AccessibilityServiceInfo.FLAG_RETRIEVE_INTERACTIVE_WINDOWS)
+    }
+
+    fun clearWCOnEvent(){
+        serviceInfo.eventTypes = (serviceInfo.eventTypes and
+                (AccessibilityEvent.TYPE_WINDOWS_CHANGED or
+                AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED).inv())
+        serviceInfo.flags = (serviceInfo.flags and
+                AccessibilityServiceInfo.FLAG_RETRIEVE_INTERACTIVE_WINDOWS.inv())
     }
 
     // event listen
-    override fun onAccessibilityEvent(event: AccessibilityEvent?) {
-        when (event?.eventType) {
+    override fun onAccessibilityEvent(event: AccessibilityEvent) {
+        when (event.eventType) {
             AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED, AccessibilityEvent.TYPE_WINDOWS_CHANGED -> {
                 // some system will mute all Log.d in accessibility onEvent function.
-                if (latestExpirationTime < 0)
-                    return refreshListeningAbility()
+                if (latestExpirationTime < 0) {
+                    clearWCOnEvent()
+                    return
+                }
 
                 val currentTimeMillis = System.currentTimeMillis()
                 if (iConnector == null || currentTimeMillis > latestExpirationTime){
@@ -89,7 +100,7 @@ abstract class AccessibilityServicePart3_EventListening: AccessibilityServicePar
                 }
                 if (classNameMap.isEmpty){
                     latestExpirationTime = -1
-                    refreshListeningAbility()
+                    clearWCOnEvent()
                 }
 
             }

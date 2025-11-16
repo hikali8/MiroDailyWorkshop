@@ -48,10 +48,8 @@ class FloatingWindow(val context: Context,
 
     // 2. Open Floating Window
     // params used for dragging
-    private var initialX = 0
-    private var initialY = 0
-    private var initialTouchX = 0f
-    private var initialTouchY = 0f
+    private var touchX = 0f
+    private var touchY = 0f
 
     @SuppressLint("ClickableViewAccessibility")
     fun open() {
@@ -84,16 +82,14 @@ class FloatingWindow(val context: Context,
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
                     // 记录初始位置
-                    initialX = layoutParams.x
-                    initialY = layoutParams.y
-                    initialTouchX = event.rawX
-                    initialTouchY = event.rawY
+                    touchX = event.rawX
+                    touchY = event.rawY
                     true
                 }
                 MotionEvent.ACTION_MOVE -> {
                     // 计算偏移量并更新位置
-                    layoutParams.x = initialX + (event.rawX - initialTouchX).toInt()
-                    layoutParams.y = initialY + (event.rawY - initialTouchY).toInt()
+                    layoutParams.x += (event.rawX - touchX).toInt()
+                    layoutParams.y += (event.rawY - touchY).toInt()
                     windowManager.updateViewLayout(binding.root, layoutParams)
                     true
                 }

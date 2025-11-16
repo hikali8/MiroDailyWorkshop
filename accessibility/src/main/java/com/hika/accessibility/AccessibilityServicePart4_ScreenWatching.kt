@@ -30,12 +30,6 @@ abstract class AccessibilityServicePart4_ScreenWatching: AccessibilityServicePar
             }
             detectJobs.add(deferred)
             return runBlocking {
-//                try {
-//                    deferred.await()!!
-//                }catch (_: Exception) {
-//                    // 如果，返回空的结果
-//                    emptyArray<DetectedObject>()
-//                }
                 deferred.await()!!
             }
         }

@@ -276,7 +276,7 @@ class StartFragment : Fragment() {
         }
     }
 
-    // Hikali8: it's unnecessary, actually you can just use StringList.contains()
+    // Hikali8: it's unnecessary, actually you can just use isAccessibilitySettingEnabled()
 //    /** 精确判断无障碍：必须包含“包名 + 服务类名”的完整扁平化字符串 */
 //    private fun isAccessibilityEnabledExact(): Boolean {
 //        val cr = requireContext().contentResolver

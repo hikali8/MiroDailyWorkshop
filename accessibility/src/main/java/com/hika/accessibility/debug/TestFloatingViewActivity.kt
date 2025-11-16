@@ -18,7 +18,6 @@ import android.view.WindowManager
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.graphics.createBitmap
 import androidx.core.net.toUri
 import androidx.lifecycle.lifecycleScope
 import com.hika.accessibility.AccessibilityCoreService
@@ -27,7 +26,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.ByteArrayOutputStream
-import java.nio.ByteBuffer
 
 
 class TestFloatingViewActivity : ComponentActivity() {

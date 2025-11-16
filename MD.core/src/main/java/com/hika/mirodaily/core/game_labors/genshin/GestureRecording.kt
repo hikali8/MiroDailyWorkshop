@@ -3,6 +3,7 @@ package com.hika.mirodaily.core.game_labors.genshin
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
+import android.widget.Toast
 import com.hika.core.interfaces.Level
 import com.hika.core.interfaces.Logger
 import com.hika.mirodaily.core.ASReceiver
@@ -43,7 +44,7 @@ class GestureRecording(val context: Context, val scope: CoroutineScope, val logg
         if(!ASReceiver.listenToActivityClassNameAsync(className))
             logger("Failed to hear class name, suppose it's already entered.")
         logger("NguyenZzhin")
-
+        Toast.makeText(context, "开始录制手势...按音量键上和电源键终止录制", Toast.LENGTH_SHORT).show()
 
 
     }

@@ -15,6 +15,7 @@ import android.os.Build
 import android.provider.Settings
 import android.util.DisplayMetrics
 import android.util.Log
+import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -43,8 +44,8 @@ abstract class AccessibilityServicePart2_Projection: AccessibilityServicePart1_C
     private fun promoteThisToForeground() {
         createNotificationChannel()
         val notification = NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("服务运行中: Mihoro, is Miro")
-            .setContentText("无障碍服务正在监控屏幕")
+            .setContentTitle("希卡无障碍服务运行中")
+            .setContentText("正在监控屏幕，直到系统断开权限或主应用退出")
             .setSmallIcon(R.drawable.ic_launcher_foreground) // 必须设置有效图标
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
 //            .setOngoing(true) // 设置为常驻通知，用户无法手动清除
@@ -67,13 +68,13 @@ abstract class AccessibilityServicePart2_Projection: AccessibilityServicePart1_C
                 notify(NOTIFICATION_ID, notification)
                 return
             }
-
             val toOpenSetting = Intent().apply {
                 action = Settings.ACTION_APP_NOTIFICATION_SETTINGS
                 putExtra(Settings.EXTRA_APP_PACKAGE, packageName)
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK
             }
             startActivity(toOpenSetting)
+            Toast.makeText(applicationContext, "请启用通知权限", Toast.LENGTH_LONG).show()
             Log.e("0x-AS2", "Failed to issue a notification. You must enable the notification of Hica to show notifications")
         }
     }

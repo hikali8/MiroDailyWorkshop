@@ -10,11 +10,6 @@
 #include <libyuv.h>
 
 
-#if __ANDROID_API__ >= 29
-#define API_GREATER_THAN_29 1
-#include <android/hardware_buffer_extra.h>
-#endif
-
 #define LOG_TAG "libyuv_converter"
 #define ALOGE(...) __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
 #define ALOGI(...) __android_log_print(ANDROID_LOG_INFO, LOG_TAG, __VA_ARGS__)

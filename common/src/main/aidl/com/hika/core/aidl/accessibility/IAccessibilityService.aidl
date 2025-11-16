@@ -1,7 +1,6 @@
 // IAccessibilityService.aidl
 package com.hika.core.aidl.accessibility;
 
-// Declare any non-default types here with import statements
 import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.Rect;
@@ -10,6 +9,7 @@ import com.hika.core.aidl.accessibility.IProjectionSuccess;
 import com.hika.core.aidl.accessibility.IReply;
 import com.hika.core.aidl.accessibility.DetectedObject;
 import com.hika.core.aidl.accessibility.ParcelableText;
+import com.hika.core.aidl.accessibility.ParcelableMotion;
 
 // from accessibility service to main app
 interface IAccessibilityService {
@@ -33,4 +33,7 @@ interface IAccessibilityService {
     oneway void click(in PointF point, long startTime, long duration);
     oneway void swipe(in PointF pointFrom, in PointF pointTo, long startTime, long duration);
     oneway void performAction(in int action);   //: AccessibilityService.GLOBAL_ACTION_XXX
+
+    ParcelableMotion[] recordMotions();
+    oneway void stopMotionRecording();
 }
