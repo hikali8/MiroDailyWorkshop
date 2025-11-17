@@ -93,8 +93,9 @@ abstract class AccessibilityServicePart5_MotionRecording: AccessibilityServicePa
         }
         if (isVUPressing && isPWPressing){
             iAccessibilityExposed.stopMotionRecording()
+            return true
         }
-        return true
+        return false
     }
 
     // 5.x Ultimate clean-ups
