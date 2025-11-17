@@ -8,6 +8,7 @@ import android.view.MotionEvent
 import android.view.accessibility.AccessibilityEvent
 import com.hika.core.aidl.accessibility.ParcelableMotion
 import kotlinx.coroutines.CancellableContinuation
+import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.suspendCancellableCoroutine
 
@@ -44,13 +45,14 @@ abstract class AccessibilityServicePart5_MotionRecording: AccessibilityServicePa
         override fun recordMotions(): Array<ParcelableMotion> {
             return runBlocking { suspendCancellableCoroutine { continuation ->
                 canceler = continuation
+                addPhysoBtnOnEvent()
                 touchController.registerCallback(null, touchCallback)
-                // whether + and p ?
             } }
         }
 
         override fun stopMotionRecording() {
             touchController.unregisterCallback(touchCallback)
+            clearPhysoBtnOnEvent()
             canceler?.resume(recordedMotions.toTypedArray(), null)
             recordedMotions.clear()
         }
@@ -75,9 +77,29 @@ abstract class AccessibilityServicePart5_MotionRecording: AccessibilityServicePa
                 AccessibilityServiceInfo.FLAG_REQUEST_FILTER_KEY_EVENTS.inv())
     }
 
+    var isVUPressing = false
+    var isPWPressing = false
     override fun onKeyEvent(event: KeyEvent?): Boolean {
-//        when(event){}
-        return super.onKeyEvent(event)
+        if(event == null)
+            return false
+        when (event.keyCode) {
+            KeyEvent.KEYCODE_VOLUME_UP -> {
+                isVUPressing = event.action == KeyEvent.ACTION_DOWN
+            }
+            KeyEvent.KEYCODE_POWER -> {
+                isPWPressing = event.action == KeyEvent.ACTION_DOWN
+            }
+            else -> return false
+        }
+        if (isVUPressing && isPWPressing){
+            iAccessibilityExposed.stopMotionRecording()
+        }
+        return true
     }
 
+    // 5.x Ultimate clean-ups
+    override fun onVisitorDisconnected(){
+        clearPhysoBtnOnEvent()
+        super.onVisitorDisconnected()
+    }
 }

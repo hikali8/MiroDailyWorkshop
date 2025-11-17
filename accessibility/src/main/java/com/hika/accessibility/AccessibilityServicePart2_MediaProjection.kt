@@ -1,10 +1,9 @@
 package com.hika.accessibility
 
-import android.Manifest
+import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.content.pm.ServiceInfo
 import android.graphics.Point
 import android.hardware.display.DisplayManager
@@ -16,7 +15,6 @@ import android.provider.Settings
 import android.util.DisplayMetrics
 import android.util.Log
 import android.widget.Toast
-import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.window.layout.WindowMetricsCalculator
@@ -42,27 +40,26 @@ abstract class AccessibilityServicePart2_Projection: AccessibilityServicePart1_C
 
     // 2.1 Promote this to foreground
     private fun promoteThisToForeground() {
-        createNotificationChannel()
-        val notification = NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("希卡无障碍服务运行中")
-            .setContentText("正在监控屏幕，直到系统断开权限或主应用退出")
-            .setSmallIcon(R.drawable.ic_launcher_foreground) // 必须设置有效图标
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-//            .setOngoing(true) // 设置为常驻通知，用户无法手动清除
-            .build()
+        val notification = createNotification()
+        startForeground(
+            NOTIFICATION_ID,
+            notification,
+            // Android 10+ needs to specify the foreground type
+            ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION
+        )
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            startForeground(
-                NOTIFICATION_ID,
-                notification,
-                // Android 10+ needs to specify the foreground type
-                ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION
-            )
-        } else {
-            startForeground(NOTIFICATION_ID, notification)
-        }
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+//            startForeground(
+//                NOTIFICATION_ID,
+//                notification,
+//                // Android 10+ needs to specify the foreground type
+//                ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION
+//            )
+//        } else {
+//            startForeground(NOTIFICATION_ID, notification)
+//        }
 
-        // Issue the new notification.
+        // Issue the notification.
         NotificationManagerCompat.from(this).apply {
             if (areNotificationsEnabled()) {
                 notify(NOTIFICATION_ID, notification)
@@ -79,17 +76,24 @@ abstract class AccessibilityServicePart2_Projection: AccessibilityServicePart1_C
         }
     }
 
-    private fun createNotificationChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                CHANNEL_ID,
-                "模拟服务通道",
-                NotificationManager.IMPORTANCE_LOW
-            )
-            channel.description = "无障碍服务运行通知"
-            getSystemService(NotificationManager::class.java)
-                .createNotificationChannel(channel)
-        }
+    private fun createNotification(): Notification {
+        // create channel
+        val channel = NotificationChannel(
+            CHANNEL_ID,
+            "模拟服务通道",
+            NotificationManager.IMPORTANCE_LOW
+        )
+        channel.description = "无障碍服务运行通知"
+        getSystemService(NotificationManager::class.java)
+            .createNotificationChannel(channel)
+        //create notification
+        return NotificationCompat.Builder(this, CHANNEL_ID)
+            .setContentTitle("希卡无障碍服务运行中")
+            .setContentText("正在监控屏幕，直到系统断开权限或主应用退出")
+            .setSmallIcon(R.drawable.ic_launcher_foreground) // 必须设置有效图标
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+//            .setOngoing(true) // 设置为常驻通知，用户无法手动清除
+            .build()
     }
 
     // 2.2 Get Media Projection token

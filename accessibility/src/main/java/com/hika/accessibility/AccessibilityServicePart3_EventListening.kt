@@ -109,7 +109,6 @@ abstract class AccessibilityServicePart3_EventListening: AccessibilityServicePar
 
     // 3.3 clean-ups
     override fun onVisitorDisconnected(){
-        Log.d("0x-AS3", "onVisitorDisconnected")
         iAccessibilityExposed.clearClassNameListeners()
         super.onVisitorDisconnected()
     }
