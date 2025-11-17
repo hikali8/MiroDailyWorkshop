@@ -159,7 +159,7 @@ class StartFragment : Fragment() {
     }
 
 
-    // 4-5. 4-5卡片：下拉框Spinner选择对应过程执行
+    // 1.4-1.5. 4-5卡片：下拉框Spinner选择对应过程执行
     val appList = listOf("原神", "崩铁", "绝区零")
     var selectedApp = ""
     val processesList = listOf("手势1", "手势2")
@@ -201,15 +201,13 @@ class StartFragment : Fragment() {
                 // Heavy work
                 val motions = iAccessibilityService?.recordMotions()
                     ?: return@launch
-                Log.w("#0x-SF", motions.toString())
+                var s = ""
+                for (motion in motions){
+                    s += motion.toString() + "\n"
+                }
+                Log.w("#0x-SF", s)
             }
 
-//            Log.w("#0x-SF", "start recording....")
-//            Handler(Looper.myLooper()!!).post {
-//                val motions = iAccessibilityService?.recordMotions()
-//                    ?: return@post
-//                Log.w("#0x-SF", motions.toString())
-//            }
         }
     }
 
@@ -227,6 +225,22 @@ class StartFragment : Fragment() {
             }
         }
         binding.btnStart.setOnClickListener(::onStartClick)
+    }
+
+    // 开始：打开悬浮窗 + 启动自动化
+    private var job: Job? = null
+    private fun onStartClick(view: View) {
+        iAccessibilityService?.stopMotionRecording()
+
+//        floatingWindow.open()
+//
+//        if (iAccessibilityService?.isProjectionStarted() != true) {
+//            Log.d("#0x-SF", "Projection is not yet started")
+//            updateUi()
+//            return
+//        }
+//        job?.cancel()
+//        job = DailyCheckIn(requireContext(), lifecycleScope, floatingWindow.logger).start()
     }
 
     fun ensurePermissions(): Boolean{
@@ -275,20 +289,6 @@ class StartFragment : Fragment() {
     override fun onDestroyView() {
         floatingWindow.close()
         super.onDestroyView()
-    }
-
-    // 开始：打开悬浮窗 + 启动自动化
-    private var job: Job? = null
-    private fun onStartClick(@Suppress("UNUSED_PARAMETER") view: View) {
-        floatingWindow.open()
-
-        if (iAccessibilityService?.isProjectionStarted() != true) {
-            Log.d("#0x-SF", "Projection is not yet started")
-            updateUi()
-            return
-        }
-        job?.cancel()
-        job = DailyCheckIn(requireContext(), lifecycleScope, floatingWindow.logger).start()
     }
 
     // ------------------ UI 状态 & 权限检测 ------------------

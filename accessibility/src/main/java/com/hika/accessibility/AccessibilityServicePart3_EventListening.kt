@@ -59,19 +59,21 @@ abstract class AccessibilityServicePart3_EventListening: AccessibilityServicePar
 
     // 3.1 Listen only if necessary
     fun addWCOnEvent(){
-        serviceInfo.eventTypes = (serviceInfo.eventTypes or
+        serviceInfo.eventTypes = serviceInfo.eventTypes or
                 AccessibilityEvent.TYPE_WINDOWS_CHANGED or
-                AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED)
-        serviceInfo.flags = (serviceInfo.flags or
-                AccessibilityServiceInfo.FLAG_RETRIEVE_INTERACTIVE_WINDOWS)
+                AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED
+        serviceInfo.flags = serviceInfo.flags or
+                AccessibilityServiceInfo.FLAG_RETRIEVE_INTERACTIVE_WINDOWS
+        setServiceInfo(serviceInfo)
     }
 
     fun clearWCOnEvent(){
-        serviceInfo.eventTypes = (serviceInfo.eventTypes and
+        serviceInfo.eventTypes = serviceInfo.eventTypes and
                 (AccessibilityEvent.TYPE_WINDOWS_CHANGED or
-                AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED).inv())
-        serviceInfo.flags = (serviceInfo.flags and
-                AccessibilityServiceInfo.FLAG_RETRIEVE_INTERACTIVE_WINDOWS.inv())
+                AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED).inv()
+        serviceInfo.flags = serviceInfo.flags and
+                AccessibilityServiceInfo.FLAG_RETRIEVE_INTERACTIVE_WINDOWS.inv()
+        setServiceInfo(serviceInfo)
     }
 
     // event listen
