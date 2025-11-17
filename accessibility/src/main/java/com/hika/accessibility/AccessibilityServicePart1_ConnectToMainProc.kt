@@ -7,7 +7,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.ServiceConnection
-import android.os.Build
 import android.os.IBinder
 import android.util.Log
 import android.view.KeyEvent
@@ -25,17 +24,18 @@ private const val START_BROADCAST = "com.hika.mirodaily.ui.ACTION_START"
 
 
 abstract class AccessibilityServicePart1_ConnectToMainProc: AccessibilityService() {
-    // 1. Connect to the Main Process
+    // 1. Connect to the Main Program
     //     :proceeded when it's connected by system or received a broadcast START_ACCESSIBILITY from the main proc
+    var iConnector: IASReceiver? = null     // interface to the main-prog's connector. null if disconnected.
+        private set
+
+    // 1.1. Try to Connect to the Main Program When it's Connected by the System
     override fun onServiceConnected() {
         super.onServiceConnected()
         connectToMainProc()
+        // Meanwhile register broadcast
         registerBroadcastReceiver()
     }
-
-    // 1.1 Connect To the Main Process
-    var iConnector: IASReceiver? = null     // interface of main-proc's connector. null if disconnected.
-        private set
 
     private fun connectToMainProc(){
         if (iConnector != null){
@@ -62,66 +62,42 @@ abstract class AccessibilityServicePart1_ConnectToMainProc: AccessibilityService
         }
     }
 
-    // 1.2 Register Broadcast Receiver to connect spontaneously
+    // 1.2. Receive Broadcast and Spontaneously connect to the Main Program
     private fun registerBroadcastReceiver(){
-        val filter = IntentFilter(START_BROADCAST)
-        val registerFlag = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            RECEIVER_EXPORTED
-        }else { 2 }
-        ContextCompat.registerReceiver(this, connectionReceiver, filter, registerFlag)
+        ContextCompat.registerReceiver(this, connectionReceiver,
+            IntentFilter(START_BROADCAST),
+            ContextCompat.RECEIVER_EXPORTED
+        )
     }
 
     val connectionReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             Log.d("#0x-AS", "Received Broadcast")
-            if (!isValidBroadcast(intent))
+
+            // 1.2.1. Verify the action
+            if (intent.action != START_BROADCAST) {
+                Log.w("#0x-AS", "收到无效广播: ${intent.action}")
                 return
-            Log.d("#0x-AS", "After Verification, Connect to Proc now")
+            }
+
+            // 1.2.2. Verify the timestamp
+            val timestamp = intent.getLongExtra("timestamp", 0)
+            if (System.currentTimeMillis() - timestamp > 5000) { // 5秒内有效
+                Log.w("#0x-AS", "广播已过期")
+                return
+            }
+
+            // 1.2.3. TODO: Verify the version
+            /*
+            val version = intent.getIntExtra("version", 0)
+            if (version != BuildConfig.VERSION_CODE) {
+                Log.w("Accessibility_Core", "版本不匹配: $version vs ${BuildConfig.VERSION_CODE}")
+                return
+            }
+            */
             connectToMainProc()
         }
     }
-
-    private fun isValidBroadcast(intent: Intent): Boolean {
-        // 1.2.1 Verify the action
-        if (intent.action != START_BROADCAST) {
-            Log.w("#0x-AS", "收到无效广播: ${intent.action}")
-            return false
-        }
-
-        // 1.2.2 Verify the timestamp
-        val timestamp = intent.getLongExtra("timestamp", 0)
-        if (System.currentTimeMillis() - timestamp > 5000) { // 5秒内有效
-            Log.w("#0x-AS", "广播已过期")
-            return false
-        }
-
-        // 1.2.3 TODO: verify the version
-        /*
-        val version = intent.getIntExtra("version", 0)
-        if (version != BuildConfig.VERSION_CODE) {
-            Log.w("Accessibility_Core", "版本不匹配: $version vs ${BuildConfig.VERSION_CODE}")
-            return false
-        }
-        */
-        return true
-    }
-
-    private inner class VuPButtonReceiver: BroadcastReceiver() {
-        override fun onReceive(context: Context, intent: Intent) {
-            if (Intent.ACTION_MEDIA_BUTTON.equals(intent.getAction())) {
-                val keyEvent: KeyEvent? = intent.getParcelableExtra(Intent.EXTRA_KEY_EVENT);
-                if (keyEvent != null && keyEvent.getAction() == KeyEvent.ACTION_DOWN) {
-                    val keyCode: Int = keyEvent.getKeyCode();
-                    if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN || keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
-                        Log.d("VolumePowerReceiver", "Volume key pressed");
-                    } else if (keyCode == KeyEvent.KEYCODE_POWER) {
-                        Log.d("VolumePowerReceiver", "Power key pressed");
-                    }
-                }
-            }
-        }
-    }
-
 
     // 1.3. Inheritancial Implements.
     // 1.3.1. Main Program Connection State Interface Exposure
