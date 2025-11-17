@@ -2,10 +2,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- Needed to start the EmulatorService as a foreground service -->
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <!-- Needed to declare media-projection since Android 14 -->
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+<!--    &lt;!&ndash; Needed to start the EmulatorService as a foreground service &ndash;&gt;-->
+<!--    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />-->
+<!--    &lt;!&ndash; Needed to declare media-projection since Android 14 &ndash;&gt;-->
+<!--    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />-->
     <!-- Android 13+ needed for notification permission -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <!-- Needed to display the overlay_logs over other apps -->
@@ -30,7 +30,6 @@
         </activity>
         <service
             android:name="com.hika.mirodaily.core.ASReceiver"
-            android:foregroundServiceType="mediaPlayback"
             android:enabled="true"
             android:exported="true">
             <intent-filter>

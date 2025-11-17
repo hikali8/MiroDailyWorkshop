@@ -27,6 +27,7 @@ class AccessibilityCoreService() : AccessibilityServicePart5_MotionRecording() {
     // 5.1. Expose this Accessibility-Service's Interface.
     override val iAccessibilityExposed by lazy { IAccessibilityExposed() }
     inner class IAccessibilityExposed: IAccessibilityExposed_Part5(){
+
         override fun click(point: PointF, startTime: Long, duration: Long)
             = this@AccessibilityCoreService.click(point, startTime, duration)
 

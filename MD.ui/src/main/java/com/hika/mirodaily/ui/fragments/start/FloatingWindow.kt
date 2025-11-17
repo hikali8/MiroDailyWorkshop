@@ -15,17 +15,17 @@ import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.WindowManager
 import android.widget.TextView
-import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.core.net.toUri
 import com.hika.core.interfaces.Level
 import com.hika.core.interfaces.Logger
+import com.hika.core.toastLine
 import com.hika.mirodaily.ui.databinding.FloatingWindowBinding
 import java.util.Calendar
 
 class FloatingWindow(val context: Context,
                      inflater: LayoutInflater,
-                     val overlayRequestLauncher: ActivityResultLauncher<Intent>) {
+                     val onOverlaySettingResult: ActivityResultLauncher<Intent>) {
 
     // 1. set window manager and window layout params
     val windowManager = context.getSystemService(WindowManager::class.java)
@@ -55,14 +55,14 @@ class FloatingWindow(val context: Context,
     fun open() {
         if (isFloatingWindowOpen()) {
             // 已经显示，不需要重复添加
-            Toast.makeText(context, "悬浮窗已显示", Toast.LENGTH_SHORT).show()
+            toastLine("悬浮窗已显示", context)
             return
         }
 
         if (!hasOverlayPermission()) {
             // request overlay permission
             Log.d("#0xSF", "Trying to request floating permission")
-            requestOverlayPermission()
+            openOverlaySetting()
             return
         }
 
@@ -71,10 +71,10 @@ class FloatingWindow(val context: Context,
         // 添加视图到WindowManager
         try {
             windowManager.addView(binding.root, layoutParams)
-            Toast.makeText(context, "悬浮窗已显示", Toast.LENGTH_SHORT).show()
+            toastLine("悬浮窗显示", context)
         } catch (e: Exception) {
             e.printStackTrace()
-            Toast.makeText(context, "显示悬浮窗失败: ${e.message}", Toast.LENGTH_SHORT).show()
+            toastLine("悬浮窗显示失败: ${e.message}", context)
         }
 
         // 设置拖拽功能
@@ -102,21 +102,20 @@ class FloatingWindow(val context: Context,
 
     private inline fun hasOverlayPermission() = Settings.canDrawOverlays(context)
 
-    private fun requestOverlayPermission() {
+    private fun openOverlaySetting() {
         val intent = Intent(
             Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
             "package:${context.packageName}".toUri()
         )
-        overlayRequestLauncher.launch(intent)
+        toastLine("请打开米洛工坊的悬浮窗权限...", context, true)
+        onOverlaySettingResult.launch(intent)
     }
 
     fun onLaunchResult(){
-        // 不管结果如何，我们都尝试显示悬浮窗
-        // 因为用户可能已经授权，只是通过返回键返回
         if (hasOverlayPermission()) {
             open()
         } else {
-            // 可以在这里添加提示，告诉用户需要权限
+            toastLine("权限未添加", context)
         }
     }
 
@@ -228,7 +227,5 @@ class FloatingWindow(val context: Context,
         // 格式：250923.18.04.23:
         return "$year$month$day.$hour.$minute.$second: "
     }
-
-
 }
 

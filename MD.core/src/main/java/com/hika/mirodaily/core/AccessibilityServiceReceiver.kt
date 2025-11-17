@@ -23,6 +23,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
+import java.lang.ref.WeakReference
 
 var iAccessibilityService: IAccessibilityService? = null
     private set
@@ -31,6 +32,7 @@ var iAccessibilityService: IAccessibilityService? = null
 class ASReceiver: Service(){
     // 1. Expose the interface received by this
     companion object{
+        var instance = WeakReference<ASReceiver>(null)
 
         fun click(x: Float, y: Float, duration: Long = 100, startTime: Long = 0)
             = iAccessibilityService?.click(PointF(x, y), startTime, duration)
@@ -64,24 +66,12 @@ class ASReceiver: Service(){
 
         fun getTextInRegion(region: Rect? = null)
             = iAccessibilityService?.getTextInRegion(region)
-
-        // 2. Get a scope in this service to run codes in this service
-        var coroutineScope: CoroutineScope? = null
-            private set
-
-        fun executeCode(code: suspend (CoroutineScope) -> Unit)
-            = coroutineScope?.launch { code(this) }
     }
 
     override fun onCreate() {
         super.onCreate()
         //expose instance
-        coroutineScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
-    }
-
-    override fun onDestroy() {
-        coroutineScope?.cancel()
-        super.onDestroy()
+        instance = WeakReference(this)
     }
 
 
@@ -91,6 +81,7 @@ class ASReceiver: Service(){
             Log.e("#0x-AR", "Somehow more than one client wants to connect.")
             return null
         }
+        Log.w("#0x-AR", "Received a binding intent: $intent")
         return object : IASReceiver.Stub() {
             override fun onASConnected(_iAccessibilityService: IAccessibilityService){
                 Log.d("#0x-AR", "Connected by accesssibility: ${_iAccessibilityService}")
@@ -100,7 +91,7 @@ class ASReceiver: Service(){
     }
 
 
-    // 4. Notice if the client is unbound
+    // 4. Notice if the client is unbound by the accessibility service
     override fun onUnbind(intent: Intent?): Boolean {
         if (iAccessibilityService != null){
             iAccessibilityService = null
@@ -108,46 +99,12 @@ class ASReceiver: Service(){
         return super.onUnbind(intent)
     }
 
-    // 5. Promote this to foreground to run the main logic
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        promoteThisToForeground()
-        return super.onStartCommand(intent, flags, startId)
+    // 5. clean up
+    override fun onDestroy() {
+        iAccessibilityService?.stopConnection()
+        instance.clear()
+        super.onDestroy()
     }
-
-    private fun promoteThisToForeground() {
-        createNotificationChannel()
-        val notification = NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("服务运行中: Kiro, is Kihoro")
-            .setContentText("Miro Daily UI Service is running your automation flow...")
-            .setSmallIcon(R.drawable.ic_notifications_black_24dp) // 必须设置有效图标
-            .setPriority(NotificationCompat.PRIORITY_LOW)
-            .build()
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            startForeground(
-                NOTIFICATION_ID,
-                notification,
-                // Android 10+ needs to specify the foreground type
-                ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
-            )
-        } else {
-            startForeground(NOTIFICATION_ID, notification)
-        }
-    }
-
-    private fun createNotificationChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                CHANNEL_ID,
-                "模拟服务通道",
-                NotificationManager.IMPORTANCE_LOW
-            )
-            channel.description = "无障碍服务接收器运行通知"
-            getSystemService(NotificationManager::class.java)
-                .createNotificationChannel(channel)
-        }
-    }
-
 }
 
 // constants
@@ -155,5 +112,3 @@ const val AccessibilityPackageName = "com.hika.accessibility"
 const val AccessibilityClassName = "com.hika.accessibility.AccessibilityCoreService"
 const val ProjectionRequesterClassName = "com.hika.accessibility.ProjectionRequesterActivity"
 const val START_BROADCAST = "com.hika.mirodaily.ui.ACTION_START"
-private const val NOTIFICATION_ID = 53
-private const val CHANNEL_ID = "MiroUI_Channel"

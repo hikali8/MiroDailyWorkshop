@@ -19,6 +19,7 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.window.layout.WindowMetricsCalculator
 import com.hika.accessibility.recognition.ImageHandler
 import com.hika.core.aidl.accessibility.IProjectionSuccess
+import com.hika.core.toastLine
 
 
 private const val NOTIFICATION_ID = 52
@@ -78,7 +79,7 @@ abstract class AccessibilityServicePart2_Projection: AccessibilityServicePart1_C
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK
             }
             startActivity(toOpenSetting)
-            Toast.makeText(applicationContext, "请启用通知权限", Toast.LENGTH_LONG).show()
+            toastLine("请启用通知权限", applicationContext, true)
             Log.e("0x-AS2", "Failed to issue a notification. You must enable the notification of Hica to show notifications")
         }
     }
@@ -119,11 +120,11 @@ abstract class AccessibilityServicePart2_Projection: AccessibilityServicePart1_C
             Log.e("#0x-AS", "媒体投影令牌获取失败")
             return
         }
-        Log.i("#0x-AS", "媒体投影已启动")
+        Log.i("#0x-AS2", "媒体投影已启动")
         // register media projection callbacks
         projectionToken!!.registerCallback(object : MediaProjection.Callback(){
             override fun onStop() {
-                Log.w("#0x-AS", "媒体投影已停止")
+                Log.i("#0x-AS2", "媒体投影已停止")
                 projectionToken = null
             }
 

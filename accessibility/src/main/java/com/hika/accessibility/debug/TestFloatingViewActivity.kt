@@ -22,6 +22,7 @@ import androidx.core.net.toUri
 import androidx.lifecycle.lifecycleScope
 import com.hika.accessibility.AccessibilityCoreService
 import com.hika.accessibility.databinding.FloatingTestViewBinding
+import com.hika.core.toastLine
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -104,7 +105,7 @@ class TestFloatingViewActivity : ComponentActivity() {
     fun open() {
         if (isFloatingWindowOpen()) {
             // 已经显示，不需要重复添加
-            Toast.makeText(this, "悬浮窗已显示", Toast.LENGTH_SHORT).show()
+            toastLine("悬浮窗已显示", this)
             return
         }
 
@@ -126,11 +127,10 @@ class TestFloatingViewActivity : ComponentActivity() {
                     delay(500)
                 }
             }
-
-            Toast.makeText(this, "悬浮窗已显示", Toast.LENGTH_SHORT).show()
+            toastLine("悬浮窗已显示", this)
         } catch (e: Exception) {
             e.printStackTrace()
-            Toast.makeText(this, "显示悬浮窗失败: ${e.message}", Toast.LENGTH_SHORT).show()
+            toastLine("显示悬浮窗失败: ${e.message}", this)
         }
     }
 

@@ -3,6 +3,7 @@ package com.hika.accessibility
 import android.accessibilityservice.AccessibilityServiceInfo
 import android.accessibilityservice.TouchInteractionController
 import android.content.Intent
+import android.util.Log
 import android.view.Display
 import android.view.KeyEvent
 import android.view.MotionEvent
@@ -12,7 +13,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.suspendCancellableCoroutine
 
 abstract class AccessibilityServicePart5_MotionRecording: AccessibilityServicePart4_ScreenWatching() {
-    // 5.3. Tap / Gesture Capture
+    // 5. Tap / Gesture Capture
 
     /**
      * When to record
@@ -36,7 +37,7 @@ abstract class AccessibilityServicePart5_MotionRecording: AccessibilityServicePa
 
     val recordedMotions = mutableListOf<ParcelableMotion>()
 
-    // 1. Motion Capturing & Resending (Passive ceasing)
+    // 5.1. Motion Capturing & Resending (And Passive ceasing)
     private val touchController by lazy { getTouchInteractionController(Display.DEFAULT_DISPLAY) }
     private var canceler: CancellableContinuation<Array<ParcelableMotion>>? = null
 
@@ -53,20 +54,24 @@ abstract class AccessibilityServicePart5_MotionRecording: AccessibilityServicePa
         override fun stopMotionRecording() {
             clearPhysoBtnOnEvent()
             touchController.unregisterCallback(touchCallback)
-            canceler?.resume(recordedMotions.toTypedArray(), null)
+            canceler?.apply {
+                resume(recordedMotions.toTypedArray(), null)
+                Log.d("#0x-AS5", "已停止手势录制")
+            }
             recordedMotions.clear()
         }
     }
 
     val touchCallback = object : TouchInteractionController.Callback {
         override fun onMotionEvent(event: MotionEvent) {
-            recordedMotions.add(ParcelableMotion(event.action, event.eventTime, event.rawX, event.rawY))
+            recordedMotions.add(ParcelableMotion(
+                event.action, event.eventTime, event.rawX, event.rawY))
         }
 
         override fun onStateChanged(state: Int) { }
     }
 
-    // 2. Hotkey ceasing (v+ and power, active)
+    // 5.2. Hotkey ceasing (v+ and power, active)
     fun addPhysoBtnOnEvent(){
         serviceInfo.flags = (serviceInfo.flags or
                 AccessibilityServiceInfo.FLAG_REQUEST_FILTER_KEY_EVENTS)

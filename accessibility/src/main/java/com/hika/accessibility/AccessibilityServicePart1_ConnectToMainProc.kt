@@ -57,8 +57,8 @@ abstract class AccessibilityServicePart1_ConnectToMainProc: AccessibilityService
         }
 
         override fun onServiceDisconnected(name: ComponentName?) {
+            Log.d("#0x-AS1", "main program disconnected on Service")
             onMainProgramDisconnected()
-            iConnector = null
         }
     }
 
@@ -100,17 +100,23 @@ abstract class AccessibilityServicePart1_ConnectToMainProc: AccessibilityService
     }
 
     // 1.3. Inheritancial Implements.
-    // 1.3.1. Main Program Connection State Interface Exposure
+    // 1.3.1. Main Program Connection State Interface Exposure.
     open fun onMainProgramConnected(){}
-    open fun onMainProgramDisconnected(){}
+    open fun onMainProgramDisconnected(){
+        iConnector = null
+        Log.d("#0x-AS1", "main program disconnected")
+    }
 
-    // 1.3.2. Expose the Accessibility-Service's Interface to main program.
+    // 1.3.2. Interface Exposure from this Accessibility-Service to the main program.
     abstract val iAccessibilityExposed: IAccessibilityService.Stub
-    abstract inner class IAccessibilityExposed_Part1: IAccessibilityService.Stub()
+    abstract inner class IAccessibilityExposed_Part1: IAccessibilityService.Stub(){
+        override fun stopConnection() {
+            onMainProgramDisconnected()
+        }
+    }
 
-
-    // 1.4 subsequence needed
-    val coroutineScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+    // 1.4 CoroutineScope needed
+    val coroutineScope = CoroutineScope(Dispatchers.Default + SupervisorJob() + Dispatchers.IO)
 
 
     // 1.4 clean-ups

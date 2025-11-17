@@ -11,7 +11,6 @@ abstract class AccessibilityServicePart3_EventListening: AccessibilityServicePar
     // 3. WindowChange Event Listening
 
     // Create delegation abstraction
-
     private data class ClassNameListener(private val onListened: (Boolean) -> Unit,
                                          val expirationTime: Long){
         var isRunning: Boolean = true

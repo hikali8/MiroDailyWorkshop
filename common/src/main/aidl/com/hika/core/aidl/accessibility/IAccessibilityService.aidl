@@ -13,6 +13,8 @@ import com.hika.core.aidl.accessibility.ParcelableMotion;
 
 // from accessibility service to main app
 interface IAccessibilityService {
+    oneway void stopConnection();
+
     boolean isProjectionStarted();
     oneway void stopProjection();
     oneway void setListenerOnProjectionSuccess(in IProjectionSuccess iProjectionSuccess);

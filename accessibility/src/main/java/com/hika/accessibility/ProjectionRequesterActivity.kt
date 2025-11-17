@@ -6,6 +6,7 @@ import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts
+import com.hika.core.toastLine
 
 // request projection permission and start accessibility-service's projection.
 class ProjectionRequesterActivity : ComponentActivity() {
@@ -27,8 +28,7 @@ class ProjectionRequesterActivity : ComponentActivity() {
         ActivityResultContracts.StartActivityForResult()
     ){
         if (it.resultCode != RESULT_OK || it.data == null){
-            Toast.makeText(this, "User denied screen sharing permission",
-                Toast.LENGTH_SHORT).show()
+            toastLine("User denied screen sharing permission",this)
         }else{
             Log.d("#0x-PA", "Projection Permitted.")
             accessibilityCoreService.startProjection(it.resultCode, it.data!!)
