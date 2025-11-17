@@ -19,8 +19,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 
 
-private const val ConnectorPackageName = "com.hika.mirodaily.ui"
-private const val ConnectorClassName = "com.hika.mirodaily.core.ASReceiver"
+private const val MainProgramPackageName = "com.hika.mirodaily.ui"
+private const val MainProgramReceiverClassName = "com.hika.mirodaily.core.ASReceiver"
 private const val START_BROADCAST = "com.hika.mirodaily.ui.ACTION_START"
 
 
@@ -44,25 +44,23 @@ abstract class AccessibilityServicePart1_ConnectToMainProc: AccessibilityService
         }
 
         val intent = Intent()
-        intent.setClassName(ConnectorPackageName, ConnectorClassName)
-//        intent.setPackage(ConnectorPackageName)
-        val ret = this.bindService(intent, MainProcessConn(), BIND_AUTO_CREATE)
+        intent.setClassName(MainProgramPackageName, MainProgramReceiverClassName)
+        val ret = this.bindService(intent, MainProgramConnection(), BIND_AUTO_CREATE)
         Log.d("#0x-AS", "Tried to bind AccessibilityConnector with: $ret, intent is: $intent")
     }
 
-    private inner class MainProcessConn: ServiceConnection{
+    inner class MainProgramConnection: ServiceConnection{
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
-            Log.d("#0x-AS", "Connected to AccessibilityConnector")
-            iConnector = IASReceiver.Stub.asInterface(service).apply {
-                onASConnected(iAccessibilityExposed)
-            }
+            iConnector = IASReceiver.Stub.asInterface(service)
+            iConnector!!.onASConnected(iAccessibilityExposed)
+            onMainProgramConnected()
         }
 
         override fun onServiceDisconnected(name: ComponentName?) {
-            onVisitorDisconnected()
+            onMainProgramDisconnected()
+            iConnector = null
         }
     }
-
 
     // 1.2 Register Broadcast Receiver to connect spontaneously
     private fun registerBroadcastReceiver(){
@@ -125,7 +123,12 @@ abstract class AccessibilityServicePart1_ConnectToMainProc: AccessibilityService
     }
 
 
-    // 1.3 Expose the Accessibility-Service's Interface to main proc. (implemented gradually)
+    // 1.3. Inheritancial Implements.
+    // 1.3.1. Main Program Connection State Interface Exposure
+    open fun onMainProgramConnected(){}
+    open fun onMainProgramDisconnected(){}
+
+    // 1.3.2. Expose the Accessibility-Service's Interface to main program.
     abstract val iAccessibilityExposed: IAccessibilityService.Stub
     abstract inner class IAccessibilityExposed_Part1: IAccessibilityService.Stub()
 
@@ -135,10 +138,6 @@ abstract class AccessibilityServicePart1_ConnectToMainProc: AccessibilityService
 
 
     // 1.4 clean-ups
-    protected open fun onVisitorDisconnected(){
-        iConnector = null
-    }
-
     override fun onDestroy() {
         unregisterReceiver(connectionReceiver)
         super.onDestroy()

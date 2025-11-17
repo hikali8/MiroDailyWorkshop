@@ -19,16 +19,13 @@ class AccessibilityCoreService() : AccessibilityServicePart5_MotionRecording() {
         var instance = WeakReference<AccessibilityCoreService>(null)
     }
 
-    override fun onServiceConnected() {
-        super.onServiceConnected()
+    override fun onCreate() {
+        super.onCreate()
         instance = WeakReference(this)
-        Log.d("#0x-AS", "onConnected is finished.")
     }
-
 
     // 5.1. Expose this Accessibility-Service's Interface.
     override val iAccessibilityExposed by lazy { IAccessibilityExposed() }
-
     inner class IAccessibilityExposed: IAccessibilityExposed_Part5(){
         override fun click(point: PointF, startTime: Long, duration: Long)
             = this@AccessibilityCoreService.click(point, startTime, duration)
@@ -75,21 +72,17 @@ class AccessibilityCoreService() : AccessibilityServicePart5_MotionRecording() {
 
     // 5.2. Clean-Ups
 
-    // on Master Disconnected
+    // on System Disconnected (as a accessibility service)
     override fun onUnbind(intent: Intent?): Boolean {
-        onVisitorDisconnected()
         return super.onUnbind(intent)
     }
 
-    // on Ego Disconnected
     override fun onDestroy() {
-        onVisitorDisconnected()
+        onMainProgramDisconnected()
         instance.clear()
         super.onDestroy()
     }
 
     // ignore
-    override fun onInterrupt() {
-        //TODO("Not yet implemented")
-    }
+    override fun onInterrupt() {}
 }

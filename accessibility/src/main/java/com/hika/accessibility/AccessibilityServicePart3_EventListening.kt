@@ -1,6 +1,7 @@
 package com.hika.accessibility
 
 import android.accessibilityservice.AccessibilityServiceInfo
+import android.content.Intent
 import android.util.Log
 import android.view.accessibility.AccessibilityEvent
 import com.hika.core.aidl.accessibility.IReply
@@ -51,8 +52,8 @@ abstract class AccessibilityServicePart3_EventListening: AccessibilityServicePar
         }
 
         override fun clearClassNameListeners() {
-            latestExpirationTime = -1
             clearWCOnEvent()
+            latestExpirationTime = -1
             classNameMap.clear()
         }
     }
@@ -108,8 +109,13 @@ abstract class AccessibilityServicePart3_EventListening: AccessibilityServicePar
     }
 
     // 3.3 clean-ups
-    override fun onVisitorDisconnected(){
+    override fun onMainProgramDisconnected(){
         iAccessibilityExposed.clearClassNameListeners()
-        super.onVisitorDisconnected()
+        super.onMainProgramDisconnected()
+    }
+
+    override fun onUnbind(intent: Intent?): Boolean {
+        iAccessibilityExposed.clearClassNameListeners()
+        return super.onUnbind(intent)
     }
 }

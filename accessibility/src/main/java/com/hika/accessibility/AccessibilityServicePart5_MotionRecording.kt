@@ -2,13 +2,12 @@ package com.hika.accessibility
 
 import android.accessibilityservice.AccessibilityServiceInfo
 import android.accessibilityservice.TouchInteractionController
+import android.content.Intent
 import android.view.Display
 import android.view.KeyEvent
 import android.view.MotionEvent
-import android.view.accessibility.AccessibilityEvent
 import com.hika.core.aidl.accessibility.ParcelableMotion
 import kotlinx.coroutines.CancellableContinuation
-import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.suspendCancellableCoroutine
 
@@ -47,12 +46,13 @@ abstract class AccessibilityServicePart5_MotionRecording: AccessibilityServicePa
                 canceler = continuation
                 addPhysoBtnOnEvent()
                 touchController.registerCallback(null, touchCallback)
+                notify("希卡正在录制手势....按音量上键和电源键停止录制")
             } }
         }
 
         override fun stopMotionRecording() {
-            touchController.unregisterCallback(touchCallback)
             clearPhysoBtnOnEvent()
+            touchController.unregisterCallback(touchCallback)
             canceler?.resume(recordedMotions.toTypedArray(), null)
             recordedMotions.clear()
         }
@@ -99,8 +99,13 @@ abstract class AccessibilityServicePart5_MotionRecording: AccessibilityServicePa
     }
 
     // 5.x Ultimate clean-ups
-    override fun onVisitorDisconnected(){
-        clearPhysoBtnOnEvent()
-        super.onVisitorDisconnected()
+    override fun onMainProgramDisconnected(){
+        iAccessibilityExposed.stopMotionRecording()
+        super.onMainProgramDisconnected()
+    }
+
+    override fun onUnbind(intent: Intent?): Boolean {
+        iAccessibilityExposed.stopMotionRecording()
+        return super.onUnbind(intent)
     }
 }

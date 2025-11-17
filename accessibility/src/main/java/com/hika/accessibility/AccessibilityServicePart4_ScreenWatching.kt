@@ -1,5 +1,6 @@
 package com.hika.accessibility
 
+import android.content.Intent
 import android.graphics.Rect
 import com.google.mlkit.vision.text.Text
 import com.hika.core.aidl.accessibility.DetectedObject
@@ -62,8 +63,13 @@ abstract class AccessibilityServicePart4_ScreenWatching: AccessibilityServicePar
     }
 
     // 4.4 Ultimate clean-ups
-    override fun onVisitorDisconnected(){
+    override fun onMainProgramDisconnected(){
         iAccessibilityExposed.cancelAllTextGetting()
-        super.onVisitorDisconnected()
+        super.onMainProgramDisconnected()
+    }
+
+    override fun onUnbind(intent: Intent?): Boolean {
+        iAccessibilityExposed.cancelAllTextGetting()
+        return super.onUnbind(intent)
     }
 }

@@ -10,7 +10,6 @@ import android.hardware.display.DisplayManager
 import android.hardware.display.VirtualDisplay
 import android.media.projection.MediaProjection
 import android.media.projection.MediaProjectionManager
-import android.os.Build
 import android.provider.Settings
 import android.util.DisplayMetrics
 import android.util.Log
@@ -23,7 +22,7 @@ import com.hika.core.aidl.accessibility.IProjectionSuccess
 
 
 private const val NOTIFICATION_ID = 52
-private const val CHANNEL_ID = "hikaAccessibility_Channel"
+private const val CHANNEL_ID = "hikaAccessibilityChannel"
 
 abstract class AccessibilityServicePart2_Projection: AccessibilityServicePart1_ConnectToMainProc() {
     // 2. Start Media Projection
@@ -32,27 +31,21 @@ abstract class AccessibilityServicePart2_Projection: AccessibilityServicePart1_C
     fun startProjection(resultCode: Int, resultData: Intent) {
         promoteThisToForeground()
         getProjectionToken(resultCode, resultData)
-        if (projectionToken == null) {
+        if (projectionToken == null)
             return
-        }
         getDisplayAndImage()
     }
 
-    // 2.1 Promote this to foreground
+    // 2.1. Promote this to foreground (a foreground service must have a notification)
     private fun promoteThisToForeground() {
-        val notification = createNotification()
-        startForeground(
-            NOTIFICATION_ID,
-            notification,
-            // Android 10+ needs to specify the foreground type
+        val notification = createNotification("希卡正在捕获屏幕，直到系统断开权限或主应用退出...")
+        startForeground(NOTIFICATION_ID, notification,
             ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION
         )
 
+        // Needed if you want to unfold the compatibility perplexity.
 //        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-//            startForeground(
-//                NOTIFICATION_ID,
-//                notification,
-//                // Android 10+ needs to specify the foreground type
+//            startForeground(NOTIFICATION_ID, notification,
 //                ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION
 //            )
 //        } else {
@@ -60,6 +53,20 @@ abstract class AccessibilityServicePart2_Projection: AccessibilityServicePart1_C
 //        }
 
         // Issue the notification.
+        notify(notification)
+    }
+
+    // 2.1.1. Create Notification
+    private fun createNotification(text: CharSequence, title: CharSequence = "希卡无障碍服务"): Notification
+            = NotificationCompat.Builder(this, CHANNEL_ID)
+        .setContentTitle(title)
+        .setContentText(text)
+        .setSmallIcon(R.drawable.ic_launcher_foreground) // 必须设置有效图标
+        .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+        //            .setOngoing(true) // 设置为常驻通知，用户无法手动清除（但部分系统无效）
+        .build()
+
+    private fun notify(notification: Notification){
         NotificationManagerCompat.from(this).apply {
             if (areNotificationsEnabled()) {
                 notify(NOTIFICATION_ID, notification)
@@ -76,34 +83,36 @@ abstract class AccessibilityServicePart2_Projection: AccessibilityServicePart1_C
         }
     }
 
-    private fun createNotification(): Notification {
-        // create channel
-        val channel = NotificationChannel(
-            CHANNEL_ID,
-            "模拟服务通道",
-            NotificationManager.IMPORTANCE_LOW
-        )
-        channel.description = "无障碍服务运行通知"
-        getSystemService(NotificationManager::class.java)
-            .createNotificationChannel(channel)
-        //create notification
-        return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("希卡无障碍服务运行中")
-            .setContentText("正在监控屏幕，直到系统断开权限或主应用退出")
-            .setSmallIcon(R.drawable.ic_launcher_foreground) // 必须设置有效图标
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-//            .setOngoing(true) // 设置为常驻通知，用户无法手动清除
-            .build()
+    // expose the notification function to the child procedure
+    fun notify(text: CharSequence, title: CharSequence = "希卡无障碍服务"){
+        notify(createNotification(text, title))
     }
 
-    // 2.2 Get Media Projection token
+    // 2.1.2. Create Notification Channel
+    override fun onCreate() {
+        super.onCreate()
+        createNotificationChannel()
+    }
+
+    val notificationManager by lazy { getSystemService(NotificationManager::class.java) }
+    private fun createNotificationChannel(){
+        notificationManager.createNotificationChannel(NotificationChannel(
+                CHANNEL_ID,
+                "希卡无障碍通知渠道",
+                NotificationManager.IMPORTANCE_LOW
+            ))
+    }
+
+    private fun deleteNotificationChannel(){
+        notificationManager.deleteNotificationChannel(CHANNEL_ID)
+    }
+
+    // 2.2. Get Media Projection token
     private var projectionToken: MediaProjection? = null
 
     private fun getProjectionToken(resultCode: Int, resultData: Intent){
-        if (projectionToken != null){
+        if (projectionToken != null)
             return
-        }
-
         projectionToken = getSystemService(MediaProjectionManager::class.java)
             .getMediaProjection(resultCode, resultData)
         if (projectionToken == null){
@@ -126,12 +135,15 @@ abstract class AccessibilityServicePart2_Projection: AccessibilityServicePart1_C
         }, null)
     }
 
-    // 2.3 Get Virtual Display and Image Handler
+    // 2.3. Get Virtual Display and Image Handler
     private var virtualDisplay: VirtualDisplay? = null
+    // exposure image to the child
     var imageHandler: ImageHandler? = null
         private set
     var width = 0
+        private set
     var height = 0
+        private set
 
     private fun getDisplayAndImage(){
         val metrics = WindowMetricsCalculator.getOrCreate()
@@ -167,7 +179,7 @@ abstract class AccessibilityServicePart2_Projection: AccessibilityServicePart1_C
     }
 
 
-    // 2.4 Interface Exposure And clean-ups
+    // 2.4. Interface Exposure And clean-ups
     abstract inner class IAccessibilityExposed_Part2: IAccessibilityExposed_Part1(){
         override fun isProjectionStarted() = projectionToken != null
 
@@ -190,10 +202,15 @@ abstract class AccessibilityServicePart2_Projection: AccessibilityServicePart1_C
     }
 
     var iProjectionSuccess: IProjectionSuccess? = null
-    
-    // 2.5 clean-ups
-    override fun onVisitorDisconnected() {
+
+    // 2.5. clean-ups
+    override fun onDestroy(){
+        deleteNotificationChannel()
+    }
+
+    override fun onMainProgramDisconnected() {
         iAccessibilityExposed.stopProjection()
-        super.onVisitorDisconnected()
+        notify("主应用已退出，已终止屏幕捕获")
+        super.onMainProgramDisconnected()
     }
 }
