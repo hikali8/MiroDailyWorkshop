@@ -17,7 +17,6 @@ import com.hika.mirodaily.ui.R
 import com.hika.mirodaily.ui.databinding.FragmentStartBinding
 import com.hika.mirodaily.ui.fragments.start.FloatingWindow
 import kotlinx.coroutines.Job
-import android.database.ContentObserver
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import com.hika.core.loopUntil
@@ -35,14 +34,13 @@ class StartFragment : Fragment() {
     private lateinit var binding: FragmentStartBinding
     private lateinit var floatingWindow: FloatingWindow
 
-    // 1. When create the fragment
+    // 1. When create the fragment, this must be preceding all of the logic
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentStartBinding.inflate(inflater, container, false)
-        floatingWindow = FloatingWindow(requireContext(), inflater, onOverlaySettingResult)
 
         // 1-3卡片按钮绑定
         binding.btnAccessibility.setOnClickListener {
@@ -54,7 +52,7 @@ class StartFragment : Fragment() {
         binding.btnOverlay.setOnClickListener {
             floatingWindow.open()
         }
-        binding.btnStart.setOnClickListener(::onStartClick)
+        floatingWindow = FloatingWindow(requireContext(), inflater, onOverlaySettingResult)
 
         // 4-5卡片及按钮
         setRecordCard()
@@ -62,15 +60,6 @@ class StartFragment : Fragment() {
 
         return binding.root
     }
-
-    // 当发起的悬浮窗设置窗关闭后就会调用此函数，只能在Activity或Fragment在内存中创建时就初始化
-    private val onOverlaySettingResult = registerForActivityResult(
-        ActivityResultContracts.StartActivityForResult()
-    ) {
-        floatingWindow.onLaunchResult()
-        updateUi()
-    }
-
 
     // 1.1. 打开无障碍设置
     fun openAccessibilitySetting() {
@@ -113,7 +102,7 @@ class StartFragment : Fragment() {
         if (iAccessibilityService == null){
             // 无障碍服务未连接到应用
             toastLine("正在通知无障碍服务绑定此应用...此后才可以为它启用投屏...", context, true)
-            startConnector()
+            startReceiver()
             accessibilityBindBroadcast()
             delay(3000)
 
@@ -143,17 +132,111 @@ class StartFragment : Fragment() {
         updateUi()
     }
 
-    private fun startConnector() {
+    // 打开接收器，接收无障碍服务传来的暴露接口。因为无障碍服务接收了系统的控制绑定，是不能再*被*自己的应用绑定的。能主动绑其他服务。
+    private fun startReceiver() {
         val res = context?.startService(Intent(context,
             com.hika.mirodaily.core.ASReceiver::class.java)
         )
     }
 
+    // 发出约定的广播，无障碍服务就应该连接接收器。
     private fun accessibilityBindBroadcast() {
         requireContext().sendBroadcast(Intent(START_BROADCAST).apply {
             setPackage(AccessibilityPackageName)
             putExtra("timestamp", System.currentTimeMillis())
         })
+    }
+
+
+    // 1.3. 悬浮窗：全部在FloatingWindow.kt中。floatingWindow.blahblah
+
+    // 当发起的悬浮窗设置窗关闭后就会调用此函数，只能在Activity或Fragment在内存中创建时就初始化，定义在外部
+    private val onOverlaySettingResult = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) {
+        floatingWindow.onLaunchResult()
+        updateUi()
+    }
+
+
+    // 4-5. 4-5卡片：下拉框Spinner选择对应过程执行
+    val appList = listOf("原神", "崩铁", "绝区零")
+    var selectedApp = ""
+    val processesList = listOf("手势1", "手势2")
+    var selectedGesture = ""
+    fun setRecordCard(){
+        // to record
+        binding.spinnerApps.adapter =
+            ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, appList)
+        binding.spinnerApps.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                selectedApp = appList[position]
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>?) {
+                selectedApp = ""
+            }
+        }
+        binding.btnRecord.setOnClickListener {
+            // ensure if the conditions are all satisfied.
+            if (ensurePermissions() == false)
+                return@setOnClickListener
+
+            // when be clicked, check the list where it is at, then go to the target app and meanwhile start record.
+//            when(selectedApp){
+//                "原神" -> {
+//
+//                }
+//                "崩铁" -> {
+//
+//                }
+//                "绝区零" -> {
+//
+//                }
+//            }
+
+            // but we at first test the motion recording.
+            Log.w("#0x-SF", "start recording....")
+            lifecycleScope.launch(Dispatchers.IO) {
+                // Heavy work
+                val motions = iAccessibilityService?.recordMotions()
+                    ?: return@launch
+                Log.w("#0x-SF", motions.toString())
+            }
+
+//            Log.w("#0x-SF", "start recording....")
+//            Handler(Looper.myLooper()!!).post {
+//                val motions = iAccessibilityService?.recordMotions()
+//                    ?: return@post
+//                Log.w("#0x-SF", motions.toString())
+//            }
+        }
+    }
+
+    fun setStartCard(){
+        // to proceed
+        binding.spinnerTargets.adapter =
+            ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, processesList)
+        binding.spinnerTargets.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                selectedGesture = processesList[position]
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>?) {
+                selectedGesture = ""
+            }
+        }
+        binding.btnStart.setOnClickListener(::onStartClick)
+    }
+
+    fun ensurePermissions(): Boolean{
+        if (isAccessibilitySettingEnabled() != true ||
+            !floatingWindow.isOverlayPermitted() ||
+            iAccessibilityService?.isProjectionStarted() != true) {
+            toastLine("缺少权限。请确保无障碍设置、悬浮显示权限、投屏权限都已开启", context, true)
+            return false
+        }
+        return true
     }
 
 
@@ -211,7 +294,7 @@ class StartFragment : Fragment() {
     // ------------------ UI 状态 & 权限检测 ------------------
     private fun updateUi() {
         val acc = isAccessibilitySettingEnabled() == true      // 精确检测：必须是你的无障碍服务组件
-        val overlay = isOverlayEnabled()
+        val overlay = floatingWindow.isOverlayPermitted()
         val projection = iAccessibilityService?.isProjectionStarted() == true
 
         // 三个小圆点（灰/绿）
@@ -264,89 +347,4 @@ class StartFragment : Fragment() {
 //        }
 //        return false
 //    }
-
-    private fun isOverlayEnabled(): Boolean {
-        return Settings.canDrawOverlays(requireContext())
-    }
-
-
-
-    // 3. 下拉框Spinner选择对应过程执行
-    val appList = listOf("原神", "崩铁", "绝区零")
-    var selectedApp = ""
-    val processesList = listOf("手势1", "手势2")
-    var selectedGesture = ""
-    fun setRecordCard(){
-        // to record
-        binding.spinnerApps.adapter =
-            ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, appList)
-        binding.spinnerApps.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                selectedApp = appList[position]
-            }
-
-            override fun onNothingSelected(parent: AdapterView<*>?) {
-                selectedApp = ""
-            }
-        }
-        binding.btnRecord.setOnClickListener {
-            // ensure if the conditions are all satisfied.
-            if (ensurePermissions() == false)
-                return@setOnClickListener
-
-            // when be clicked, check the list where it is at, then go to the target app and meanwhile start record.
-//            when(selectedApp){
-//                "原神" -> {
-//
-//                }
-//                "崩铁" -> {
-//
-//                }
-//                "绝区零" -> {
-//
-//                }
-//            }
-            // but we at first test the motion recording.
-
-            Log.w("#0x-SF", "start recording....")
-            lifecycleScope.launch(Dispatchers.IO) {
-                // Heavy work
-                val motions = iAccessibilityService?.recordMotions()
-                    ?: return@launch
-                Log.w("#0x-SF", motions.toString())
-            }
-
-//            Log.w("#0x-SF", "start recording....")
-//            Handler(Looper.myLooper()!!).post {
-//                val motions = iAccessibilityService?.recordMotions()
-//                    ?: return@post
-//                Log.w("#0x-SF", motions.toString())
-//            }
-        }
-    }
-
-    fun setStartCard(){
-        // to proceed
-        binding.spinnerTargets.adapter =
-            ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, processesList)
-        binding.spinnerTargets.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                selectedGesture = processesList[position]
-            }
-
-            override fun onNothingSelected(parent: AdapterView<*>?) {
-                selectedGesture = ""
-            }
-        }
-    }
-
-    fun ensurePermissions(): Boolean{
-        if (isAccessibilitySettingEnabled() != true ||
-            !isOverlayEnabled() ||
-            iAccessibilityService?.isProjectionStarted() != true) {
-            toastLine("缺少权限。请确保无障碍设置、悬浮显示权限、投屏权限都已开启", context, true)
-            return false
-        }
-        return true
-    }
 }

@@ -59,7 +59,7 @@ class FloatingWindow(val context: Context,
             return
         }
 
-        if (!hasOverlayPermission()) {
+        if (!isOverlayPermitted()) {
             // request overlay permission
             Log.d("#0xSF", "Trying to request floating permission")
             openOverlaySetting()
@@ -98,9 +98,9 @@ class FloatingWindow(val context: Context,
         }
     }
 
-    private inline fun isFloatingWindowOpen() = binding.root.isAttachedToWindow
+    fun isFloatingWindowOpen() = binding.root.isAttachedToWindow
 
-    private inline fun hasOverlayPermission() = Settings.canDrawOverlays(context)
+    fun isOverlayPermitted() = Settings.canDrawOverlays(context)
 
     private fun openOverlaySetting() {
         val intent = Intent(
@@ -112,7 +112,7 @@ class FloatingWindow(val context: Context,
     }
 
     fun onLaunchResult(){
-        if (hasOverlayPermission()) {
+        if (isOverlayPermitted()) {
             open()
         } else {
             toastLine("权限未添加", context)
