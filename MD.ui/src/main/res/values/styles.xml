@@ -1,4 +1,10 @@
 <resources>
+<!--    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">-->
+<!--        <item name="android:statusBarColor">@android:color/transparent</item>-->
+<!--        <item name="android:windowDrawsSystemBarBackgrounds">true</item>-->
+<!--        <item name="android:windowTranslucentStatus">true</item>-->
+<!--    </style>-->
+
     <style name="TextTitleLg">
         <item name="android:textColor">@color/text_primary</item>
         <item name="android:textSize">20sp</item>

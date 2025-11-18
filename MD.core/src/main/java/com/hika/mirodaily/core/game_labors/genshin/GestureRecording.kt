@@ -15,7 +15,7 @@ import kotlinx.coroutines.launch
 
 class GestureRecording(val context: Context, val scope: CoroutineScope, val logger: Logger) {
     val packageName = "com.miHoYo.Yuanshen"
-    val className = "com.mihoyo.hyperion.main.HyperionMainActivity"
+    val className = "com.miHoYo.GetMobileInfo.MainActivity"
 
     //1. Entry: Open the app
     val intent = Intent(Intent.ACTION_MAIN).apply {
