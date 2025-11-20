@@ -1,33 +1,39 @@
 package com.hika.mirodaily.ui.ui.fragments.start
 
+import android.app.AlertDialog
 import android.content.ComponentName
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
+import android.os.Environment
 import android.provider.Settings
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import com.hika.mirodaily.core.iAccessibilityService
-import com.hika.mirodaily.core.game_labors.hoyolab.DailyCheckIn
-import com.hika.mirodaily.ui.R
-import com.hika.mirodaily.ui.databinding.FragmentStartBinding
-import com.hika.mirodaily.ui.fragments.start.FloatingWindow
-import kotlinx.coroutines.Job
-import android.widget.AdapterView
-import android.widget.ArrayAdapter
 import com.hika.core.loopUntil
 import com.hika.core.toastLine
+import com.hika.mirodaily.core.ASReceiver
 import com.hika.mirodaily.core.AccessibilityClassName
 import com.hika.mirodaily.core.AccessibilityPackageName
 import com.hika.mirodaily.core.ProjectionRequesterClassName
 import com.hika.mirodaily.core.START_BROADCAST
+import com.hika.mirodaily.core.game_labors.genshin.ScriptReplay
+import com.hika.mirodaily.core.iAccessibilityService
+import com.hika.mirodaily.ui.R
+import com.hika.mirodaily.ui.databinding.FragmentStartBinding
+import com.hika.mirodaily.ui.fragments.start.FloatingWindow
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.io.File
+
 
 class StartFragment : Fragment() {
 
@@ -55,8 +61,8 @@ class StartFragment : Fragment() {
         floatingWindow = FloatingWindow(requireContext(), inflater, onOverlaySettingResult)
 
         // 4-5卡片及按钮
-        setRecordCard()
-        setStartCard()
+        setCard4()
+        // 5待加
 
         return binding.root
     }
@@ -104,9 +110,8 @@ class StartFragment : Fragment() {
             toastLine("正在通知无障碍服务绑定此应用...此后才可以为它启用投屏...", context, true)
             startReceiver()
             accessibilityBindBroadcast()
-            delay(3000)
 
-            if (!loopUntil(3000) { iAccessibilityService != null }){
+            if (!loopUntil(5000) { iAccessibilityService != null }){
                 toastLine("服务未能绑定应用.", context)
                 return
             }
@@ -115,10 +120,10 @@ class StartFragment : Fragment() {
             toastLine("投屏权限已经授予。", context)
             return
         }
-        toastLine("请在新开的窗口中授予“整个屏幕”的投屏权限", context, true)
         onProjectionRequestingResult.launch(Intent().apply {
             setClassName(AccessibilityPackageName, ProjectionRequesterClassName)
         })
+        toastLine("请在新开的窗口中授予“整个屏幕”的投屏权限", context, true)
     }
 
     // 在打开的投屏申请活动从栈顶上关闭后会调用
@@ -135,7 +140,7 @@ class StartFragment : Fragment() {
     // 打开接收器，接收无障碍服务传来的暴露接口。因为无障碍服务接收了系统的控制绑定，是不能再*被*自己的应用绑定的。能主动绑其他服务。
     private fun startReceiver() {
         val res = context?.startService(Intent(context,
-            com.hika.mirodaily.core.ASReceiver::class.java)
+            ASReceiver::class.java)
         )
     }
 
@@ -159,79 +164,91 @@ class StartFragment : Fragment() {
     }
 
 
-    // 1.4-1.5. 4-5卡片：下拉框Spinner选择对应过程执行
-    val appList = listOf("原神", "崩铁", "绝区零")
-    var selectedApp = ""
-    val processesList = listOf("手势1", "手势2")
-    var selectedGesture = ""
-    fun setRecordCard(){
-        // to record
-        binding.spinnerApps.adapter =
-            ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, appList)
+    // 1.4. 下拉框Spinner选择对应过程执行
+    var files: Array<File>? = null
+    var selectedFile: File? = null
+    fun setCard4(){
+        // spinner
+        flashFiles()
         binding.spinnerApps.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                selectedApp = appList[position]
+                selectedFile = files?.get(position)
             }
 
             override fun onNothingSelected(parent: AdapterView<*>?) {
-                selectedApp = ""
+                selectedFile = null
             }
         }
-        binding.btnRecord.setOnClickListener {
+        // btn left
+        binding.btn4.setOnClickListener {
             // ensure if the conditions are all satisfied.
-            if (ensurePermissions() == false)
+            if (isAccessibilitySettingEnabled() != true ||
+                !floatingWindow.isOverlayPermitted() ||
+                iAccessibilityService?.isProjectionStarted() != true) {
+                toastLine("缺少权限。请确保无障碍设置、悬浮显示权限、投屏权限都已开启", context, true)
                 return@setOnClickListener
-
-            // when be clicked, check the list where it is at, then go to the target app and meanwhile start record.
-//            when(selectedApp){
-//                "原神" -> {
-//
-//                }
-//                "崩铁" -> {
-//
-//                }
-//                "绝区零" -> {
-//
-//                }
-//            }
-
-            // but we at first test the motion recording.
-            Log.w("#0x-SF", "start recording....")
-            lifecycleScope.launch(Dispatchers.IO) {
-                // Heavy work
-                val motions = iAccessibilityService?.recordMotions()
-                    ?: return@launch
-                var s = ""
-                for (motion in motions){
-                    s += motion.toString() + "\n"
-                }
-                Log.w("#0x-SF", s)
             }
 
+
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R ||
+                Environment.isExternalStorageManager()) {
+                toastLine("已获得访问所有文件权限", context)
+            } else {
+                val builder = AlertDialog.Builder(context)
+                    .setMessage("本程序需要您同意允许访问所有文件权限")
+                    .setPositiveButton("确定") { _, _ ->
+                        val intent = Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION)
+                        startActivity(intent)
+                    }
+                builder.show()
+                return@setOnClickListener
+            }
+
+            val file = selectedFile
+            if (file == null){
+                toastLine("请选择文件", context, true)
+                return@setOnClickListener
+            }
+            toastLine(file.name + "已选择", context)
+
+            if (!file.canRead())
+            {
+                toastLine("Can't read file.", context)
+                return@setOnClickListener
+            }
+
+            ScriptReplay(requireContext(),
+                CoroutineScope(Dispatchers.IO),
+                floatingWindow.logger,
+                file.readText()).start()
+        }
+
+        binding.btn4Flash.setOnClickListener {
+            flashFiles()
         }
     }
 
-    fun setStartCard(){
-        // to proceed
-        binding.spinnerTargets.adapter =
-            ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, processesList)
-        binding.spinnerTargets.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                selectedGesture = processesList[position]
-            }
+    fun flashFiles(){
+        val externalAppDir: File? = requireContext().getExternalFilesDir(null)
+        val files = externalAppDir?.run {
+            if (exists() && isDirectory)
+                return@run listFiles()
+            null
+        } ?: return println("Directory does not exist or is not accessible")
+        this.files = files
 
-            override fun onNothingSelected(parent: AdapterView<*>?) {
-                selectedGesture = ""
-            }
-        }
-        binding.btnStart.setOnClickListener(::onStartClick)
+        binding.spinnerApps.adapter =
+            ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item,
+                files.map { it.name })
     }
+
+
+    // 1.5 待扩展.
+
 
     // 开始：打开悬浮窗 + 启动自动化
     private var job: Job? = null
     private fun onStartClick(view: View) {
-        iAccessibilityService?.stopMotionRecording()
-
 //        floatingWindow.open()
 //
 //        if (iAccessibilityService?.isProjectionStarted() != true) {
@@ -241,16 +258,6 @@ class StartFragment : Fragment() {
 //        }
 //        job?.cancel()
 //        job = DailyCheckIn(requireContext(), lifecycleScope, floatingWindow.logger).start()
-    }
-
-    fun ensurePermissions(): Boolean{
-        if (isAccessibilitySettingEnabled() != true ||
-            !floatingWindow.isOverlayPermitted() ||
-            iAccessibilityService?.isProjectionStarted() != true) {
-            toastLine("缺少权限。请确保无障碍设置、悬浮显示权限、投屏权限都已开启", context, true)
-            return false
-        }
-        return true
     }
 
 
@@ -294,8 +301,8 @@ class StartFragment : Fragment() {
     // ------------------ UI 状态 & 权限检测 ------------------
     private fun updateUi() {
         val acc = isAccessibilitySettingEnabled() == true      // 精确检测：必须是你的无障碍服务组件
-        val overlay = floatingWindow.isOverlayPermitted()
         val projection = iAccessibilityService?.isProjectionStarted() == true
+        val overlay = floatingWindow.isOverlayPermitted()
 
         // 三个小圆点（灰/绿）
         binding.dot1.setImageResource(
@@ -308,12 +315,12 @@ class StartFragment : Fragment() {
             if (overlay) R.drawable.dot_state_ok else R.drawable.dot_state_grey
         )
 
-        // “开启测试”按钮：仅要求 无障碍+悬浮窗 就绪即可点
-        val ready = acc && overlay
-        binding.btnStart.apply {
+        // “开启测试”按钮：要求 无障碍+媒体投影 就绪即可点
+        val ready = acc && projection
+        binding.btn4.apply {
             isEnabled = ready
             if (ready) {
-                text = "立即开启"
+                text = "启动执行"
                 setBackgroundColor(requireContext().getColor(R.color.brand_purple))
                 setTextColor(requireContext().getColor(R.color.white))
             } else {
@@ -322,6 +329,8 @@ class StartFragment : Fragment() {
                 setTextColor(requireContext().getColor(R.color.btn_disabled_text))
             }
         }
+
+        flashFiles()
     }
 
     // Hikali8: 这个代码不是必要的，就用 isAccessibilitySettingEnabled() 吧

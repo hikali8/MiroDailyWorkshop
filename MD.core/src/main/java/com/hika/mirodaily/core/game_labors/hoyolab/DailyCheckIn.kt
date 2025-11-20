@@ -56,7 +56,7 @@ class DailyCheckIn(val context: Context, val scope: CoroutineScope, val logger: 
         }catch (_: ActivityNotFoundException){
             logger("HyperionMainActivity Not Found", Level.Erro)
             job.cancel()
-            onTaskFinished()
+            onDestroy()
         }
         return job
     }
@@ -329,7 +329,7 @@ class DailyCheckIn(val context: Context, val scope: CoroutineScope, val logger: 
     }
 
     //5. Clean-Up: On Task finished
-    private fun onTaskFinished(){
+    private fun onDestroy(){
         iAccessibilityService?.clearClassNameListeners()
         iAccessibilityService?.cancelAllTextGetting()
     }

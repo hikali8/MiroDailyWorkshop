@@ -7,13 +7,14 @@ import android.graphics.PointF
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import kotlinx.coroutines.launch
 import java.lang.ref.WeakReference
 
 /**
  * This will be running forever, just because some system disables all stopped applications'
  *  accessibility settings.
  */
-class AccessibilityCoreService() : AccessibilityServicePart5_MotionRecording() {
+class AccessibilityCoreService() : AccessibilityServicePart5_ScriptReplay() {
     // 5. Service Core: Instance and Click
     companion object {
         var instance = WeakReference<AccessibilityCoreService>(null)
@@ -41,22 +42,17 @@ class AccessibilityCoreService() : AccessibilityServicePart5_MotionRecording() {
 
     // to set default arguments, we need to put them anywhere else
     fun click(point: PointF, startTime: Long, duration: Long){
-        val gesturePath = Path().apply {
-            moveTo(point.x, point.y)
-        }
+        val gesturePath = Path()
+        gesturePath.moveTo(point.x, point.y)
         dispatchGestureEdited(gesturePath, startTime, duration)
     }
 
     fun swipe(pointFrom: PointF, pointTo: PointF, startTime: Long = 0, duration: Long = 100){
-        val gesturePath = Path().apply {
-            moveTo(pointFrom.x, pointFrom.y)
-            lineTo(pointTo.x, pointTo.y)
-        }
+        val gesturePath = Path()
+        gesturePath.moveTo(pointFrom.x, pointFrom.y)
+        gesturePath.lineTo(pointTo.x, pointTo.y)
         dispatchGestureEdited(gesturePath, startTime, duration)
     }
-
-    /** Handler on the main thread. */
-    private val mainThreadHandler: Handler = Handler(Looper.getMainLooper())
 
     private fun dispatchGestureEdited(gesturePath: Path, startTime: Long, duration: Long){
         val gestureDescription = GestureDescription.Builder().apply {
@@ -65,7 +61,7 @@ class AccessibilityCoreService() : AccessibilityServicePart5_MotionRecording() {
             ))
         }.build()
 
-        mainThreadHandler.post {
+        coroutineScope.launch {
             dispatchGesture(gestureDescription, null, null)
         }
     }

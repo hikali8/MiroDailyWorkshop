@@ -3,7 +3,6 @@ package com.hika.mirodaily.core.game_labors.genshin
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
-import android.widget.Toast
 import com.hika.core.interfaces.Level
 import com.hika.core.interfaces.Logger
 import com.hika.core.toastLine
@@ -13,7 +12,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
-class GestureRecording(val context: Context, val scope: CoroutineScope, val logger: Logger) {
+class ScriptReplay(val context: Context, val scope: CoroutineScope, val logger: Logger, val script: String) {
     val packageName = "com.miHoYo.Yuanshen"
     val className = "com.miHoYo.GetMobileInfo.MainActivity"
 
@@ -36,7 +35,7 @@ class GestureRecording(val context: Context, val scope: CoroutineScope, val logg
         }catch (_: ActivityNotFoundException){
             logger("Yuanshen Not Found", Level.Erro)
             job.cancel()
-            onTaskFinished()
+            onDestroy()
         }
         return job
     }
@@ -44,13 +43,13 @@ class GestureRecording(val context: Context, val scope: CoroutineScope, val logg
     suspend fun prepareToEnterGenshin(){
         if(!ASReceiver.listenToActivityClassNameAsync(className))
             logger("Failed to hear class name, suppose it's already entered.")
-        logger("NguyenZzhin")
-        toastLine("开始录制手势...按音量键上和电源键终止录制", context, true)
+        logger("Genshin")
+        toastLine("开始重放手势...", context, true)
+        iAccessibilityService?.replayScript(script)
     }
 
     //5. Clean-Up: On Task finished
-    private fun onTaskFinished(){
-        iAccessibilityService?.clearClassNameListeners()
-        iAccessibilityService?.cancelAllTextGetting()
+    private fun onDestroy(){
+        iAccessibilityService?.stopReplay()
     }
 }

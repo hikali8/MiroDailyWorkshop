@@ -3,7 +3,7 @@ from datetime import datetime
 from enum import Enum
 
 
-# purify out only the coordinate information
+# purify out and leave only the coordinate information
 fingers = None
 isRunnable = False
 def extractADBEvent(out):
@@ -167,9 +167,11 @@ def depositPrimaryFingers(fingers: Fingers, isToMergeMoves=False):
                 case Action.Type.Move:
                     _action = Action(0)
                     if last.type == Action.Type.wait:
-                        if last.time > 50000:
-                            last.time -= 50000
-                            _action.time = 50000
+                        if last.time > 8000:
+                            _action.time = 8000
+                            last.time -= 8000
+                            if last.time < 500:
+                                new_finger.pop()
                         else:
                             _action.time = last.time
                             new_finger.pop()
@@ -199,7 +201,7 @@ def getCSV(fingers):
         for action in finger:
             ret += action.type.name + ","
             if action.time is not None:
-                ret += str(action.time // 1000)
+                ret += str(round(action.time / 1000))
             ret += ","
             if action.x is not None:
                 ret += str(action.x / 16)
