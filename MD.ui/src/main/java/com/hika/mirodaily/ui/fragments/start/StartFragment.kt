@@ -1,11 +1,11 @@
 package com.hika.mirodaily.ui.ui.fragments.start
 
+import android.accessibilityservice.GestureDescription
 import android.app.AlertDialog
 import android.content.ComponentName
 import android.content.Intent
-import android.os.Build
+import android.graphics.PointF
 import android.os.Bundle
-import android.os.Environment
 import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
@@ -35,11 +35,11 @@ import com.hika.mirodaily.ui.fragments.start.FloatingWindow
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
+import kotlin.math.roundToInt
 
 
 class StartFragment : Fragment() {
@@ -212,7 +212,8 @@ class StartFragment : Fragment() {
                 return@setOnClickListener
             }
 
-            ScriptReplay(requireContext(),
+            ScriptReplay(
+                requireContext(),
                 CoroutineScope(Dispatchers.IO),
                 floatingWindow.logger,
                 file.readText()
@@ -396,3 +397,4 @@ class StartFragment : Fragment() {
 //        return false
 //    }
 }
+

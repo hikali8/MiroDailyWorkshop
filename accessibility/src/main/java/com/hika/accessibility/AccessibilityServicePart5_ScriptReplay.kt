@@ -136,8 +136,11 @@ abstract class AccessibilityServicePart5_ScriptReplay : AccessibilityServicePart
                             if (preTime < 0) preTime = countTotalTime(timePaths.last())
                             this.x = x
                             this.y = y
-                        } ?: TimePoint(countTotalTime(timePaths.last()),
-                            x, y
+                        } ?: TimePoint(
+                            if (timePaths.isEmpty()) 0 else
+                                countTotalTime(timePaths.last()),
+                            x,
+                            y
                         )))
                         unDownTimePoint = null
                     }
@@ -155,17 +158,17 @@ abstract class AccessibilityServicePart5_ScriptReplay : AccessibilityServicePart
                     Type.wait -> {
                         val time = cols[1].toLong()
                         val lastPath = timePaths.last()
-                        unDownTimePoint?.apply {
-                            if (preTime < 0) preTime = countTotalTime(timePaths.last())
-                            preTime += time
-                        } ?: {
-                            val p1 = lastPath[lastPath.size - 2]
-                            val p2 = lastPath.last()
-                            if (p1.x == p2.x && p1.y == p2.y){
-                                p2.preTime += time
-                            }else{
-                                lastPath.add(TimePoint(time, p2.x, p2.y))
-                            }
+                        if (unDownTimePoint != null){
+                            if (unDownTimePoint.preTime < 0)
+                                unDownTimePoint.preTime = countTotalTime(timePaths.last())
+                            unDownTimePoint.preTime += time
+                        } else {
+                            val point = lastPath.last()
+                            if (lastPath.size > 1
+                                && lastPath[lastPath.size - 2].run { x == point.x && y == point.y })
+                                point.preTime += time
+                            else
+                                lastPath.add(TimePoint(time, point.x, point.y))
                         }
                     }
                     Type.NEXT -> unDownTimePoint = TimePoint(cols[1].toLong())
@@ -192,17 +195,25 @@ abstract class AccessibilityServicePart5_ScriptReplay : AccessibilityServicePart
                 val gesture = timePath.removeFirstOrNull() ?.run {
                     Gesture(preTime, Stroke(this) )
                 } ?: continue
-                var lastDuration = 0L
+                var last = gesture.strokes.last()
+                var lastPretime = -1L
                 for (point in timePath){
                     if (point.preTime.run{
-                            this != 0L && lastDuration.toFloat() / this in 0.9..1.1
+                            this != 0L && lastPretime.toFloat() / this in 0.9..1.1
                         }){
-                        val last = gesture.strokes.last()
                         last.points.add(PointF(point.x, point.y))
-                        last.duratioin += lastDuration
+                        last.duratioin += lastPretime
                     } else {
-                        gesture.strokes.add(Stroke(PointF(point.x, point.y)))
-                        lastDuration = point.preTime
+                        if (lastPretime == -1L) {
+                            last.points.add(PointF(point.x, point.y))
+                        } else {
+                            last = Stroke(arrayListOf(
+                                last.points.last(), PointF(point.x, point.y)
+                            ))
+                            gesture.strokes.add(last)
+                        }
+                        last.duratioin = point.preTime
+                        lastPretime = point.preTime
                     }
                 }
                 if (gesture.strokes.size > maxCount)
