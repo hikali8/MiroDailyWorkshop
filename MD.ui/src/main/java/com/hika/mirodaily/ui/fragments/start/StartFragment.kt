@@ -212,14 +212,14 @@ class StartFragment : Fragment() {
                 return@setOnClickListener
             }
 
-            ScriptReplay(
-                requireContext(),
-                CoroutineScope(Dispatchers.IO),
-                floatingWindow.logger,
-                file.readText()
-            ).start()
+//            ScriptReplay(
+//                requireContext(),
+//                CoroutineScope(Dispatchers.IO),
+//                floatingWindow.logger,
+//                file.readText()
+//            ).start()
 
-//            iAccessibilityService?.replayScript(file.readText())
+            iAccessibilityService?.replayScript(file.readText())
         }
 
         binding.btn4Paste.setOnClickListener {

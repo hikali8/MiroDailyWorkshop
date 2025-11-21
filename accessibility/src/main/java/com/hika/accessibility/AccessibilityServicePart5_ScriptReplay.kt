@@ -40,7 +40,7 @@ abstract class AccessibilityServicePart5_ScriptReplay : AccessibilityServicePart
                             } ?: continue
                             for (point in stroke.points){
                                 val rotated = rotateCoordinate(point.x, point.y)
-                                path.moveTo(rotated.first, rotated.second)
+                                path.lineTo(rotated.first, rotated.second)
                             }
                             builder.addStroke(GestureDescription.StrokeDescription(
                                 path, startTime, stroke.duratioin
