@@ -1516,7 +1516,7 @@ void ScaleRowDown4Box_NEON(const uint8_t* src_ptr,
 
 // Down scale from 4 to 3 pixels. Use the neon multilane read/write
 //  to load up the every 4th pixel into a 4 different registers.
-// Point samples 32 pixels to 24 pixels.
+// TimePoint samples 32 pixels to 24 pixels.
 void ScaleRowDown34_NEON(const uint8_t* src_ptr,
                          ptrdiff_t src_stride,
                          uint8_t* dst_ptr,

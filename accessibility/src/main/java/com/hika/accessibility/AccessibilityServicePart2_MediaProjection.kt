@@ -124,16 +124,15 @@ abstract class AccessibilityServicePart2_Projection: AccessibilityServicePart1_C
             }
 
             override fun onCapturedContentResize(_width: Int, _height: Int) {
-                Log.d("#0x-AS2", "Resized: $_width, $_height")
                 width = _width
                 height = _height
-
                 super.onCapturedContentResize(_width, _height)
+                onResize()
             }
         }, null)
     }
 
-
+    abstract fun onResize()
 
     // 2.3. Get Virtual Display and Image Handler
     private var virtualDisplay: VirtualDisplay? = null

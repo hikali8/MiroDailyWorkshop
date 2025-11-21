@@ -20,7 +20,7 @@ extern "C" {
 
 // Supported filtering.
 typedef enum FilterMode {
-  kFilterNone = 0,      // Point sample; Fastest.
+  kFilterNone = 0,      // TimePoint sample; Fastest.
   kFilterLinear = 1,    // Filter horizontally only.
   kFilterBilinear = 2,  // Faster than box, but lower quality scaling down.
   kFilterBox = 3        // Highest quality.
