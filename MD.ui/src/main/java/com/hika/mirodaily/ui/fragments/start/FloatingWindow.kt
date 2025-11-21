@@ -28,7 +28,7 @@ class FloatingWindow(val context: Context,
                      val onOverlaySettingResult: ActivityResultLauncher<Intent>) {
 
     // 1. set window manager and window layout params
-    val windowManager = context.getSystemService(WindowManager::class.java)
+    val windowManager get() = context.getSystemService(WindowManager::class.java)
 
     val layoutParams = WindowManager.LayoutParams(
         WindowManager.LayoutParams.WRAP_CONTENT,

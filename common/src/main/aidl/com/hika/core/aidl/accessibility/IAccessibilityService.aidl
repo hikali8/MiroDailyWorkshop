@@ -16,7 +16,6 @@ interface IAccessibilityService {
 
     boolean isProjectionStarted();
     oneway void stopProjection();
-    oneway void setListenerOnProjectionSuccess(in IProjectionSuccess iProjectionSuccess);
     Point getScreenSize();
 
     oneway void setListenerOnActivityClassName(

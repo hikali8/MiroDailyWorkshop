@@ -2,9 +2,16 @@ package com.hika.accessibility
 
 import android.accessibilityservice.GestureDescription
 import android.graphics.Path
+import android.hardware.display.DisplayManager
+import android.os.Build
 import android.util.Log
+import android.view.Surface
+import android.view.WindowManager
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.properties.Delegates
 
 abstract class AccessibilityServicePart5_ScriptReplay : AccessibilityServicePart4_ScreenWatching() {
     // 5. Script Replay
@@ -15,9 +22,19 @@ abstract class AccessibilityServicePart5_ScriptReplay : AccessibilityServicePart
     var job: Job? = null
     abstract inner class IAccessibilityExposed_Part5: IAccessibilityExposed_Part4(){
         override fun replayScript(script: String) {
-            job = coroutineScope.launch {
-                for (description in extractScript(script))
-                    coroutineScope.launch {
+            if (job?.isActive == true){
+                Log.e("#0x-AS5", "已经有脚本处于执行中")
+                return
+            }
+            job = coroutineScope.launch(Dispatchers.IO) {
+                rotation = getSystemService(DisplayManager::class.java)
+                    .displays.first().rotation
+
+                val extracted = extractScript(script)
+//                Log.d("#0x-AS5", "解开是：" + extracted.toString())
+                for ((time, description) in extracted)
+                    coroutineScope.launch(Dispatchers.IO) {
+                        delay(time)
                         dispatchGesture(description, null, null)
                     }
             }
@@ -32,39 +49,45 @@ abstract class AccessibilityServicePart5_ScriptReplay : AccessibilityServicePart
         }
     }
 
-    val maxStrokeCount = GestureDescription.getMaxStrokeCount()
-    val maxDuration = GestureDescription.getMaxGestureDuration()
-    private fun extractScript(script: String): MutableList<GestureDescription> {
-        val gestureDescriptions = mutableListOf<GestureDescription>()
+    private var rotation by Delegates.notNull<Int>()
+    private fun rotateCoordinate(x: Float?, y: Float?): Pair<Float?, Float?> {
+        return when (rotation) {
+            Surface.ROTATION_0 ->
+                Pair(x, y)
+            Surface.ROTATION_90 ->
+                Pair(y, if (x == null) null else height - x)
+            Surface.ROTATION_180 ->
+                Pair(if (x == null) null else width - x, if (y == null) null else height - y)
+            Surface.ROTATION_270 ->
+                Pair(if (y == null) null else width - y, x)
+            else -> throw Exception("Unknown rotation: $rotation")
+        }
+    }
 
-        var builder = GestureDescription.Builder()
-        var gestureCount = 0
+
+    val maxDuration = GestureDescription.getMaxGestureDuration()
+    private fun extractScript(script: String): MutableList<Pair<Long, GestureDescription>> {
+        val gestureDescriptions = mutableListOf<Pair<Long, GestureDescription>>()
+
         var startTime: Long = 0
 
         var path = Path()
         var endX = 0f
         var endY = 0f
 
-        var currentTime: Long = 0
         var duration: Long = 0
         var type: Type? = null
 
         val doo = {
             if (duration > maxDuration){
-                throw Exception("Duration too long: $duration, type: ${type?.name}")
+                throw Exception("Duration too long: $duration, operation: ${type?.name}")
             }
-
-            if (gestureCount >= maxStrokeCount || currentTime - startTime + duration > maxDuration) {
-                gestureDescriptions.add(builder.build())
-                builder = GestureDescription.Builder()
-                startTime = currentTime
-                gestureCount = 0
-            }
-            builder.addStroke(GestureDescription.StrokeDescription(
-                path, currentTime, duration
-            ))
-            gestureCount += 1
-            currentTime += duration
+            // StrokeDescription.startTime is very unusable, easily causing crash
+            gestureDescriptions.add(Pair(startTime,
+                GestureDescription.Builder().addStroke(GestureDescription.StrokeDescription(
+                    path, 0, duration
+                )).build()))
+            startTime += duration
             path = Path()
             duration = 0
         }
@@ -75,9 +98,16 @@ abstract class AccessibilityServicePart5_ScriptReplay : AccessibilityServicePart
                 Type.Down.name ->{
                     if (type == Type.Down)
                         throw Exception("Ununderstood Branch")
-                    endX = cols[2].toFloat()
-                    endY = cols[3].toFloat()
                     type = Type.Down
+
+                    val x = cols[2].run {
+                        if (this == "") null else this.toFloat()
+                    }
+                    val y = cols.getOrNull(3)?.toFloat()
+                    val p = rotateCoordinate(x, y)
+                    p.first?.apply { endX = this }
+                    p.second?.apply { endY = this }
+
                     path.moveTo(endX, endY)
                 }
                 Type.Up.name -> {
@@ -88,34 +118,37 @@ abstract class AccessibilityServicePart5_ScriptReplay : AccessibilityServicePart
                 Type.Move.name -> {
                     if (type == Type.Down)
                         doo()
+                    type = Type.Move
+                    path.moveTo(endX, endY)
 
                     duration = cols[1].toLong()
-                    val x = cols[2].toFloat()
-                    val y = cols[3].toFloat()
-                    type = Type.Move
+                    val x = cols[2].run {
+                        if (this == "") null else this.toFloat()
+                    }
+                    val y = cols.getOrNull(3)?.toFloat()
+                    val p = rotateCoordinate(x, y)
+                    p.first?.apply { endX = this }
+                    p.second?.apply { endY = this }
 
-                    path.moveTo(endX, endY)
-                    path.lineTo(x, y)
-                    endX = x
-                    endY = y
+                    path.lineTo(endX, endY)
                     doo()
                 }
                 Type.NEXT.name -> {
                     if (type == Type.Down)
                         doo()
-                    val time = cols[1].toLong()
-                    currentTime = time
-                    startTime = time
                     type = Type.NEXT
+
+                    startTime = cols[1].toLong()
                 }
                 Type.wait.name -> {
                     val dur = cols[1].toLong()
+
                     when (type) {
                         Type.Down -> {
                             duration += dur
                         }
                         Type.Up -> {
-                            currentTime += dur
+                            startTime += dur
                         }
                         Type.Move -> {
                             path.moveTo(endX, endY)
@@ -123,8 +156,7 @@ abstract class AccessibilityServicePart5_ScriptReplay : AccessibilityServicePart
                             doo()
                         }
                         Type.NEXT -> {
-                            currentTime += dur
-                            startTime = currentTime
+                            startTime += dur
                         }
                         else -> throw Exception("Ununderstood Branch")
                     }
@@ -135,8 +167,12 @@ abstract class AccessibilityServicePart5_ScriptReplay : AccessibilityServicePart
 
         if (type == Type.Down)
             doo()
-        gestureDescriptions.add(builder.build())
-
         return gestureDescriptions
+    }
+
+
+    override fun onMainProgramDisconnected(){
+        iAccessibilityExposed.stopReplay()
+        super.onMainProgramDisconnected()
     }
 }

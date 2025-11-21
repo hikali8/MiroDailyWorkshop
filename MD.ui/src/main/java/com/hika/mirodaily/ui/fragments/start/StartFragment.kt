@@ -6,13 +6,18 @@ import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.os.Environment
+import android.os.Handler
+import android.os.Looper
 import android.provider.Settings
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
+import android.widget.EditText
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.os.HandlerCompat.postDelayed
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.hika.core.loopUntil
@@ -33,6 +38,8 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.File
+import java.text.SimpleDateFormat
+import java.util.Date
 
 
 class StartFragment : Fragment() {
@@ -190,40 +197,72 @@ class StartFragment : Fragment() {
             }
 
 
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R ||
-                Environment.isExternalStorageManager()) {
-                toastLine("已获得访问所有文件权限", context)
-            } else {
-                val builder = AlertDialog.Builder(context)
-                    .setMessage("本程序需要您同意允许访问所有文件权限")
-                    .setPositiveButton("确定") { _, _ ->
-                        val intent = Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION)
-                        startActivity(intent)
-                    }
-                builder.show()
-                return@setOnClickListener
-            }
-
             val file = selectedFile
             if (file == null){
                 toastLine("请选择文件", context, true)
                 return@setOnClickListener
             }
-            toastLine(file.name + "已选择", context)
 
-            if (!file.canRead())
-            {
-                toastLine("Can't read file.", context)
+            if (!file.canRead()){
+                AlertDialog.Builder(context)
+                    .setTitle("无法读取文件")
+                    .setMessage("不要用文件管理器粘贴文件到应用文件夹里！安卓系统有文件所有者限制。")
+                    .setIcon(android.R.drawable.ic_dialog_alert)
+                    .show()
                 return@setOnClickListener
             }
 
             ScriptReplay(requireContext(),
                 CoroutineScope(Dispatchers.IO),
                 floatingWindow.logger,
-                file.readText()).start()
+                file.readText()
+            ).start()
+
+//            iAccessibilityService?.replayScript(file.readText())
         }
 
-        binding.btn4Flash.setOnClickListener {
+        binding.btn4Paste.setOnClickListener {
+            // 创建对话框
+            val inputBox = EditText(context)
+            inputBox.hint = "在这里粘贴脚本"
+
+            AlertDialog.Builder(context)
+                .setTitle("请输入或粘贴脚本")
+                .setView(inputBox)
+                .setPositiveButton("确定") { dialog, which ->
+                    val input = inputBox.text.toString()
+
+                    // 格式化日期和时间
+                    val formatter = SimpleDateFormat("yyyyMMdd-HHmmss")
+                    val formattedDate = "Script-" + formatter.format(Date()) + ".csv"
+
+                    val nameBox = EditText(context)
+                    nameBox.setText(formattedDate)
+                    nameBox.hint = "脚本文件名称"
+                    nameBox.setOnFocusChangeListener { _, hasFocus ->
+                        if (hasFocus)
+                            postDelayed(Handler(Looper.getMainLooper()), {
+                                nameBox.setSelection(0, nameBox.text.length - 4)
+                            }, null, 100)
+                    }
+
+                    AlertDialog.Builder(context)
+                        .setTitle("请输入脚本文件名称")
+                        .setView(nameBox)
+                        .setPositiveButton("确定"){ dialog, which ->
+                            val name = nameBox.text.toString()
+                            val dir = context?.getExternalFilesDir(null)
+                                ?: return@setPositiveButton
+                            val file = File(dir, name)
+                            file.writeText(input)
+                            flashFiles()
+                        } .show()
+                } .show()
+        }
+
+        binding.btn4Delete.setOnClickListener {
+            val result = selectedFile?.delete()
+            toastLine(if (result == true) "文件删除成功" else "文件删除失败", context)
             flashFiles()
         }
     }
@@ -234,7 +273,7 @@ class StartFragment : Fragment() {
             if (exists() && isDirectory)
                 return@run listFiles()
             null
-        } ?: return println("Directory does not exist or is not accessible")
+        } ?: return toastLine("应用目录不存在或无法访问", context)
         this.files = files
 
         binding.spinnerApps.adapter =

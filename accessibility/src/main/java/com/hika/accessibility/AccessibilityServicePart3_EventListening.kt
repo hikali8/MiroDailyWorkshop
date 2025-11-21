@@ -63,6 +63,7 @@ abstract class AccessibilityServicePart3_EventListening: AccessibilityServicePar
                 AccessibilityEvent.TYPE_WINDOWS_CHANGED or
                 AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED
         serviceInfo.flags = serviceInfo.flags or
+                AccessibilityServiceInfo.DEFAULT or
                 AccessibilityServiceInfo.FLAG_RETRIEVE_INTERACTIVE_WINDOWS
         setServiceInfo(serviceInfo)
     }
@@ -72,7 +73,8 @@ abstract class AccessibilityServicePart3_EventListening: AccessibilityServicePar
                 (AccessibilityEvent.TYPE_WINDOWS_CHANGED or
                 AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED).inv()
         serviceInfo.flags = serviceInfo.flags and
-                AccessibilityServiceInfo.FLAG_RETRIEVE_INTERACTIVE_WINDOWS.inv()
+                (AccessibilityServiceInfo.DEFAULT or
+                AccessibilityServiceInfo.FLAG_RETRIEVE_INTERACTIVE_WINDOWS).inv()
         setServiceInfo(serviceInfo)
     }
 

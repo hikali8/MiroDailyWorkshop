@@ -10,6 +10,7 @@ import android.hardware.display.DisplayManager
 import android.hardware.display.VirtualDisplay
 import android.media.projection.MediaProjection
 import android.media.projection.MediaProjectionManager
+import android.os.Build
 import android.provider.Settings
 import android.util.DisplayMetrics
 import android.util.Log
@@ -40,18 +41,11 @@ abstract class AccessibilityServicePart2_Projection: AccessibilityServicePart1_C
     // 2.1. Promote this to foreground (a foreground service must have a notification)
     private fun promoteThisToForeground() {
         val notification = createNotification("希卡正在捕获屏幕，直到系统断开权限或主应用退出...")
-        startForeground(NOTIFICATION_ID, notification,
-            ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION
-        )
-
-        // Needed if you want to unfold the compatibility perplexity.
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-//            startForeground(NOTIFICATION_ID, notification,
-//                ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION
-//            )
-//        } else {
-//            startForeground(NOTIFICATION_ID, notification)
-//        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
+            startForeground(NOTIFICATION_ID, notification,
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION
+            )
+        else startForeground(NOTIFICATION_ID, notification)
 
         // Issue the notification.
         notify(notification)
@@ -95,17 +89,18 @@ abstract class AccessibilityServicePart2_Projection: AccessibilityServicePart1_C
         createNotificationChannel()
     }
 
-    val notificationManager by lazy { getSystemService(NotificationManager::class.java) }
     private fun createNotificationChannel(){
-        notificationManager.createNotificationChannel(NotificationChannel(
+        getSystemService(NotificationManager::class.java)
+            .createNotificationChannel(NotificationChannel(
                 CHANNEL_ID,
                 "希卡无障碍通知渠道",
-                NotificationManager.IMPORTANCE_LOW
+                NotificationManager.IMPORTANCE_DEFAULT
             ))
     }
 
     private fun deleteNotificationChannel(){
-        notificationManager.deleteNotificationChannel(CHANNEL_ID)
+        getSystemService(NotificationManager::class.java)
+            .deleteNotificationChannel(CHANNEL_ID)
     }
 
     // 2.2. Get Media Projection token
@@ -129,18 +124,23 @@ abstract class AccessibilityServicePart2_Projection: AccessibilityServicePart1_C
             }
 
             override fun onCapturedContentResize(_width: Int, _height: Int) {
+                Log.d("#0x-AS2", "Resized: $_width, $_height")
                 width = _width
                 height = _height
+
                 super.onCapturedContentResize(_width, _height)
             }
         }, null)
     }
+
+
 
     // 2.3. Get Virtual Display and Image Handler
     private var virtualDisplay: VirtualDisplay? = null
     // exposure image to the child
     var imageHandler: ImageHandler? = null
         private set
+
     var width = 0
         private set
     var height = 0
@@ -193,10 +193,6 @@ abstract class AccessibilityServicePart2_Projection: AccessibilityServicePart1_C
             projectionToken = null
             imageHandler = null
 
-        }
-
-        override fun setListenerOnProjectionSuccess(_iProjectionSuccess: IProjectionSuccess) {
-            iProjectionSuccess = _iProjectionSuccess
         }
 
         override fun getScreenSize() = Point(width, height)
