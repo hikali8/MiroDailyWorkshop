@@ -3,7 +3,7 @@ from datetime import datetime
 from enum import Enum
 
 
-# purify out and leave only the coordinate information
+# purify off and leave only the coordinate information
 fingers = None
 isRunnable = False
 def extractADBEvent(out):

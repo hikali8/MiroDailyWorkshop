@@ -120,8 +120,8 @@ abstract class AccessibilityServicePart1_ConnectToMainProc: AccessibilityService
 
 
     // 1.4 clean-ups
-    override fun onDestroy() {
+    override fun onUnbind(intent: Intent?): Boolean {
         unregisterReceiver(connectionReceiver)
-        super.onDestroy()
+        return super.onUnbind(intent)
     }
 }

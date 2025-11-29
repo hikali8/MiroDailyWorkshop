@@ -22,6 +22,26 @@ abstract class AccessibilityServicePart5_ScriptReplay : AccessibilityServicePart
                 Log.e("#0x-AS5", "已经有脚本处于执行中")
                 return
             }
+//            // this damn thing has made too much error, have to break it down
+//            var path = Path()
+//            path.moveTo(1000f, 0f)
+//            path.lineTo(1000f, 500f)
+//            val startTime = 0L
+//            val duration = 3000L
+//            val builder = GestureDescription.Builder()
+//            builder.addStroke(GestureDescription.StrokeDescription(
+//                path, startTime, duration - 1
+//            ))
+//            path = Path()
+//            path.moveTo(1000f, 500f)
+//            path.lineTo(1000f, 1000f)
+//
+//            builder.addStroke(GestureDescription.StrokeDescription(
+//                path, duration, duration
+//            ))
+//
+//            dispatchGesture(builder.build(), null, null)
+
             job = coroutineScope.launch(Dispatchers.IO) {
                 isToUpdateRotation = true
                 updateRotation()
@@ -43,9 +63,14 @@ abstract class AccessibilityServicePart5_ScriptReplay : AccessibilityServicePart
                                 path.lineTo(rotated.first, rotated.second)
                             }
                             builder.addStroke(GestureDescription.StrokeDescription(
-                                path, startTime, stroke.duratioin
+                                path, startTime,
+                                stroke.duration - 1
                             ))
-                            startTime += stroke.duratioin
+                            if (stroke.duration > 3000L || stroke.duration < 0L){
+                                throw Exception("wtf are you playing?")
+                            }
+
+                            startTime += stroke.duration
                         }
                         dispatchGesture(builder.build(), null, null)
                     }
@@ -109,7 +134,7 @@ abstract class AccessibilityServicePart5_ScriptReplay : AccessibilityServicePart
             }
         }
 
-        class Stroke(val points: ArrayList<PointF>, var duratioin: Long = 0){
+        class Stroke(val points: ArrayList<PointF>, var duration: Long = 0){
             constructor(point: PointF, duration: Long = 0): this(arrayListOf(point), duration)
             // only x, y will be stored
             constructor(point: TimePoint, duration: Long = 0): this(PointF(point.x, point.y), duration)
@@ -202,7 +227,7 @@ abstract class AccessibilityServicePart5_ScriptReplay : AccessibilityServicePart
                             this != 0L && lastPretime.toFloat() / this in 0.9..1.1
                         }){
                         last.points.add(PointF(point.x, point.y))
-                        last.duratioin += lastPretime
+                        last.duration += lastPretime
                     } else {
                         if (lastPretime == -1L) {
                             last.points.add(PointF(point.x, point.y))
@@ -212,12 +237,17 @@ abstract class AccessibilityServicePart5_ScriptReplay : AccessibilityServicePart
                             ))
                             gesture.strokes.add(last)
                         }
-                        last.duratioin = point.preTime
+                        last.duration = point.preTime
                         lastPretime = point.preTime
                     }
                 }
                 if (gesture.strokes.size > maxCount)
                     throw Exception("Too much strokes, n=${gesture.strokes.size}, maximum=$maxCount")
+                for (stroke in gesture.strokes){
+                    val points = stroke.points
+                    if (points.size == 2 &&  points[0] == points[1])
+                        points.removeAt(1)
+                }
                 gestures.add(gesture)
             }
             return gestures

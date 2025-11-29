@@ -4,6 +4,7 @@ import android.accessibilityservice.GestureDescription
 import android.app.AlertDialog
 import android.content.ComponentName
 import android.content.Intent
+import android.graphics.Path
 import android.graphics.PointF
 import android.os.Bundle
 import android.os.Handler
@@ -35,6 +36,7 @@ import com.hika.mirodaily.ui.fragments.start.FloatingWindow
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.File
 import java.text.SimpleDateFormat
@@ -57,12 +59,15 @@ class StartFragment : Fragment() {
 
         // 1-3卡片按钮绑定
         binding.btnAccessibility.setOnClickListener {
+            updateUi()
             openAccessibilitySetting()
         }
         binding.btnProjection.setOnClickListener {
+            updateUi()
             lifecycleScope.launch { requestProjection() }
         }
         binding.btnOverlay.setOnClickListener {
+            updateUi()
             floatingWindow.open()
         }
         floatingWindow = FloatingWindow(requireContext(), inflater, onOverlaySettingResult)
@@ -172,22 +177,23 @@ class StartFragment : Fragment() {
 
 
     // 1.4. 下拉框Spinner选择对应过程执行
-    var files: Array<File>? = null
-    var selectedFile: File? = null
+    var files: MutableList<File>? = null
+    var selectedPosition: Int? = 0
     fun setCard4(){
         // spinner
         flashFiles()
-        binding.spinnerApps.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+        binding.spinnerScripts.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                selectedFile = files?.get(position)
+                selectedPosition = position
             }
 
             override fun onNothingSelected(parent: AdapterView<*>?) {
-                selectedFile = null
+                selectedPosition = null
             }
         }
         // btn left
         binding.btn4.setOnClickListener {
+            updateUi()
             // ensure if the conditions are all satisfied.
             if (isAccessibilitySettingEnabled() != true ||
                 !floatingWindow.isOverlayPermitted() ||
@@ -196,8 +202,7 @@ class StartFragment : Fragment() {
                 return@setOnClickListener
             }
 
-
-            val file = selectedFile
+            val file = selectedPosition?.run{ files?.get(this) }
             if (file == null){
                 toastLine("请选择文件", context, true)
                 return@setOnClickListener
@@ -212,17 +217,19 @@ class StartFragment : Fragment() {
                 return@setOnClickListener
             }
 
-//            ScriptReplay(
-//                requireContext(),
-//                CoroutineScope(Dispatchers.IO),
-//                floatingWindow.logger,
-//                file.readText()
-//            ).start()
+            ScriptReplay(
+                requireContext(),
+                CoroutineScope(Dispatchers.IO),
+                floatingWindow.logger,
+                file.readText()
+            ).start()
 
-            iAccessibilityService?.replayScript(file.readText())
+
+//            iAccessibilityService?.replayScript(file.readText())
         }
 
         binding.btn4Paste.setOnClickListener {
+            updateUi()
             // 创建对话框
             val inputBox = EditText(context)
             inputBox.hint = "在这里粘贴脚本"
@@ -262,9 +269,21 @@ class StartFragment : Fragment() {
         }
 
         binding.btn4Delete.setOnClickListener {
-            val result = selectedFile?.delete()
-            toastLine(if (result == true) "文件删除成功" else "文件删除失败", context)
-            flashFiles()
+            updateUi()
+            val pos = selectedPosition
+            if (pos != null){
+                try {
+                    files?.removeAt(pos)
+                    toastLine("文件删除成功", context)
+                } catch (_: IndexOutOfBoundsException){
+                    toastLine("文件删除失败", context)
+                }
+                flashFiles()
+                binding.spinnerScripts.setSelection(
+                    if(files!!.size <= pos) 0 else pos)
+                return@setOnClickListener
+            }
+            toastLine("文件未选中", context)
         }
     }
 
@@ -275,9 +294,8 @@ class StartFragment : Fragment() {
                 return@run listFiles()
             null
         } ?: return toastLine("应用目录不存在或无法访问", context)
-        this.files = files
-
-        binding.spinnerApps.adapter =
+        this.files = files.toMutableList()
+        binding.spinnerScripts.adapter =
             ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item,
                 files.map { it.name })
     }
@@ -398,3 +416,171 @@ class StartFragment : Fragment() {
 //    }
 }
 
+
+
+class ScriptReplayer {
+    enum class Type{ Down, Move, Up, wait, NEXT }
+
+    /**
+     * workflow:
+     *   Script: Down, wait, Move, wait, Up, wait, Down, .... NEXT, wait, wait, Down, wait, Up, ...
+     *     to
+     *   TimePath: t1--p1--t2--p2
+     *     to
+     *   Gesture: t1--(pa1,pa2,...)d1--(pb1,pb2,...)d2--...
+     */
+    class TimePoint(var preTime: Long = 0, var x: Float = -1f, var y: Float = -1f){
+        fun copy() = TimePoint(preTime, x, y)
+    }
+    class TimePath(): ArrayList<TimePoint>(){
+        constructor(timePoint: TimePoint) : this() {
+            add(timePoint)
+        }
+    }
+
+    class Stroke(val points: ArrayList<PointF>, var duratioin: Long = 0){
+        constructor(point: PointF, duration: Long = 0): this(arrayListOf(point), duration)
+        // only x, y will be stored
+        constructor(point: TimePoint, duration: Long = 0): this(PointF(point.x, point.y), duration)
+    }
+    class Gesture(var startTime: Long, val strokes: ArrayList<Stroke> = arrayListOf()){
+        constructor(startTime: Long, stroke: Stroke): this(startTime, arrayListOf(stroke))
+    }
+
+    // return: mutableListOf(gesture)
+    fun extractScript(script: String) : ArrayList<Gesture> {
+        val timePaths = ArrayList<TimePath>()
+        // when the x, y of the point is unknown
+        var unDownTimePoint: TimePoint? = null
+        for (line in script.lineSequence()){
+            val cols = line.split(',')
+            val type = Type.valueOf(cols[0])
+            when (type){
+                Type.Down -> {
+                    val x = cols[2].takeIf { it != "" } ?.toFloat()
+                        ?: timePaths.last().last().x
+                    val y = cols.getOrNull(3)?.toFloat()
+                        ?: timePaths.last().last().y
+                    timePaths.add(TimePath(unDownTimePoint?.apply {
+                        if (preTime < 0) preTime = countTotalTime(timePaths.last())
+                        this.x = x
+                        this.y = y
+                    } ?: TimePoint(
+                        if (timePaths.isEmpty()) 0 else
+                            countTotalTime(timePaths.last()),
+                        x,
+                        y
+                    )))
+                    unDownTimePoint = null
+                }
+                Type.Move -> {
+                    val timePath = timePaths.last()
+                    timePath.add(TimePoint(
+                        cols[1].toLong(),
+                        cols[2].takeIf { it != "" } ?.toFloat()
+                            ?: timePath.last().x,
+                        cols.getOrNull(3)?.toFloat()
+                            ?: timePath.last().y
+                    ))
+                }
+                Type.Up -> unDownTimePoint = TimePoint(-1)
+                Type.wait -> {
+                    val time = cols[1].toLong()
+                    val lastPath = timePaths.last()
+                    if (unDownTimePoint != null){
+                        if (unDownTimePoint.preTime < 0)
+                            unDownTimePoint.preTime = countTotalTime(timePaths.last())
+                        unDownTimePoint.preTime += time
+                    } else {
+                        val point = lastPath.last()
+                        if (lastPath.size > 1
+                            && lastPath[lastPath.size - 2].run { x == point.x && y == point.y })
+                            point.preTime += time
+                        else
+                            lastPath.add(TimePoint(time, point.x, point.y))
+                    }
+                }
+                Type.NEXT -> unDownTimePoint = TimePoint(cols[1].toLong())
+            }
+        }
+
+        return packTimePaths(timePaths)
+    }
+
+    inline fun countTotalTime(timePath: TimePath) = timePath.sumOf { it.preTime }
+
+
+
+    private val maxDuration = GestureDescription.getMaxGestureDuration()    // of a gesture
+    private val maxCount = GestureDescription.getMaxStrokeCount()    // of a gesture
+    /**
+     *   TimePath: t1--p1--t2--p2
+     *     to
+     *   Gesture: t1--(pa1,pa2,...)d1--(pb1,pb2,...)d2--...
+     */
+    fun packTimePaths(timePaths: ArrayList<TimePath>): ArrayList<Gesture>{
+        val gestures = ArrayList<Gesture>()
+        for (timePath in timePaths){
+            val gesture = timePath.removeFirstOrNull() ?.run {
+                Gesture(preTime, Stroke(this) )
+            } ?: continue
+            var last = gesture.strokes.last()
+            var lastPretime = -1L
+            for (point in timePath){
+                if (point.preTime.run{
+                        this != 0L && lastPretime.toFloat() / this in 0.9..1.1
+                    }){
+                    last.points.add(PointF(point.x, point.y))
+                    last.duratioin += lastPretime
+                } else {
+                    if (lastPretime == -1L) {
+                        last.points.add(PointF(point.x, point.y))
+                    } else {
+                        last = Stroke(arrayListOf(
+                            last.points.last(), PointF(point.x, point.y)
+                        ))
+                        gesture.strokes.add(last)
+                    }
+                    last.duratioin = point.preTime
+                    lastPretime = point.preTime
+                }
+            }
+            if (gesture.strokes.size > maxCount)
+                throw Exception("Too much strokes, n=${gesture.strokes.size}, maximum=$maxCount")
+            for (stroke in gesture.strokes){
+                val points = stroke.points
+                if (points.size == 2 &&  points[0] == points[1])
+                    points.removeAt(1)
+            }
+            gestures.add(gesture)
+        }
+        return gestures
+    }
+
+    // referring this, maybe able to reduce strokes
+    fun shrinkPoints(timePath: TimePath, targetStroke: Int): TimePath {
+        if (timePath.size < targetStroke)
+            return timePath
+        val timePath1 = TimePath()
+        var last: TimePoint? = null
+        var totalDuration = 0L
+
+        val interval = ((timePath.size - 1).toDouble() / targetStroke).roundToInt()
+        for ((index, point) in timePath.withIndex()){
+            if (index == 0 || (index % interval == 1 && timePath1.size <= targetStroke)){
+                last = point.copy()
+                timePath1.add(last)
+                totalDuration += last.preTime
+            }else{
+                last!!.preTime += point.preTime
+                totalDuration += point.preTime
+                last.x = point.x
+                last.y = point.y
+            }
+        }
+        if (totalDuration > maxDuration){
+            throw Exception("Duration Too Long: $totalDuration")
+        }
+        return timePath1
+    }
+}
