@@ -1,46 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:fillViewport="true"
     tools:context=".ui.fragments.more_dots.MoreDotsFragment">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:padding="16dp">
 
-        <!-- 配置选项1 -->
-        <LinearLayout
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:padding="16dp">
+            app:cardCornerRadius="20dp"
+            app:cardUseCompatPadding="true"
+            app:cardElevation="6dp">
 
-            <TextView
-                android:layout_width="0dp"
+            <!-- 这里面将由代码自动添加：分组标题 + 按钮 -->
+            <LinearLayout
+                android:id="@+id/feature_container"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="投屏排错视图"
-                android:textSize="16sp" />
-
-            <Button
-                android:id="@+id/btn_debug_view"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="启动" />
-        </LinearLayout>
-
-        <!-- 分割线 -->
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="#EEE" />
-
-        <!-- 更多配置选项... -->
+                android:orientation="vertical"
+                android:padding="16dp" />
+        </com.google.android.material.card.MaterialCardView>
 
     </LinearLayout>
-
-</androidx.cardview.widget.CardView>
+</ScrollView>
