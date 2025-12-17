@@ -5,9 +5,9 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/bg_page"
-    android:orientation="vertical"
     android:fillViewport="true"
     android:clipToPadding="false">
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -29,7 +29,7 @@
                 android:layout_height="wrap_content"
                 android:minHeight="96dp"
                 android:layout_margin="16dp">
-                <!-- 图标 -->
+
                 <FrameLayout
                     android:id="@+id/icon1"
                     android:layout_width="wrap_content"
@@ -46,7 +46,6 @@
                         app:tint="@color/brand_purple" />
                 </FrameLayout>
 
-                <!-- 标题 -->
                 <TextView
                     android:id="@+id/title1"
                     android:layout_width="wrap_content"
@@ -59,7 +58,6 @@
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintLeft_toRightOf="@+id/icon1"/>
 
-                <!-- 核定点 -->
                 <ImageView
                     android:id="@+id/dot1"
                     android:layout_width="wrap_content"
@@ -68,7 +66,6 @@
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintRight_toRightOf="parent"/>
 
-                <!-- 说明 -->
                 <TextView
                     android:id="@+id/description1"
                     android:layout_width="wrap_content"
@@ -80,7 +77,6 @@
                     app:layout_constraintTop_toBottomOf="@id/title1"
                     app:layout_constraintLeft_toLeftOf="@+id/title1"/>
 
-                <!-- 按钮 -->
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_accessibility"
                     android:layout_width="wrap_content"
@@ -100,6 +96,7 @@
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
             app:cardBackgroundColor="@color/card_bg"
             app:cardCornerRadius="24dp"
             app:cardUseCompatPadding="true"
@@ -110,7 +107,7 @@
                 android:layout_height="wrap_content"
                 android:minHeight="96dp"
                 android:layout_margin="16dp">
-                <!-- 图标 -->
+
                 <FrameLayout
                     android:id="@+id/icon2"
                     android:layout_width="wrap_content"
@@ -127,7 +124,6 @@
                         app:tint="@color/brand_purple" />
                 </FrameLayout>
 
-                <!-- 标题 -->
                 <TextView
                     android:id="@+id/title2"
                     android:layout_width="wrap_content"
@@ -140,7 +136,6 @@
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintLeft_toRightOf="@+id/icon2"/>
 
-                <!-- 核定点 -->
                 <ImageView
                     android:id="@+id/dot2"
                     android:layout_width="wrap_content"
@@ -149,7 +144,6 @@
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintRight_toRightOf="parent"/>
 
-                <!-- 说明 -->
                 <TextView
                     android:id="@+id/description2"
                     android:layout_width="wrap_content"
@@ -161,7 +155,6 @@
                     app:layout_constraintTop_toBottomOf="@id/title2"
                     app:layout_constraintLeft_toLeftOf="@+id/title2"/>
 
-                <!-- 按钮 -->
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_projection"
                     android:layout_width="wrap_content"
@@ -181,6 +174,7 @@
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
             app:cardBackgroundColor="@color/card_bg"
             app:cardCornerRadius="24dp"
             app:cardUseCompatPadding="true"
@@ -191,7 +185,7 @@
                 android:layout_height="wrap_content"
                 android:minHeight="96dp"
                 android:layout_margin="16dp">
-                <!-- 图标 -->
+
                 <FrameLayout
                     android:id="@+id/icon3"
                     android:layout_width="wrap_content"
@@ -208,7 +202,6 @@
                         app:tint="@color/brand_purple" />
                 </FrameLayout>
 
-                <!-- 标题 -->
                 <TextView
                     android:id="@+id/title3"
                     android:layout_width="wrap_content"
@@ -221,7 +214,6 @@
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintLeft_toRightOf="@+id/icon3"/>
 
-                <!-- 核定点 -->
                 <ImageView
                     android:id="@+id/dot3"
                     android:layout_width="wrap_content"
@@ -230,7 +222,6 @@
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintRight_toRightOf="parent"/>
 
-                <!-- 说明 -->
                 <TextView
                     android:id="@+id/description3"
                     android:layout_width="wrap_content"
@@ -242,7 +233,6 @@
                     app:layout_constraintTop_toBottomOf="@id/title3"
                     app:layout_constraintLeft_toLeftOf="@+id/title3"/>
 
-                <!-- 按钮 -->
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_overlay"
                     android:layout_width="wrap_content"
@@ -258,10 +248,11 @@
             </androidx.constraintlayout.widget.ConstraintLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- ======= 卡片 4：手势录制 ======= -->
+        <!-- ======= 卡片 4：去配置页（脚本/计划） ======= -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
             app:cardBackgroundColor="@color/card_bg"
             app:cardCornerRadius="24dp"
             app:cardUseCompatPadding="true"
@@ -272,7 +263,7 @@
                 android:layout_height="wrap_content"
                 android:minHeight="96dp"
                 android:layout_margin="16dp">
-                <!-- 图标 -->
+
                 <FrameLayout
                     android:id="@+id/icon4"
                     android:layout_width="wrap_content"
@@ -289,12 +280,11 @@
                         app:tint="@color/brand_purple" />
                 </FrameLayout>
 
-                <!-- 标题 -->
                 <TextView
                     android:id="@+id/title4"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="脚本试跑"
+                    android:text="脚本与计划"
                     android:textColor="@color/text_primary"
                     android:textStyle="bold"
                     android:textSize="14sp"
@@ -302,190 +292,43 @@
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintLeft_toRightOf="@+id/icon4"/>
 
-                <!-- 启动对象选择框 -->
-                <Spinner
-                    android:id="@+id/spinner_scripts"
-                    android:layout_width="0dp"
-                    android:layout_height="40dp"
-                    android:layout_marginTop="4dp"
-                    android:layout_marginEnd="16dp"
-                    android:background="@drawable/bg_spinner"
-                    app:layout_constraintLeft_toLeftOf="@+id/title4"
-                    app:layout_constraintTop_toBottomOf="@id/title4"
-                    app:layout_constraintRight_toRightOf="parent"/>
-
-                <!-- 说明 -->
                 <TextView
                     android:id="@+id/description4"
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
-                    android:text="启动脚本试跑"
+                    android:text="录入脚本、分组、设置计划并执行（已移至 Config 页面）"
                     android:textColor="@color/text_secondary"
                     android:textSize="14sp"
+                    app:layout_constraintTop_toBottomOf="@id/title4"
                     app:layout_constraintLeft_toLeftOf="@+id/title4"
-                    app:layout_constraintTop_toBottomOf="@id/spinner_scripts"/>
+                    app:layout_constraintRight_toRightOf="parent"/>
 
-                <!-- 按钮 -->
+                <!-- 复用 id=btn4，配套 StartFragment.kt 的跳转逻辑 -->
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn4"
                     android:layout_width="wrap_content"
                     android:layout_height="36dp"
                     android:layout_marginTop="12dp"
-                    android:text="等待权限"
+                    android:text="打开配置页（脚本/计划）"
                     android:textAllCaps="false"
                     android:textColor="@android:color/white"
                     app:cornerRadius="12dp"
                     app:backgroundTint="@color/brand_purple"
                     app:layout_constraintLeft_toLeftOf="@+id/title4"
                     app:layout_constraintTop_toBottomOf="@id/description4"/>
-
-                <!-- 按钮 -->
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btn4_paste"
-                    android:layout_width="wrap_content"
-                    android:layout_height="36dp"
-                    android:layout_marginTop="12dp"
-                    android:text="粘贴脚本"
-                    android:textAllCaps="false"
-                    android:textColor="@android:color/white"
-                    app:cornerRadius="12dp"
-                    app:backgroundTint="@android:color/darker_gray"
-                    app:layout_constraintLeft_toLeftOf="@+id/title4"
-                    app:layout_constraintTop_toBottomOf="@id/btn4"/>
-
-                <!-- 按钮 -->
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btn4_delete"
-                    android:layout_width="wrap_content"
-                    android:layout_height="36dp"
-                    android:layout_marginTop="12dp"
-                    android:text="删除脚本"
-                    android:textAllCaps="false"
-                    android:textColor="@android:color/white"
-                    app:cornerRadius="12dp"
-                    app:backgroundTint="@android:color/darker_gray"
-                    app:layout_constraintLeft_toLeftOf="@+id/title4"
-                    app:layout_constraintTop_toBottomOf="@id/btn4_paste"/>
             </androidx.constraintlayout.widget.ConstraintLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- ======= 卡片 5：手势录制 ======= -->
-        <com.google.android.material.card.MaterialCardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:cardBackgroundColor="@color/card_bg"
-            app:cardCornerRadius="24dp"
-            app:cardUseCompatPadding="true"
-            app:cardElevation="8dp">
-
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:minHeight="96dp"
-                android:layout_margin="16dp">
-                <!-- 图标 -->
-                <FrameLayout
-                    android:id="@+id/icon5"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/bg_icon_container"
-                    android:padding="12dp"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintLeft_toLeftOf="parent">
-
-                    <ImageView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:src="@drawable/ic_run_24"
-                        app:tint="@color/brand_purple" />
-                </FrameLayout>
-
-                <!-- 标题 -->
-                <TextView
-                    android:id="@+id/title5"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="智能化执行！"
-                    android:textColor="@color/text_primary"
-                    android:textStyle="bold"
-                    android:textSize="14sp"
-                    android:layout_marginStart="16dp"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintLeft_toRightOf="@+id/icon5"/>
-
-                <!-- 说明 -->
-                <TextView
-                    android:id="@+id/description5"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:text="启动智能化执行"
-                    android:textColor="@color/text_secondary"
-                    android:textSize="14sp"
-                    app:layout_constraintLeft_toLeftOf="@+id/title5"
-                    app:layout_constraintTop_toBottomOf="@id/title5"/>
-
-                <!-- 按钮 -->
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btn5"
-                    android:layout_width="wrap_content"
-                    android:layout_height="36dp"
-                    android:layout_marginTop="12dp"
-                    android:text="等待权限"
-                    android:textAllCaps="false"
-                    android:textColor="@android:color/white"
-                    app:cornerRadius="12dp"
-                    app:backgroundTint="@color/brand_purple"
-                    app:layout_constraintLeft_toLeftOf="@+id/title5"
-                    app:layout_constraintTop_toBottomOf="@id/description5"/>
-
-            </androidx.constraintlayout.widget.ConstraintLayout>
-        </com.google.android.material.card.MaterialCardView>
-
-        <!-- ======= 使用说明 ======= -->
+        <!-- === 使用说明 === -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
-            android:text="使用说明：依次开启三个权限，然后按照顺序开启测试"
+            android:text="使用说明：依次开启三个权限，然后到 Config 里录入脚本并设置执行计划"
             android:textColor="@color/text_primary"
             android:textStyle="bold"
             android:textSize="14sp" />
-
-<!--        <com.google.android.material.card.MaterialCardView-->
-<!--            android:layout_width="match_parent"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:layout_marginTop="8dp"-->
-<!--            app:cardBackgroundColor="@color/card_bg"-->
-<!--            app:cardCornerRadius="24dp"-->
-<!--            app:cardUseCompatPadding="true"-->
-<!--            app:cardElevation="8dp">-->
-
-<!--            <LinearLayout-->
-<!--                android:layout_width="match_parent"-->
-<!--                android:layout_height="wrap_content"-->
-<!--                android:orientation="vertical"-->
-<!--                android:padding="16dp">-->
-
-<!--                &lt;!&ndash; 下面这三个 include 的父是 LinearLayout，不是 RelativeLayout。-->
-<!--                     但为了稳妥，include 也建议显式给宽/高。 &ndash;&gt;-->
-<!--                <include-->
-<!--                    android:layout_width="match_parent"-->
-<!--                    android:layout_height="wrap_content"-->
-<!--                    layout="@layout/row_bullet"/>-->
-<!--                <include-->
-<!--                    android:layout_width="match_parent"-->
-<!--                    android:layout_height="wrap_content"-->
-<!--                    android:layout_marginTop="8dp"-->
-<!--                    layout="@layout/row_bullet"/>-->
-<!--                <include-->
-<!--                    android:layout_width="match_parent"-->
-<!--                    android:layout_height="wrap_content"-->
-<!--                    android:layout_marginTop="8dp"-->
-<!--                    layout="@layout/row_bullet"/>-->
-<!--            </LinearLayout>-->
-<!--        </com.google.android.material.card.MaterialCardView>-->
 
     </LinearLayout>
 </ScrollView>
