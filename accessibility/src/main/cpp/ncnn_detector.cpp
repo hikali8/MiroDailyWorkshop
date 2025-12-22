@@ -114,7 +114,8 @@ ncnn::Mat preprocess(const unsigned char* rgba_data, int width, int height) {
     // tencent method: read rgba & convert to rgb & resize to target scale
     ncnn::Mat mat1 = ncnn::Mat::from_pixels_resize(
             rgba_data,
-            ncnn::Mat::PIXEL_RGBA2RGB,
+            //ncnn::Mat::PIXEL_RGBA2RGB,
+            ncnn::Mat::PIXEL_BGR2RGB,
             width,
             height,
             w,
