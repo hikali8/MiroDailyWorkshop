@@ -9,4 +9,6 @@ class DetectedObject(
     val objectName: String,
     val regionBox: Rect,
     val confidence: Float
-) : Parcelable
+) : Parcelable{
+
+}

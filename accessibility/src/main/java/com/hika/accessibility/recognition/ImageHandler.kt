@@ -1,6 +1,9 @@
 package com.hika.accessibility.recognition
 
 import android.content.Context
+import android.content.res.AssetManager
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.PixelFormat
 import android.graphics.Rect
 import android.media.ImageReader
@@ -55,10 +58,35 @@ class ImageHandler(width: Int, height: Int, val scope: CoroutineScope, val conte
 
     val ncnnDetector by lazy { NCNNDetector(context)}
 
+    var recognizableDebug: Recognizable? = null
+    init {
+        val assetManager: AssetManager = context.assets
+        try {
+            val inputStream = assetManager.open("debug/GS1.jpg")
+            val bitmap = BitmapFactory.decodeStream(inputStream)
+            val byteBuffer = ByteBuffer.allocateDirect(bitmap.byteCount)
+            bitmap.copyPixelsToBuffer(byteBuffer)
+            byteBuffer.rewind()
+            recognizableDebug = Recognizable(
+                byteBuffer,
+                bitmap.width,
+                bitmap.height,
+                bitmap.rowBytes
+            )
+            inputStream.close()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    inline fun debugUsage(){
+        recognizableDebug?.findOnNCNNDetector("", null)
+    }
+
     inner class Recognizable(val imageBuffer: ByteBuffer, val width: Int, val height: Int, rowStride: Int){
         fun findOnNCNNDetector(detectorName: String,
                                region: Rect?): Array<DetectedObject>
-            = ncnnDetector.detect(this) // imperfect, needs to be refined
+            = ncnnDetector.detect(this) // now we just recognize what we've captured.
 
         suspend fun findOnGoogleOCRerInRangeAsync(region: Rect?)
             = (region?.run {
@@ -108,8 +136,7 @@ class ImageHandler(width: Int, height: Int, val scope: CoroutineScope, val conte
                 rgbaStride,
                 width,
                 height,
-                nv21Array))
-            nv21Array
+                nv21Array)) nv21Array
         else null
     }
 

@@ -1,0 +1,6 @@
+train: images/train  # 或者使用绝对路径：/home/user/datasets/helmet/images/train
+val: images/val
+
+# 类别
+nc: 5
+names: ['GS_CheckIn', 'HK2_CheckIn', 'HK3_CheckIn', 'HSR_CheckIn', 'ZZZ_CheckIn']

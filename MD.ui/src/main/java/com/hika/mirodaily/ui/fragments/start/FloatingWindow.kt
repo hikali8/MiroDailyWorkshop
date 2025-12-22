@@ -23,9 +23,11 @@ import com.hika.core.toastLine
 import com.hika.mirodaily.ui.databinding.FloatingWindowBinding
 import java.util.Calendar
 
+@SuppressLint("ClickableViewAccessibility")
 class FloatingWindow(val context: Context,
                      inflater: LayoutInflater,
                      val onOverlaySettingResult: ActivityResultLauncher<Intent>) {
+
 
     // 1. set window manager and window layout params
     val windowManager get() = context.getSystemService(WindowManager::class.java)
@@ -45,38 +47,7 @@ class FloatingWindow(val context: Context,
 
     private val binding = FloatingWindowBinding.inflate(inflater)
 
-
-    // 2. Open Floating Window
-    // params used for dragging
-    private var touchX = 0f
-    private var touchY = 0f
-
-    @SuppressLint("ClickableViewAccessibility")
-    fun open() {
-        if (isFloatingWindowOpen()) {
-            // 已经显示，不需要重复添加
-            toastLine("悬浮窗已显示", context)
-            return
-        }
-
-        if (!isOverlayPermitted()) {
-            // request overlay permission
-            Log.d("#0xSF", "Trying to request floating permission")
-            openOverlaySetting()
-            return
-        }
-
-        Log.d("#0xSF", "Trying to start floating window")
-
-        // 添加视图到WindowManager
-        try {
-            windowManager.addView(binding.root, layoutParams)
-            toastLine("悬浮窗显示", context)
-        } catch (e: Exception) {
-            e.printStackTrace()
-            toastLine("悬浮窗显示失败: ${e.message}", context)
-        }
-
+    init {
         // 设置拖拽功能
         binding.floatWindow.setOnTouchListener { v, event ->
             when (event.action) {
@@ -98,11 +69,44 @@ class FloatingWindow(val context: Context,
         }
     }
 
+    // 2. Open Floating Window
+    // params used for dragging
+    private var touchX = 0f
+    private var touchY = 0f
+
+
+    fun open(): Boolean {
+        if (isFloatingWindowOpen()) {
+            // 已经显示，不需要重复添加
+            toastLine("悬浮窗已显示", context)
+            return true
+        }
+
+        if (!isOverlayPermitted()) {
+            // no overlay permission
+            toastLine("没有悬浮窗权限", context)
+            return false
+        }
+
+        Log.d("#0xSF", "Trying to start floating window")
+
+        // 添加视图到WindowManager
+        try {
+            windowManager.addView(binding.root, layoutParams)
+            toastLine("悬浮窗显示（没有初始大小）", context)
+            return true
+        } catch (e: Exception) {
+            e.printStackTrace()
+            toastLine("悬浮窗显示失败: ${e.message}", context)
+            return false
+        }
+    }
+
     fun isFloatingWindowOpen() = binding.root.isAttachedToWindow
 
     fun isOverlayPermitted() = Settings.canDrawOverlays(context)
 
-    private fun openOverlaySetting() {
+    fun openOverlaySetting() {
         val intent = Intent(
             Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
             "package:${context.packageName}".toUri()

@@ -105,7 +105,7 @@ class TestFloatingViewActivity : ComponentActivity() {
     fun open() {
         if (isFloatingWindowOpen()) {
             // 已经显示，不需要重复添加
-            toastLine("悬浮窗已显示", this)
+            toastLine("悬浮窗已显示")
             return
         }
 
@@ -127,10 +127,10 @@ class TestFloatingViewActivity : ComponentActivity() {
                     delay(500)
                 }
             }
-            toastLine("悬浮窗已显示", this)
+            toastLine("悬浮窗已显示")
         } catch (e: Exception) {
             e.printStackTrace()
-            toastLine("显示悬浮窗失败: ${e.message}", this)
+            toastLine("显示悬浮窗失败: ${e.message}")
         }
     }
 

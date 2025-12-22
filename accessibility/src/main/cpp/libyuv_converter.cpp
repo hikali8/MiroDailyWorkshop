@@ -10,7 +10,7 @@
 #include <libyuv.h>
 
 
-#define LOG_TAG "libyuv_converter"
+#define LOG_TAG "#0x-LC"
 #define ALOGE(...) __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
 #define ALOGI(...) __android_log_print(ANDROID_LOG_INFO, LOG_TAG, __VA_ARGS__)
 
@@ -43,7 +43,7 @@ Java_com_hika_accessibility_recognition_ImageHandler_convertRGBAtoNV21(
     auto* nv21Buffer = reinterpret_cast<uint8_t*>(nv21Data);
 
     // use libyuv to convert
-    // ABGR is truly RGBA (little order), Google made it unclear
+    // ABGR is just RGBA (little order), Google made it unclear
 
     int result = libyuv::ABGRToNV21(
             rgbaData,           // src_rgba

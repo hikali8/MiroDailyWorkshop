@@ -28,9 +28,8 @@ class ProjectionRequesterActivity : ComponentActivity() {
         ActivityResultContracts.StartActivityForResult()
     ){
         if (it.resultCode != RESULT_OK || it.data == null){
-            toastLine("User denied screen sharing permission",this)
+            toastLine("User denied screen sharing permission")
         }else{
-            Log.d("#0x-PA", "Projection Permitted.")
             accessibilityCoreService.startProjection(it.resultCode, it.data!!)
         }
         this.finish()

@@ -1,0 +1,29 @@
+{
+  "categories": [
+    {
+      "id": 0,
+      "name": "GS_CheckIn"
+    },
+    {
+      "id": 1,
+      "name": "HK2_CheckIn"
+    },
+    {
+      "id": 2,
+      "name": "HK3_CheckIn"
+    },
+    {
+      "id": 3,
+      "name": "HSR_CheckIn"
+    },
+    {
+      "id": 4,
+      "name": "ZZZ_CheckIn"
+    }
+  ],
+  "info": {
+    "year": 2025,
+    "version": "1.0",
+    "contributor": "Label Studio"
+  }
+}

@@ -15,19 +15,7 @@ android {
         versionCode = 1
         versionName = "1.0"
 
-        ndk {
-            // 至少编译 arm64-v8a（这样才能用 dotprod+i8mm）
-            abiFilters += listOf("arm64-v8a")
-        }
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        externalNativeBuild {
-            cmake {
-                //cppFlags("-std=c++17")
-                //abiFilters("armeabi-v7a", "arm64-v8a")
-                cppFlags += listOf("-std=c++17", "-fPIC", "-march=armv8.2-a+dotprod+i8mm")
-            }
-        }
     }
 
     buildTypes {

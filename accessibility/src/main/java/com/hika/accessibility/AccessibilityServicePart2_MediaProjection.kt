@@ -40,7 +40,7 @@ abstract class AccessibilityServicePart2_Projection: AccessibilityServicePart1_C
 
     // 2.1. Promote this to foreground (a foreground service must have a notification)
     private fun promoteThisToForeground() {
-        val notification = createNotification("希卡正在捕获屏幕，直到系统断开权限或主应用退出...")
+        val notification = createNotification("希卡正在具有屏幕捕获权限，直到系统断开权限或主应用退出...")
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
             startForeground(NOTIFICATION_ID, notification,
                 ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION

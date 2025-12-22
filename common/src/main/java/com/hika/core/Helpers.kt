@@ -2,6 +2,8 @@ package com.hika.core
 
 import android.content.Context
 import android.widget.Toast
+import androidx.activity.ComponentActivity
+import androidx.fragment.app.Fragment
 import kotlinx.coroutines.delay
 
 // Helpers: Methods to help
@@ -44,6 +46,18 @@ suspend fun loopUntil(
 
 // too many code, that i have to simplify Toast.makeText
 fun toastLine(text: CharSequence, context: Context?, isLong: Boolean = false){
+    Toast.makeText(context, text,
+        if (isLong) Toast.LENGTH_LONG else Toast.LENGTH_SHORT
+    ).show()
+}
+
+fun ComponentActivity.toastLine(text: CharSequence, isLong: Boolean = false){
+    Toast.makeText(this, text,
+        if (isLong) Toast.LENGTH_LONG else Toast.LENGTH_SHORT
+    ).show()
+}
+
+fun Fragment.toastLine(text: CharSequence, isLong: Boolean = false){
     Toast.makeText(context, text,
         if (isLong) Toast.LENGTH_LONG else Toast.LENGTH_SHORT
     ).show()
