@@ -124,8 +124,8 @@ class TestFloatingViewActivity : ComponentActivity() {
             myWindowManager.addView(binding.root, layoutParams)
             updateJob = lifecycleScope.launch {
                 while (true){
-                    showDebugImg()
-                    delay(1000)
+                    updateFrame()
+                    delay(500)
                 }
             }
             toastLine("悬浮窗已显示")
@@ -140,33 +140,33 @@ class TestFloatingViewActivity : ComponentActivity() {
             ?: throw Exception("ImageHandler Uninitialized")
     }
 
-    fun showDebugImg(){
-        val bitmap = imageHandler.bitmapDebug
-        if (bitmap == null)
-            return
-
-        val canvas = binding.textureView.lockCanvas()
-        canvas?.let {
-            // 创建变换矩阵
-            val matrix = Matrix()
-
-            // 计算缩放比例
-            val scale = calculateScale(bitmap.width, bitmap.height,
-                canvas.width, canvas.height)
-
-            // 方法1: 等比例缩放并居中
-            matrix.setScale(scale, scale)
-            matrix.postTranslate(
-                (canvas.width - bitmap.width * scale) / 2,
-                (canvas.height - bitmap.height * scale) / 2
-            )
-
-            it.drawBitmap(bitmap, matrix, null)
-            binding.textureView.unlockCanvasAndPost(it)
-        }
-
-        Log.i("#0x-TF", "image format config: ${bitmap.config}")
-    }
+//    fun showDebugImg(){
+//        val bitmap = imageHandler.bitmapDebug
+//        if (bitmap == null)
+//            return
+//
+//        val canvas = binding.textureView.lockCanvas()
+//        canvas?.let {
+//            // 创建变换矩阵
+//            val matrix = Matrix()
+//
+//            // 计算缩放比例
+//            val scale = calculateScale(bitmap.width, bitmap.height,
+//                canvas.width, canvas.height)
+//
+//            // 方法1: 等比例缩放并居中
+//            matrix.setScale(scale, scale)
+//            matrix.postTranslate(
+//                (canvas.width - bitmap.width * scale) / 2,
+//                (canvas.height - bitmap.height * scale) / 2
+//            )
+//
+//            it.drawBitmap(bitmap, matrix, null)
+//            binding.textureView.unlockCanvasAndPost(it)
+//        }
+//
+//        Log.i("#0x-TF", "image format config: ${bitmap.config}")
+//    }
 
     fun updateFrame(){
         val recognizable = imageHandler.getRecognizable()

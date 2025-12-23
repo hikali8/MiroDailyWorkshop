@@ -17,6 +17,6 @@ class NCNNDetector(context: Context) {
     }
 
     external fun init(assetManager: AssetManager?): Boolean // 初始化模型
-    external fun detect(recognizable: Recognizable): Array<DetectedObject>  // 检测图像
+    external fun detect(recognizable: Recognizable, confidence: Float): Array<DetectedObject>  // 检测图像
     external fun release()  // 释放资源
 }

@@ -25,14 +25,14 @@ interface IAccessibilityService {
     );
     oneway void clearClassNameListeners();
 
-    DetectedObject[] getObjectInRegion(in String detectorName, in @nullable Rect region); // implement later
+    DetectedObject[] getObjectInRegion(in String detectorName, in @nullable Rect region, float confidence);
     oneway void cancelAllObjectGetting();
     ParcelableText getTextInRegion(in @nullable Rect region);
     oneway void cancelAllTextGetting();
 
     oneway void click(in PointF point, long startTime, long duration);
     oneway void swipe(in PointF pointFrom, in PointF pointTo, long startTime, long duration);
-    oneway void performAction(in int action);   //: AccessibilityService.GLOBAL_ACTION_XXX, press a physical key
+    oneway void performAction(in int action);   //: AccessibilityService.GLOBAL_ACTION_XXX, to press a physical key
 
     oneway void replayScript(in String script);
     oneway void stopReplay();

@@ -4,7 +4,6 @@ import android.app.Activity
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
-import android.widget.Toast
 import com.hika.core.interfaces.Level
 import com.hika.core.interfaces.Logger
 import com.hika.core.toastLine
@@ -15,8 +14,9 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
+// 进入游戏，我们需要找到按钮位置
 
-class ScriptReplay(val context: Context, val scope: CoroutineScope, val logger: Logger, val script: String) {
+class EnterGame(val context: Context, val scope: CoroutineScope, val logger: Logger) {
     val packageName = "com.miHoYo.Yuanshen"
     val className = "com.miHoYo.GetMobileInfo.MainActivity"
 
@@ -28,10 +28,21 @@ class ScriptReplay(val context: Context, val scope: CoroutineScope, val logger: 
         addCategory(Intent.CATEGORY_LAUNCHER)
     }
 
-    fun start(): Job {
+    fun start(tast: ITask): Job {
         val job = scope.launch {
             iAccessibilityService?.clearClassNameListeners()
-            prepareToEnterGenshin()
+            if(!ASReceiver.listenToActivityClassNameAsync(className))
+                logger("Failed to hear class name, suppose it's already entered.")
+            logger("Genshin")
+
+            delay(1000)
+            // 进入游戏。
+            // “开始游戏”需要被点击。
+
+            // 找到操作框的位置。计算w,a,s,d的坐标。
+
+            // 开始任务。
+            tast.start()
         }
 
         try {
@@ -44,19 +55,6 @@ class ScriptReplay(val context: Context, val scope: CoroutineScope, val logger: 
         return job
     }
 
-    suspend fun prepareToEnterGenshin(){
-        if(!ASReceiver.listenToActivityClassNameAsync(className))
-            logger("Failed to hear class name, suppose it's already entered.")
-        logger("Genshin")
-
-        // 在Activity中才做
-        delay(1000)
-        (context as Activity).runOnUiThread{
-            toastLine("开始重放手势...", context, true)
-        }
-
-        iAccessibilityService?.replayScript(script)
-    }
 
     //5. Clean-Up: On Task finished
     private fun onDestroy(){

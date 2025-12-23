@@ -24,7 +24,6 @@ const char* CLASS_NAMES[] = {
         "ZZZ_CheckIn"};
 
 #define INPUT_SIZE 640
-#define CONFIDENCE 0.5f
 
 static ncnn::Net* pModel = nullptr;
 
@@ -95,14 +94,14 @@ image_normalizing(const unsigned char* imageBuffer, int width, int height, ncnn:
     // 将调整大小后的图像复制到图像中央
     double wpadP2 = (INPUT_SIZE - w) / 2.0;
     double hpadP2 = (INPUT_SIZE - h) / 2.0;
-    ncnn::copy_make_border(mat1, in_mat,
-                           floor(hpadP2),
-                           ceil(hpadP2),
-                           floor(wpadP2),
-                           ceil(wpadP2),
-                           ncnn::BorderType::BORDER_CONSTANT,
-                           114.f);
-    // 归一化: Reasonably suspect that the color changing was not considered by the model.
+    ncnn::copy_make_border(
+            mat1, in_mat,
+            floor(hpadP2),
+            ceil(hpadP2),
+            floor(wpadP2),
+            ceil(wpadP2),
+            ncnn::BorderType::BORDER_CONSTANT,
+            114.f);
     const float norm_vals[] = {1/255.f, 1/255.f, 1/255.f};
     in_mat.substract_mean_normalize(nullptr, norm_vals);
     return make_pair(wpadP2, hpadP2);
@@ -122,7 +121,7 @@ struct Object {
         return true;
     }
 
-    // true to push pack, false to ignore
+    // true to put back, false to ignore
     bool replaceConfidenceLesser(const vector<unique_ptr<Object>>& objects){
         for (auto& obj_past : objects)
             if (classIndex == obj_past->classIndex && isOverlappingWith(*obj_past)){
@@ -136,13 +135,11 @@ struct Object {
     }
 };
 
-vector<unique_ptr<Object>> infer_and_recognize(const ncnn::Mat& in_mat){
+vector<unique_ptr<Object>> infer_and_recognize(const ncnn::Mat& in_mat, float confidence){
     ncnn::Mat out_mat;
     ncnn::Extractor extractor = pModel->create_extractor();
     extractor.input("in0", in_mat);
     extractor.extract("out0", out_mat);
-    LOGI("done with extractor.extract");
-
     assert(out_mat.c == 1);
     int mat_w = out_mat.w;
     int mat_h = out_mat.h;
@@ -152,7 +149,7 @@ vector<unique_ptr<Object>> infer_and_recognize(const ncnn::Mat& in_mat){
         auto obj = make_unique<Object>();
         for (int j = 4; j < mat_h; j++){
             float score = out_mat[i + mat_w * j];
-            if (score > CONFIDENCE && score > obj->confidence){
+            if (score > confidence && score > obj->confidence){
                 obj->confidence = score;
                 obj->classIndex = j - 4;
                 for (int k = 0; k < 4; k++)
@@ -197,8 +194,6 @@ jobjectArray correction(JNIEnv *env, const vector<unique_ptr<Object>>& objects, 
             objNum, dobj_jcls, nullptr);
     for (int i = 0; i < objNum; i++){
         auto& obj = objects[i];
-        LOGI("original obj %d: confidence %f, location cx %f cy %f w %f h %f", obj->classIndex, obj->confidence,
-             obj->floats[0], obj->floats[1], obj->floats[2], obj->floats[3]);
         double realCenterX = obj->floats[0] - wpadP2,
                realCenterY = obj->floats[1] - hpadP2,
                widthP2 = obj->floats[2] / 2,
@@ -252,7 +247,8 @@ struct Recognizable {
 extern "C" JNIEXPORT jobjectArray JNICALL
 Java_com_hika_accessibility_recognition_means_object_1detection_NCNNDetector_detect(
         JNIEnv *env, jobject thiz,
-        jobject recognizable_java) {
+        jobject recognizable_java,
+        jfloat confidence) {
     if (pModel == nullptr) {
         LOGE("Model not initialized");
         return nullptr;
@@ -270,12 +266,10 @@ Java_com_hika_accessibility_recognition_means_object_1detection_NCNNDetector_det
             reinterpret_cast<unsigned char *>(recognizable.imageBuffer),
             recognizable.width, recognizable.height, in_mat);
     // ncnn::Mat::shape() always fails.
-    LOGI("done with image_normalizing. in_mat %d x %d x %d.", in_mat.w, in_mat.h, in_mat.c);
     double wpadP2 = whP2Pair.first, hpadP2 = whP2Pair.second;
 
     // 推理并识别
-    vector<unique_ptr<Object>> objects = infer_and_recognize(in_mat);
-    LOGI("done with infer_and_recognize. size:%d", objects.size());
+    vector<unique_ptr<Object>> objects = infer_and_recognize(in_mat, confidence);
 
     // 转换坐标和名称
     double ratio;
@@ -285,7 +279,7 @@ Java_com_hika_accessibility_recognition_means_object_1detection_NCNNDetector_det
         ratio = recognizable.height;
     ratio /= INPUT_SIZE;
     jobjectArray dobjects = correction(env, objects, wpadP2, hpadP2, ratio);
-    LOGI("done with correction, ratio %lf", ratio);
+    LOGI("done with detected objects correction, ratio %lf", ratio);
     return dobjects;
 }
 

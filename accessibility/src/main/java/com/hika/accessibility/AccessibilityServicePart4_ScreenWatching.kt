@@ -19,17 +19,14 @@ abstract class AccessibilityServicePart4_ScreenWatching: AccessibilityServicePar
     val textJobs = mutableListOf<Deferred<Text?>>()
 
     // 4.2 Interfaces and implements: Received Watching Delegation Dispatch
-
     abstract inner class IAccessibilityExposed_Part4: IAccessibilityExposed_Part3() {
         override fun getObjectInRegion(
             detectorName: String,
-            region: Rect?
+            region: Rect?,
+            confidence: Float
         ): Array<DetectedObject> {
             val deferred = coroutineScope.async {
-//                imageHandler?.getRecognizable()?.findOnNCNNDetector(detectorName, region)
-                // 现在debug资产图像。
-                imageHandler?.debugUsage()
-
+                imageHandler?.getRecognizable()?.findOnNCNNDetector(detectorName, region, confidence)
                 null
             }
             detectJobs.add(deferred)

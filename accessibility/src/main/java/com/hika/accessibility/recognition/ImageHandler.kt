@@ -12,7 +12,6 @@ import android.view.Surface
 import com.hika.accessibility.recognition.means.object_detection.NCNNDetector
 import com.hika.accessibility.recognition.means.ocr.GoogleOCRer
 import com.hika.core.aidl.accessibility.DetectedObject
-import com.hika.core.aidl.accessibility.TemplateImageID
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -59,45 +58,44 @@ class ImageHandler(width: Int, height: Int, val scope: CoroutineScope, val conte
 
     val ncnnDetector by lazy { NCNNDetector(context)}
 
-    var recognizableDebug: Recognizable? = null
-    var bitmapDebug: Bitmap? = null
+//    var recognizableDebug: Recognizable? = null
+//    var bitmapDebug: Bitmap? = null
+//
+//    init {
+//        val assetManager: AssetManager = context.assets
+//        try {
+//            val inputStream = assetManager.open("debug/GS1.jpg")
+//            val bitmap = BitmapFactory.decodeStream(inputStream)
+//            val byteBuffer = ByteBuffer.allocateDirect(bitmap.byteCount)
+//            bitmap.copyPixelsToBuffer(byteBuffer)
+//            byteBuffer.rewind()
+//            recognizableDebug = Recognizable(
+//                byteBuffer,
+//                bitmap.width,
+//                bitmap.height,
+//                bitmap.rowBytes
+//            )
+//            bitmapDebug = bitmap
+//            inputStream.close()
+//            Log.i("#0x-IH", "Debug img is read.");
+//        } catch (e: Exception) {
+//            Log.i("#0x-IH", "Error while reading img: $e");
+//            e.printStackTrace()
+//        }
+//    }
 
-    init {
-        val assetManager: AssetManager = context.assets
-        try {
-            val inputStream = assetManager.open("debug/GS1.jpg")
-            val bitmap = BitmapFactory.decodeStream(inputStream)
-            val byteBuffer = ByteBuffer.allocateDirect(bitmap.byteCount)
-            bitmap.copyPixelsToBuffer(byteBuffer)
-            byteBuffer.rewind()
-            recognizableDebug = Recognizable(
-                byteBuffer,
-                bitmap.width,
-                bitmap.height,
-                bitmap.rowBytes
-            )
-            bitmapDebug = bitmap
-            inputStream.close()
-            Log.i("#0x-IH", "Debug img is read.");
-        } catch (e: Exception) {
-            Log.i("#0x-IH", "Error while reading img: $e");
-            e.printStackTrace()
-        }
-    }
-
-    inline fun debugUsage(){
-        val arr = recognizableDebug?.findOnNCNNDetector("", null) ?: return
-        var s = String()
-        for (dobj in arr){
-            s += dobj.toString() + ",\n"
-        }
-        Log.i("#0x-IH", "detected (debug):\n" + s)
-    }
+//    inline fun debugUsage(){
+//        val arr = recognizableDebug?.findOnNCNNDetector("", null) ?: return
+//        var s = String()
+//        for (dobj in arr){
+//            s += dobj.toString() + ",\n"
+//        }
+//        Log.i("#0x-IH", "detected (debug):\n" + s)
+//    }
 
     inner class Recognizable(val imageBuffer: ByteBuffer, val width: Int, val height: Int, val rowStride: Int){
-        fun findOnNCNNDetector(detectorName: String,
-                               region: Rect?): Array<DetectedObject>
-            = ncnnDetector.detect(this) // now we just recognize what we've captured.
+        fun findOnNCNNDetector(detectorName: String, region: Rect?, confidence: Float): Array<DetectedObject>
+            = ncnnDetector.detect(this, confidence) // now we just recognize what we've captured.
 
         suspend fun findOnGoogleOCRerInRangeAsync(region: Rect?)
             = (region?.run {
