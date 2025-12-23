@@ -6,6 +6,7 @@ import android.content.ComponentName
 import android.content.Intent
 import android.graphics.Path
 import android.graphics.PointF
+import android.graphics.Rect
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -179,126 +180,134 @@ class StartFragment : Fragment() {
     // 1.4. 下拉框Spinner选择对应过程执行
     var files: MutableList<File>? = null
     var selectedPosition: Int? = 0
+
     fun setCard4(){
-        // spinner
-        flashFiles()
-        binding.spinnerScripts.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                selectedPosition = position
-            }
-
-            override fun onNothingSelected(parent: AdapterView<*>?) {
-                selectedPosition = null
-            }
-        }
-        // btn left
         binding.btn4.setOnClickListener {
-            updateUi()
-            // ensure if the conditions are all satisfied.
-            if (isAccessibilitySettingEnabled() != true ||
-                !floatingWindow.isOverlayPermitted() ||
-                iAccessibilityService?.isProjectionStarted() != true) {
-                toastLine("缺少权限。请确保无障碍设置、悬浮显示权限、投屏权限都已开启", context, true)
-                return@setOnClickListener
-            }
-
-            val file = selectedPosition?.run{ files?.get(this) }
-            if (file == null){
-                toastLine("请选择文件", context, true)
-                return@setOnClickListener
-            }
-
-            if (!file.canRead()){
-                AlertDialog.Builder(context)
-                    .setTitle("无法读取文件")
-                    .setMessage("不要用文件管理器粘贴文件到应用文件夹里！安卓系统有文件所有者限制。")
-                    .setIcon(android.R.drawable.ic_dialog_alert)
-                    .show()
-                return@setOnClickListener
-            }
-
-            ScriptReplay(
-                requireContext(),
-                CoroutineScope(Dispatchers.IO),
-                floatingWindow.logger,
-                file.readText()
-            ).start()
-
-
-//            iAccessibilityService?.replayScript(file.readText())
-        }
-
-        binding.btn4Paste.setOnClickListener {
-            updateUi()
-            // 创建对话框
-            val inputBox = EditText(context)
-            inputBox.hint = "在这里粘贴脚本"
-
-            AlertDialog.Builder(context)
-                .setTitle("请输入或粘贴脚本")
-                .setView(inputBox)
-                .setPositiveButton("确定") { dialog, which ->
-                    val input = inputBox.text.toString()
-
-                    // 格式化日期和时间
-                    val formatter = SimpleDateFormat("yyyyMMdd-HHmmss")
-                    val formattedDate = "Script-" + formatter.format(Date()) + ".csv"
-
-                    val nameBox = EditText(context)
-                    nameBox.setText(formattedDate)
-                    nameBox.hint = "脚本文件名称"
-                    nameBox.setOnFocusChangeListener { _, hasFocus ->
-                        if (hasFocus)
-                            postDelayed(Handler(Looper.getMainLooper()), {
-                                nameBox.setSelection(0, nameBox.text.length - 4)
-                            }, null, 100)
-                    }
-
-                    AlertDialog.Builder(context)
-                        .setTitle("请输入脚本文件名称")
-                        .setView(nameBox)
-                        .setPositiveButton("确定"){ dialog, which ->
-                            val name = nameBox.text.toString()
-                            val dir = context?.getExternalFilesDir(null)
-                                ?: return@setPositiveButton
-                            val file = File(dir, name)
-                            file.writeText(input)
-                            flashFiles()
-                        } .show()
-                } .show()
-        }
-
-        binding.btn4Delete.setOnClickListener {
-            updateUi()
-            val pos = selectedPosition
-            if (pos != null){
-                try {
-                    files?.removeAt(pos)
-                    toastLine("文件删除成功", context)
-                } catch (_: IndexOutOfBoundsException){
-                    toastLine("文件删除失败", context)
-                }
-                flashFiles()
-                binding.spinnerScripts.setSelection(
-                    if(files!!.size <= pos) 0 else pos)
-                return@setOnClickListener
-            }
-            toastLine("文件未选中", context)
+            iAccessibilityService?.getObjectInRegion("IconLabeling",
+                Rect(-1, -1, -1, -1));
         }
     }
 
-    fun flashFiles(){
-        val externalAppDir: File? = requireContext().getExternalFilesDir(null)
-        val files = externalAppDir?.run {
-            if (exists() && isDirectory)
-                return@run listFiles()
-            null
-        } ?: return toastLine("应用目录不存在或无法访问", context)
-        this.files = files.toMutableList()
-        binding.spinnerScripts.adapter =
-            ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item,
-                files.map { it.name })
-    }
+//    fun setCard4(){
+//        // spinner
+//        flashFiles()
+//        binding.spinnerScripts.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+//            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+//                selectedPosition = position
+//            }
+//
+//            override fun onNothingSelected(parent: AdapterView<*>?) {
+//                selectedPosition = null
+//            }
+//        }
+//        // btn left
+//        binding.btn4.setOnClickListener {
+//            updateUi()
+//            // ensure if the conditions are all satisfied.
+//            if (isAccessibilitySettingEnabled() != true ||
+//                !floatingWindow.isOverlayPermitted() ||
+//                iAccessibilityService?.isProjectionStarted() != true) {
+//                toastLine("缺少权限。请确保无障碍设置、悬浮显示权限、投屏权限都已开启", context, true)
+//                return@setOnClickListener
+//            }
+//
+//            val file = selectedPosition?.run{ files?.get(this) }
+//            if (file == null){
+//                toastLine("请选择文件", context, true)
+//                return@setOnClickListener
+//            }
+//
+//            if (!file.canRead()){
+//                AlertDialog.Builder(context)
+//                    .setTitle("无法读取文件")
+//                    .setMessage("不要用文件管理器粘贴文件到应用文件夹里！安卓系统有文件所有者限制。")
+//                    .setIcon(android.R.drawable.ic_dialog_alert)
+//                    .show()
+//                return@setOnClickListener
+//            }
+//
+//            ScriptReplay(
+//                requireContext(),
+//                CoroutineScope(Dispatchers.IO),
+//                floatingWindow.logger,
+//                file.readText()
+//            ).start()
+//
+//
+////            iAccessibilityService?.replayScript(file.readText())
+//        }
+//
+//        binding.btn4Paste.setOnClickListener {
+//            updateUi()
+//            // 创建对话框
+//            val inputBox = EditText(context)
+//            inputBox.hint = "在这里粘贴脚本"
+//
+//            AlertDialog.Builder(context)
+//                .setTitle("请输入或粘贴脚本")
+//                .setView(inputBox)
+//                .setPositiveButton("确定") { dialog, which ->
+//                    val input = inputBox.text.toString()
+//
+//                    // 格式化日期和时间
+//                    val formatter = SimpleDateFormat("yyyyMMdd-HHmmss")
+//                    val formattedDate = "Script-" + formatter.format(Date()) + ".csv"
+//
+//                    val nameBox = EditText(context)
+//                    nameBox.setText(formattedDate)
+//                    nameBox.hint = "脚本文件名称"
+//                    nameBox.setOnFocusChangeListener { _, hasFocus ->
+//                        if (hasFocus)
+//                            postDelayed(Handler(Looper.getMainLooper()), {
+//                                nameBox.setSelection(0, nameBox.text.length - 4)
+//                            }, null, 100)
+//                    }
+//
+//                    AlertDialog.Builder(context)
+//                        .setTitle("请输入脚本文件名称")
+//                        .setView(nameBox)
+//                        .setPositiveButton("确定"){ dialog, which ->
+//                            val name = nameBox.text.toString()
+//                            val dir = context?.getExternalFilesDir(null)
+//                                ?: return@setPositiveButton
+//                            val file = File(dir, name)
+//                            file.writeText(input)
+//                            flashFiles()
+//                        } .show()
+//                } .show()
+//        }
+//
+//        binding.btn4Delete.setOnClickListener {
+//            updateUi()
+//            val pos = selectedPosition
+//            if (pos != null){
+//                try {
+//                    files?.removeAt(pos)
+//                    toastLine("文件删除成功", context)
+//                } catch (_: IndexOutOfBoundsException){
+//                    toastLine("文件删除失败", context)
+//                }
+//                flashFiles()
+//                binding.spinnerScripts.setSelection(
+//                    if(files!!.size <= pos) 0 else pos)
+//                return@setOnClickListener
+//            }
+//            toastLine("文件未选中", context)
+//        }
+//    }
+//
+//    fun flashFiles(){
+//        val externalAppDir: File? = requireContext().getExternalFilesDir(null)
+//        val files = externalAppDir?.run {
+//            if (exists() && isDirectory)
+//                return@run listFiles()
+//            null
+//        } ?: return toastLine("应用目录不存在或无法访问", context)
+//        this.files = files.toMutableList()
+//        binding.spinnerScripts.adapter =
+//            ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item,
+//                files.map { it.name })
+//    }
 
 
     // 1.5 待扩展.
@@ -388,32 +397,9 @@ class StartFragment : Fragment() {
             }
         }
 
-        flashFiles()
+//        flashFiles()
     }
 
-    // Hikali8: 这个代码不是必要的，就用 isAccessibilitySettingEnabled() 吧
-//    /** 精确判断无障碍：必须包含“包名 + 服务类名”的完整扁平化字符串 */
-//    private fun isAccessibilityEnabledExact(): Boolean {
-//        val cr = requireContext().contentResolver
-//        val enabled = Settings.Secure.getInt(cr, Settings.Secure.ACCESSIBILITY_ENABLED, 0) == 1
-//        if (!enabled) return false
-//
-//        val enabledServices = Settings.Secure.getString(
-//            cr, Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
-//        ) ?: return false
-//
-//        // 与 core 中声明的 Service 完整组件名保持一致
-//        val target = ComponentName(
-//            com.hika.mirodaily.core.AccessibilityPackageName,
-//            com.hika.mirodaily.core.AccessibilityClassName
-//        ).flattenToString()
-//
-//        val splitter = TextUtils.SimpleStringSplitter(':').apply { setString(enabledServices) }
-//        while (splitter.hasNext()) {
-//            if (splitter.next().equals(target, ignoreCase = true)) return true
-//        }
-//        return false
-//    }
 }
 
 

@@ -8,9 +8,9 @@ find_package(OpenMP REQUIRED)
 include_directories("${CMAKE_SOURCE_DIR}/includes")
 
 # 关键：查找系统库
-# AHardwareBuffer_* 在 libandroid，__android_log_print 在 liblog
 find_library(ANDROID_LIB android)
 find_library(LOG_LIB log)
+# AHardwareBuffer_* 在 libandroid，__android_log_print 在 liblog
 
 
 

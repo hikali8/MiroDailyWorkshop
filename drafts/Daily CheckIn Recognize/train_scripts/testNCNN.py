@@ -41,13 +41,13 @@ def image_normalization() -> ncnn.Mat:
         scale = float(h) / target_size
         w = int(w / scale)
         h = target_size
-    in_mat = ncnn.Mat.from_pixels_resize(img,
-                                         ncnn.Mat.PixelType.PIXEL_BGR2RGB,
-                                         img.shape[1],
-                                         img.shape[0],
-                                         w,
-                                         h
-                                         )
+    in_mat = ncnn.Mat.from_pixels_resize(
+        img,
+        ncnn.Mat.PixelType.PIXEL_BGR2RGB,
+        img.shape[1],
+        img.shape[0],
+        w,
+        h)
     # turn the w and h into a multiplier of 32
     # wpadP2 = (math.ceil(w / 32) * 32 - w) / 2
     # hpadP2 = (math.ceil(h / 32) * 32 - h) / 2
@@ -61,8 +61,7 @@ def image_normalization() -> ncnn.Mat:
         math.floor(wpadP2),
         math.ceil(wpadP2),
         ncnn.BorderType.BORDER_CONSTANT,
-        114.0,
-    )
+        114.0)
     in_mat.substract_mean_normalize([], normalization)
     print(wpadP2, hpadP2)
     return in_mat
@@ -92,10 +91,11 @@ def infer_and_recognize():
     print(out_mat.w, out_mat.h, out_mat.c)
 
     # 8400个值：代表8400个框。9个值：代表5种对象的得分，和4个表示框位置的值。
+    mat_h = out_mat.h
     out_mat = np.array(out_mat).transpose()
     for box in out_mat:
         obj = Object()
-        for j in range(4, 9):
+        for j in range(4, mat_h):
             class_score = box[j]
             if class_score > confidence and class_score > obj.confidence:
                 obj.confidence = class_score

@@ -7,6 +7,7 @@ import android.graphics.BitmapFactory
 import android.graphics.PixelFormat
 import android.graphics.Rect
 import android.media.ImageReader
+import android.util.Log
 import android.view.Surface
 import com.hika.accessibility.recognition.means.object_detection.NCNNDetector
 import com.hika.accessibility.recognition.means.ocr.GoogleOCRer
@@ -59,6 +60,8 @@ class ImageHandler(width: Int, height: Int, val scope: CoroutineScope, val conte
     val ncnnDetector by lazy { NCNNDetector(context)}
 
     var recognizableDebug: Recognizable? = null
+    var bitmapDebug: Bitmap? = null
+
     init {
         val assetManager: AssetManager = context.assets
         try {
@@ -73,17 +76,25 @@ class ImageHandler(width: Int, height: Int, val scope: CoroutineScope, val conte
                 bitmap.height,
                 bitmap.rowBytes
             )
+            bitmapDebug = bitmap
             inputStream.close()
+            Log.i("#0x-IH", "Debug img is read.");
         } catch (e: Exception) {
+            Log.i("#0x-IH", "Error while reading img: $e");
             e.printStackTrace()
         }
     }
 
     inline fun debugUsage(){
-        recognizableDebug?.findOnNCNNDetector("", null)
+        val arr = recognizableDebug?.findOnNCNNDetector("", null) ?: return
+        var s = String()
+        for (dobj in arr){
+            s += dobj.toString() + ",\n"
+        }
+        Log.i("#0x-IH", "detected (debug):\n" + s)
     }
 
-    inner class Recognizable(val imageBuffer: ByteBuffer, val width: Int, val height: Int, rowStride: Int){
+    inner class Recognizable(val imageBuffer: ByteBuffer, val width: Int, val height: Int, val rowStride: Int){
         fun findOnNCNNDetector(detectorName: String,
                                region: Rect?): Array<DetectedObject>
             = ncnnDetector.detect(this) // now we just recognize what we've captured.
