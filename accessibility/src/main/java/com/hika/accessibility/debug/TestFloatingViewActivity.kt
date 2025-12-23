@@ -27,6 +27,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.ByteArrayOutputStream
+import kotlin.experimental.and
 
 
 class TestFloatingViewActivity : ComponentActivity() {
@@ -123,8 +124,8 @@ class TestFloatingViewActivity : ComponentActivity() {
             myWindowManager.addView(binding.root, layoutParams)
             updateJob = lifecycleScope.launch {
                 while (true){
-                    updateFrame()
-                    delay(500)
+                    showDebugImg()
+                    delay(1000)
                 }
             }
             toastLine("悬浮窗已显示")
@@ -137,6 +138,34 @@ class TestFloatingViewActivity : ComponentActivity() {
     val imageHandler by lazy{
         AccessibilityCoreService.instance.get()?.imageHandler
             ?: throw Exception("ImageHandler Uninitialized")
+    }
+
+    fun showDebugImg(){
+        val bitmap = imageHandler.bitmapDebug
+        if (bitmap == null)
+            return
+
+        val canvas = binding.textureView.lockCanvas()
+        canvas?.let {
+            // 创建变换矩阵
+            val matrix = Matrix()
+
+            // 计算缩放比例
+            val scale = calculateScale(bitmap.width, bitmap.height,
+                canvas.width, canvas.height)
+
+            // 方法1: 等比例缩放并居中
+            matrix.setScale(scale, scale)
+            matrix.postTranslate(
+                (canvas.width - bitmap.width * scale) / 2,
+                (canvas.height - bitmap.height * scale) / 2
+            )
+
+            it.drawBitmap(bitmap, matrix, null)
+            binding.textureView.unlockCanvasAndPost(it)
+        }
+
+        Log.i("#0x-TF", "image format config: ${bitmap.config}")
     }
 
     fun updateFrame(){
@@ -188,10 +217,6 @@ class TestFloatingViewActivity : ComponentActivity() {
             it.drawBitmap(bitmap, matrix, null)
             binding.textureView.unlockCanvasAndPost(it)
         }
-
-//        withContext(Dispatchers.Main) {
-//            bitmap?.let { binding.textureView.setBitmap(it) }
-//        }
     }
 
     private fun calculateScale(

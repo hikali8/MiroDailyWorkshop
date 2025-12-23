@@ -10,5 +10,7 @@ class DetectedObject(
     val regionBox: Rect,
     val confidence: Float
 ) : Parcelable{
-
+    override fun toString(): String {
+        return "obj $objectName: confidence $confidence, location $regionBox"
+    }
 }

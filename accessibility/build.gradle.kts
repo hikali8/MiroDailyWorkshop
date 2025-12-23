@@ -1,3 +1,6 @@
+import com.android.build.gradle.internal.ide.v2.TestSuiteSourceImpl.Companion.assets
+import org.gradle.internal.declarativedsl.parsing.main
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -7,6 +10,12 @@ plugins {
 android {
     namespace = "com.hika.accessibility"
     compileSdk = 36
+
+    sourceSets{
+        named("main") {
+            assets.srcDirs("src/main/assets")
+        }
+    }
 
     defaultConfig {
         applicationId = "com.hika.accessibility"
