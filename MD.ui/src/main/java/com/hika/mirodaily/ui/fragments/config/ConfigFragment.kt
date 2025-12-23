@@ -1,4 +1,4 @@
-package com.hika.mirodaily.ui.ui.fragments.config
+package com.hika.mirodaily.ui.fragments.config
 
 import android.os.Bundle
 import android.view.LayoutInflater
