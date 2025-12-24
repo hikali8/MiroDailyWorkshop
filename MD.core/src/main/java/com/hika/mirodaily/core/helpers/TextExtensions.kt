@@ -1,9 +1,10 @@
-package com.hika.mirodaily.core.data_extractors
+package com.hika.mirodaily.core.helpers
 
 import android.util.Log
 import com.hika.core.aidl.accessibility.ParcelableSymbol
 import com.hika.core.aidl.accessibility.ParcelableText
 import com.hika.core.countSpaces
+import kotlin.text.iterator
 
 // match the first position where the sequence appears
 fun ParcelableText.matchSequence(sequence: String): List<ParcelableSymbol> {

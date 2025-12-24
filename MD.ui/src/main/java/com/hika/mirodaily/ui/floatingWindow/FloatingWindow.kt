@@ -1,4 +1,4 @@
-package com.hika.mirodaily.ui.fragments.start
+package com.hika.mirodaily.ui.floatingWindow
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -17,16 +17,19 @@ import android.view.WindowManager
 import android.widget.TextView
 import androidx.activity.result.ActivityResultLauncher
 import androidx.core.net.toUri
+import com.hika.core.interfaces.FloatingWindowControll
 import com.hika.core.interfaces.Level
 import com.hika.core.interfaces.Logger
 import com.hika.core.toastLine
 import com.hika.mirodaily.ui.databinding.FloatingWindowBinding
 import java.util.Calendar
+import kotlin.text.iterator
 
 @SuppressLint("ClickableViewAccessibility")
 class FloatingWindow(val context: Context,
                      inflater: LayoutInflater,
-                     val onOverlaySettingResult: ActivityResultLauncher<Intent>) {
+                     val onOverlaySettingResult: ActivityResultLauncher<Intent>
+): FloatingWindowControll {
 
 
     // 1. set window manager and window layout params
@@ -41,12 +44,15 @@ class FloatingWindow(val context: Context,
         PixelFormat.TRANSLUCENT
     ).apply {
         gravity = Gravity.TOP or Gravity.START
-        x = 100
-        y = 1500
+        x = 0
+        y = 0
     }
 
     private val binding = FloatingWindowBinding.inflate(inflater)
 
+    // params used for dragging
+    private var touchX = 0f
+    private var touchY = 0f
     init {
         // 设置拖拽功能
         binding.floatWindow.setOnTouchListener { v, event ->
@@ -70,12 +76,7 @@ class FloatingWindow(val context: Context,
     }
 
     // 2. Open Floating Window
-    // params used for dragging
-    private var touchX = 0f
-    private var touchY = 0f
-
-
-    fun open(): Boolean {
+    override fun open(): Boolean {
         if (isFloatingWindowOpen()) {
             // 已经显示，不需要重复添加
             toastLine("悬浮窗已显示", context)
@@ -118,6 +119,7 @@ class FloatingWindow(val context: Context,
     fun onLaunchResult(){
         if (isOverlayPermitted()) {
             open()
+            logger("权限开启，显示窗口")
         } else {
             toastLine("权限未添加", context)
         }
@@ -132,17 +134,26 @@ class FloatingWindow(val context: Context,
 
 
     // 3. Close floating window (not hide or destroy, which should be done by the parent)
-    fun close(){
+    fun clear(){
+        if (isFloatingWindowOpen())
+            windowManager.removeView(binding.root)
+        binding.logText.setText("")
+    }
+
+    override fun hide(){
         if (isFloatingWindowOpen())
             windowManager.removeView(binding.root)
     }
 
 
     // 4. println for floating window
-    val lineWidth = 40
-    val indent = 17  // should not appear
+    override var screenWidth = 2780
+    override var screenHeight = 1264
+
+    val lineWidth get() = (40.0 / 1309 * screenWidth).toInt()
+    val maxLines = (15.0 / 1264 * screenHeight).toInt()
+    val indent = 17  // 缩进，但总是对不上
     val logger = object: Logger {
-        override val maxLines = 15
 
         override fun println(text: String, color: Level) {
             // line break
@@ -153,7 +164,8 @@ class FloatingWindow(val context: Context,
             // get spannable
             var spannableString = SpannableStringBuilder(text)
             // set color
-            spannableString.setSpan(BackgroundColorSpan(color.getColor()),
+            spannableString.setSpan(
+                BackgroundColorSpan(color.getColor()),
                 0,
                 text.length,
                 Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
@@ -232,4 +244,3 @@ class FloatingWindow(val context: Context,
         return "$year$month$day.$hour.$minute.$second: "
     }
 }
-

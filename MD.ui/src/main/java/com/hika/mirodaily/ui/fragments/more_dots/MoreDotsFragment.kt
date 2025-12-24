@@ -19,7 +19,7 @@ import com.hika.mirodaily.core.ProjectionRequesterClassName
 import com.hika.mirodaily.ui.R
 import com.hika.mirodaily.ui.chat.GameAiChatBottomSheet
 import com.hika.mirodaily.ui.databinding.FragmentMoreDotsBinding
-import com.hika.mirodaily.ui.fragments.start.FloatingWindow
+import com.hika.mirodaily.ui.floatingWindow.FloatingWindow
 
 private const val DebugViewClassName = "com.hika.accessibility.debug.TestFloatingViewActivity"
 
@@ -179,7 +179,7 @@ class MoreDotsFragment : Fragment() {
         (value * resources.displayMetrics.density).toInt()
 
     override fun onDestroyView() {
-        floatingWindow?.close()
+        floatingWindow?.clear()
         floatingWindow = null
         _binding = null
         super.onDestroyView()

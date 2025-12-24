@@ -6,6 +6,7 @@ import android.graphics.PointF
 import android.hardware.display.DisplayManager
 import android.util.Log
 import android.view.Surface
+import com.hika.core.rotateCoordinate
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -22,29 +23,10 @@ abstract class AccessibilityServicePart5_ScriptReplay : AccessibilityServicePart
                 Log.e("#0x-AS5", "已经有脚本处于执行中")
                 return
             }
-//            // this damn thing has made too much error, have to break it down
-//            var path = Path()
-//            path.moveTo(1000f, 0f)
-//            path.lineTo(1000f, 500f)
-//            val startTime = 0L
-//            val duration = 3000L
-//            val builder = GestureDescription.Builder()
-//            builder.addStroke(GestureDescription.StrokeDescription(
-//                path, startTime, duration - 1
-//            ))
-//            path = Path()
-//            path.moveTo(1000f, 500f)
-//            path.lineTo(1000f, 1000f)
-//
-//            builder.addStroke(GestureDescription.StrokeDescription(
-//                path, duration, duration
-//            ))
-//
-//            dispatchGesture(builder.build(), null, null)
 
             job = coroutineScope.launch(Dispatchers.IO) {
-                isToUpdateRotation = true
-                updateRotation()
+                val rotation = getSystemService(DisplayManager::class.java)
+                    .displays.first().rotation
                 val gestures = ScriptReplayer().extractScript(script)
                 Log.d("#0x-AS5", "解开是：" + gestures.toString())
                 for (gesture in gestures)
@@ -55,11 +37,11 @@ abstract class AccessibilityServicePart5_ScriptReplay : AccessibilityServicePart
                         for (stroke in gesture.strokes){
                             val path = Path()
                             stroke.points.removeFirstOrNull()?.apply {
-                                val rotated = rotateCoordinate(x, y)
+                                val rotated = rotateCoordinate(x, y, width, height, rotation)
                                 path.moveTo(rotated.first, rotated.second)
                             } ?: continue
                             for (point in stroke.points){
-                                val rotated = rotateCoordinate(point.x, point.y)
+                                val rotated = rotateCoordinate(point.x, point.y, width, height, rotation)
                                 path.lineTo(rotated.first, rotated.second)
                             }
                             builder.addStroke(GestureDescription.StrokeDescription(
@@ -75,9 +57,6 @@ abstract class AccessibilityServicePart5_ScriptReplay : AccessibilityServicePart
                         dispatchGesture(builder.build(), null, null)
                     }
             }
-            job?.invokeOnCompletion {
-                isToUpdateRotation = false
-            }
         }
 
         override fun stopReplay() {
@@ -89,30 +68,7 @@ abstract class AccessibilityServicePart5_ScriptReplay : AccessibilityServicePart
         }
     }
 
-    var rotation by Delegates.notNull<Int>()
-    fun updateRotation(){
-        rotation = getSystemService(DisplayManager::class.java)
-            .displays.first().rotation
-    }
-
-    var isToUpdateRotation = false
-    override fun onResize() {
-        if (isToUpdateRotation) updateRotation()
-    }
-
-    private fun rotateCoordinate(x: Float, y: Float): Pair<Float, Float> {
-        return when (rotation) {
-            Surface.ROTATION_0 ->
-                Pair(x, y)
-            Surface.ROTATION_90 ->
-                Pair(y, height - x)
-            Surface.ROTATION_180 ->
-                Pair(width - x, height - y)
-            Surface.ROTATION_270 ->
-                Pair(width - y, x)
-            else -> throw Exception("Unknown rotation: $rotation")
-        }
-    }
+    override fun onResize() { }
 
     class ScriptReplayer {
         enum class Type{ Down, Move, Up, wait, NEXT }

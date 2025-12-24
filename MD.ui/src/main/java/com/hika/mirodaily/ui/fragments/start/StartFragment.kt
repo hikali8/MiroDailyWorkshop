@@ -22,14 +22,13 @@ import com.hika.mirodaily.core.iAccessibilityService
 import com.hika.mirodaily.ui.MainActivity
 import com.hika.mirodaily.ui.R
 import com.hika.mirodaily.ui.databinding.FragmentStartBinding
-import com.hika.mirodaily.ui.fragments.start.FloatingWindow
+import com.hika.mirodaily.ui.floatingWindow.FloatingWindow
 import kotlinx.coroutines.launch
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class StartFragment : Fragment() {
 
     private lateinit var binding: FragmentStartBinding
-    private lateinit var floatingWindow: FloatingWindow
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -51,11 +50,14 @@ class StartFragment : Fragment() {
         }
 
         // 卡片 3：悬浮窗
+        val floatingWindow = FloatingWindow(requireContext(), inflater, onOverlaySettingResult)
         binding.btnOverlay.setOnClickListener {
             updateUi()
-            floatingWindow.open()
+            if (!floatingWindow.open())
+                floatingWindow.openOverlaySetting()
+            floatingWindow.logger("点击了悬浮窗开启按钮")
         }
-        floatingWindow = FloatingWindow(requireContext(), inflater, onOverlaySettingResult)
+        (activity as MainActivity).floatingWindow = floatingWindow
 
         // 卡片 4：跳转 Config 页面
         setCard4()
@@ -66,7 +68,7 @@ class StartFragment : Fragment() {
     /* ---------------- 无障碍 ---------------- */
 
     private fun openAccessibilitySetting() {
-        if (isAccessibilitySettingEnabled() == true) {
+        if ((activity as MainActivity).isAccessibilitySettingEnabled() == true) {
             toastLine("无障碍已开启，仍打开设置以便调试", context)
         } else {
             toastLine("请启用无障碍服务", context, true)
@@ -76,7 +78,7 @@ class StartFragment : Fragment() {
 
     private val onAccessibilitySettingResult =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-            if (isAccessibilitySettingEnabled() == true)
+            if ((activity as MainActivity).isAccessibilitySettingEnabled() == true)
                 toastLine("无障碍设置已启用", context)
             else
                 toastLine("无障碍设置启用失败", context, true)
@@ -84,20 +86,11 @@ class StartFragment : Fragment() {
             updateUi()
         }
 
-    private fun isAccessibilitySettingEnabled(): Boolean? {
-        val enabledServices = Settings.Secure.getString(
-            context?.contentResolver,
-            Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
-        )
-        return enabledServices?.contains(
-            ComponentName(AccessibilityPackageName, AccessibilityClassName).flattenToString()
-        )
-    }
 
     /* ---------------- 媒体投影 ---------------- */
 
     private suspend fun requestProjection() {
-        if (isAccessibilitySettingEnabled() != true) {
+        if ((activity as MainActivity).isAccessibilitySettingEnabled() != true) {
             toastLine("请先启用无障碍服务", context, true)
             return
         }
@@ -153,7 +146,7 @@ class StartFragment : Fragment() {
 
     private val onOverlaySettingResult =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-            floatingWindow.onLaunchResult()
+            (activity as MainActivity).floatingWindow.onLaunchResult()
             updateUi()
         }
 
@@ -181,15 +174,10 @@ class StartFragment : Fragment() {
         updateUi()
     }
 
-    override fun onDestroyView() {
-        floatingWindow.close()
-        super.onDestroyView()
-    }
-
     private fun updateUi() {
-        val acc = isAccessibilitySettingEnabled() == true
+        val acc = (activity as MainActivity).isAccessibilitySettingEnabled() == true
         val projection = iAccessibilityService?.isProjectionStarted() == true
-        val overlay = floatingWindow.isOverlayPermitted()
+        val overlay = (activity as MainActivity).floatingWindow.isOverlayPermitted()
 
         binding.dot1.setImageResource(
             if (acc) R.drawable.dot_state_ok else R.drawable.dot_state_grey

@@ -64,6 +64,6 @@ Java_com_hika_accessibility_recognition_ImageHandler_convertRGBAtoNV21(
         return JNI_FALSE;
     }
 
-    ALOGI("Successfully converted RGBA to NV21");
+    //ALOGI("Successfully converted RGBA to NV21");
     return JNI_TRUE;
 }

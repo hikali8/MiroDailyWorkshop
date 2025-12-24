@@ -1,24 +1,30 @@
 package com.hika.mirodaily.core.game_labors.genshin
 
+import android.util.Log
+
 const val MEASURE_W = 2780.0
 const val MEASURE_H = 1264.0
 
 enum class UIBtn(val xScale: Double, val yScale: Double, val rScale: Double,
                  var x: Float = -1f, var y: Float = -1f, var r: Float = -1f) {
-    WASD(256 / MEASURE_W, 1115 / MEASURE_H, 81 / MEASURE_W),
-    S(2608 / MEASURE_W, 1176 / MEASURE_H, 44 / MEASURE_W),
-    I(2229 / MEASURE_W, 946 / MEASURE_H, 16 / MEASURE_W),
-    MAP(177 / MEASURE_W, 92 / MEASURE_H, 79 / MEASURE_W),
-    MAP_REGION_SELECT(2670 / MEASURE_W, 1219 / MEASURE_H, 22 / MEASURE_W),
-    MAP_MODSTADT(2318 / MEASURE_W, 160 / MEASURE_H, 30 / MEASURE_W),
-    MAP_SUNSETLAKE(2260 / MEASURE_W, 202 / MEASURE_H, 12 / MEASURE_W),
-    MAP_TELEPORT_CONFIRM(2400 / MEASURE_W, 1212 / MEASURE_H, 16 / MEASURE_W);
+    WASD(511 / MEASURE_W, 966 / MEASURE_H, 173 / MEASURE_W),
+    S(2437 / MEASURE_W, 1088 / MEASURE_H, 89 / MEASURE_W),
+    I(1681 / MEASURE_W, 631 / MEASURE_H, 31 / MEASURE_W),
+    MAP(350 / MEASURE_W, 183 / MEASURE_H, 159 / MEASURE_W),
+    MAP_REGION_SELECT(2559 / MEASURE_W, 1172 / MEASURE_H, 46 / MEASURE_W),
+    MAP_SUNSETLAKE(1739 / MEASURE_W, 402 / MEASURE_H, 26 / MEASURE_W),
+    MAP_MODSTADT(1857 / MEASURE_W, 319 / MEASURE_H, 50 / MEASURE_W),
+    MAP_TELEPORT_CONFIRM(2019 / MEASURE_W, 1158 / MEASURE_H, 32 / MEASURE_W),
+
+    MAP_ZOOM_BAR(175/ MEASURE_W, 632/ MEASURE_H, 113/ MEASURE_W),
+    ;
     companion object {
-        fun updateCoordinate(curWidth: Int, curHeight: Int){
+        fun updateWH(width: Int, height: Int){
+            Log.i("#0x-", "updateCoordinate $width x $height")
             for (uib in UIBtn.entries){
-                uib.x = (curWidth * uib.xScale).toFloat()
-                uib.y = (curHeight * uib.yScale).toFloat()
-                uib.r = (curWidth * uib.rScale).toFloat()
+                uib.x = (width * uib.xScale).toFloat()
+                uib.y = (height * uib.yScale).toFloat()
+                uib.r = (width * uib.rScale).toFloat()
             }
         }
     }

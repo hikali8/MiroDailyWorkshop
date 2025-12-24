@@ -29,7 +29,7 @@ private const val CHANNEL_ID = "hikaAccessibilityChannel"
 abstract class AccessibilityServicePart2_Projection: AccessibilityServicePart1_ConnectToMainProc() {
     // 2. Start Media Projection
     //     media projection has to be requested in an activity, and started in a service. to start
-    //       it, we have to promote this service to foreground after activity requests it.
+    //       it, we have to promote this service to foreground after activity requests the permission.
     fun startProjection(resultCode: Int, resultData: Intent) {
         promoteThisToForeground()
         getProjectionToken(resultCode, resultData)

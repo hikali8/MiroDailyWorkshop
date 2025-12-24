@@ -13,7 +13,7 @@
         android:id="@+id/logText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        tools:text="Floating Window Content (Preview)"
+        tools:text="Floating Window Content (Preview) Floating Window Content (Preview) "
         android:textColor="@android:color/white"
         android:textSize="16sp"
         android:layout_marginBottom="8dp"/>

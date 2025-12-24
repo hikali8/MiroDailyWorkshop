@@ -44,6 +44,7 @@ suspend fun loopUntil(
     return false
 }
 
+
 // too many code, that i have to simplify Toast.makeText
 fun toastLine(text: CharSequence, context: Context?, isLong: Boolean = false){
     Toast.makeText(context, text,

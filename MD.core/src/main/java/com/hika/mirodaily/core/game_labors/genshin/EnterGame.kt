@@ -1,24 +1,23 @@
 package com.hika.mirodaily.core.game_labors.genshin
 
 import android.content.ActivityNotFoundException
-import android.content.Context
 import android.content.Intent
-import com.hika.core.aidl.accessibility.ParcelableSymbol
-import com.hika.core.aidl.accessibility.ParcelableText
+import androidx.activity.ComponentActivity
+import androidx.lifecycle.lifecycleScope
+import com.hika.core.interfaces.FloatingWindowControll
 import com.hika.core.interfaces.Level
 import com.hika.core.interfaces.Logger
-import com.hika.core.loopUntil
 import com.hika.mirodaily.core.ASReceiver
-import com.hika.mirodaily.core.data_extractors.matchSequence
 import com.hika.mirodaily.core.iAccessibilityService
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 // 进入游戏，我们需要找到按钮位置
 
-class EnterGame(val context: Context, val scope: CoroutineScope, val logger: Logger) {
+class EnterGame(val context: ComponentActivity, val fWindowControll: FloatingWindowControll, val logger: Logger) {
+    val scope = context.lifecycleScope
+
     val packageName = "com.miHoYo.Yuanshen"
     val className = "com.miHoYo.GetMobileInfo.MainActivity"
 
@@ -30,34 +29,34 @@ class EnterGame(val context: Context, val scope: CoroutineScope, val logger: Log
         addCategory(Intent.CATEGORY_LAUNCHER)
     }
 
-    fun start(task: ITask): Job {
+    fun launch(task: ITask): Job {
         val job = scope.launch {
             iAccessibilityService?.clearClassNameListeners()
             if(!ASReceiver.listenToActivityClassNameAsync(className))
                 logger("Failed to hear class name, suppose it's already entered.")
-            logger("Genshin")
-
+            logger("原神")
             delay(1000)
             // 进入游戏。
-            // “点击进入”需要被点击。等待30s
-            val keyword = "点击进入"
-            var location: List<ParcelableSymbol>? = null
-            var text: ParcelableText? = null
-            if (loopUntil(30000) {
-                    text = ASReceiver.getTextInRegion()
-                    location = text!!.matchSequence(keyword)
-                    location?.isNotEmpty() != true
-                }){
-                logger("click the '点击进入'.")
-                ASReceiver.clickLocationBox(location!!.first().boundingBox!!)
-            }else{
-                logger("Not see '点击进入'.")
-            }
-            // 延时5秒
-            delay(5000)
+//            // “点击进入”需要被点击。等待30s
+//            logger("'点击进入' 需要被点击.")
+//            destructivelyClickOnceAppearsText(
+//                "点击进入",
+//                30000,
+//                10000
+//            ).let {
+//                if (it > 0) logger("'点击进入' 已点击消失.")
+//                else if (it == 0) logger("未见 '点击进入'.")
+//                else {
+//                    logger("已点击 '点击进入' ，但未见消失.")
+//                    return@launch
+//                }
+//            }
+//            // 延时10秒
+//            delay(10000)
             // 找到操作框的位置。计算w,a,s,d的坐标。
             val p = iAccessibilityService?.screenSize ?: return@launch
-            UIBtn.updateCoordinate(p.x, p.y)
+            UIBtn.updateWH(p.x, p.y)
+            fWindowControll.screenWidth = p.x
             // 开始任务。
             task.start()
         }

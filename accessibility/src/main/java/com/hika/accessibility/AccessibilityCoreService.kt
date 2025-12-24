@@ -42,12 +42,15 @@ class AccessibilityCoreService() : AccessibilityServicePart5_ScriptReplay() {
 
     // to set default arguments, we need to put them anywhere else
     fun click(point: PointF, startTime: Long, duration: Long){
+        Log.i("#0x-AS", "点击：$point")
         val gesturePath = Path()
         gesturePath.moveTo(point.x, point.y)
+        gesturePath.lineTo(point.x, point.y)
         dispatchGestureEdited(gesturePath, startTime, duration)
     }
 
     fun swipe(pointFrom: PointF, pointTo: PointF, startTime: Long = 0, duration: Long = 100){
+        Log.i("#0x-AS", "滑动：pointFrom $pointFrom pointTo $pointTo")
         val gesturePath = Path()
         gesturePath.moveTo(pointFrom.x, pointFrom.y)
         gesturePath.lineTo(pointTo.x, pointTo.y)

@@ -21,6 +21,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import java.lang.ref.WeakReference
@@ -39,6 +40,12 @@ class ASReceiver: Service(){
 
         fun swipe(pointFrom: PointF, pointTo: PointF, duration: Long = 100, startTime: Long = 0)
             = iAccessibilityService?.swipe(pointFrom, pointTo, startTime, duration)
+
+        suspend fun swipeWithDelay(x1: Float, y1: Float, x2: Float, y2: Float, duration: Long = 100, startTime: Long = 0){
+            delay(startTime)
+            iAccessibilityService?.swipe(PointF(x1, y1), PointF(x2, y2), 0, duration)
+            delay(duration)
+        }
 
         fun clickLocationBox(locationBox: Rect, duration: Long = 50, startTime: Long = 0)
             = iAccessibilityService?.click(PointF(
