@@ -19,10 +19,12 @@ import com.hika.mirodaily.core.AccessibilityPackageName
 import com.hika.mirodaily.core.ProjectionRequesterClassName
 import com.hika.mirodaily.core.START_BROADCAST
 import com.hika.mirodaily.core.iAccessibilityService
+import com.hika.mirodaily.ui.MainActivity
 import com.hika.mirodaily.ui.R
 import com.hika.mirodaily.ui.databinding.FragmentStartBinding
 import com.hika.mirodaily.ui.fragments.start.FloatingWindow
 import kotlinx.coroutines.launch
+import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class StartFragment : Fragment() {
 
@@ -160,8 +162,15 @@ class StartFragment : Fragment() {
     private fun setCard4() {
         binding.btn4.setOnClickListener {
             updateUi()
-            // 直接使用 mobile_navigation.xml 里的 destination id
-            findNavController().navigate(R.id.navigation_config)
+            // 直接使用 mobile_navigation.xml 里的 destination id，会导致原Fragment无法返回
+//            findNavController().navigate(R.id.navigation_config)
+
+            // 获取Activity中的底部导航栏引用并模拟点击
+            val activity = requireActivity() as MainActivity
+            val bottomNav = activity.findViewById<BottomNavigationView>(R.id.nav_view)
+
+            // 模拟点击Config按钮（假设ID是 R.id.navigation_config，赋值更改）
+            bottomNav.selectedItemId = R.id.navigation_config
         }
     }
 
