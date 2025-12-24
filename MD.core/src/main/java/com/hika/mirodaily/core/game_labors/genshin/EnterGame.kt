@@ -1,13 +1,15 @@
 package com.hika.mirodaily.core.game_labors.genshin
 
-import android.app.Activity
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
+import com.hika.core.aidl.accessibility.ParcelableSymbol
+import com.hika.core.aidl.accessibility.ParcelableText
 import com.hika.core.interfaces.Level
 import com.hika.core.interfaces.Logger
-import com.hika.core.toastLine
+import com.hika.core.loopUntil
 import com.hika.mirodaily.core.ASReceiver
+import com.hika.mirodaily.core.data_extractors.matchSequence
 import com.hika.mirodaily.core.iAccessibilityService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -28,7 +30,7 @@ class EnterGame(val context: Context, val scope: CoroutineScope, val logger: Log
         addCategory(Intent.CATEGORY_LAUNCHER)
     }
 
-    fun start(tast: ITask): Job {
+    fun start(task: ITask): Job {
         val job = scope.launch {
             iAccessibilityService?.clearClassNameListeners()
             if(!ASReceiver.listenToActivityClassNameAsync(className))
@@ -37,12 +39,27 @@ class EnterGame(val context: Context, val scope: CoroutineScope, val logger: Log
 
             delay(1000)
             // 进入游戏。
-            // “开始游戏”需要被点击。
-
+            // “点击进入”需要被点击。等待30s
+            val keyword = "点击进入"
+            var location: List<ParcelableSymbol>? = null
+            var text: ParcelableText? = null
+            if (loopUntil(30000) {
+                    text = ASReceiver.getTextInRegion()
+                    location = text!!.matchSequence(keyword)
+                    location?.isNotEmpty() != true
+                }){
+                logger("click the '点击进入'.")
+                ASReceiver.clickLocationBox(location!!.first().boundingBox!!)
+            }else{
+                logger("Not see '点击进入'.")
+            }
+            // 延时5秒
+            delay(5000)
             // 找到操作框的位置。计算w,a,s,d的坐标。
-
+            val p = iAccessibilityService?.screenSize ?: return@launch
+            UIBtn.updateCoordinate(p.x, p.y)
             // 开始任务。
-            tast.start()
+            task.start()
         }
 
         try {
@@ -54,6 +71,7 @@ class EnterGame(val context: Context, val scope: CoroutineScope, val logger: Log
         }
         return job
     }
+
 
 
     //5. Clean-Up: On Task finished
