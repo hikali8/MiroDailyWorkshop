@@ -1,4 +1,4 @@
-package com.hika.mirodaily.ui.ui.fragments.more_dots
+package com.hika.mirodaily.ui.fragments.more_dots
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData

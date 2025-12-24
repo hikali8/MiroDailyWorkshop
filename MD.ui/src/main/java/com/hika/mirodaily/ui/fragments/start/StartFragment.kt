@@ -1,4 +1,4 @@
-package com.hika.mirodaily.ui.ui.fragments.start
+package com.hika.mirodaily.ui.fragments.start
 
 import android.content.ComponentName
 import android.content.Intent

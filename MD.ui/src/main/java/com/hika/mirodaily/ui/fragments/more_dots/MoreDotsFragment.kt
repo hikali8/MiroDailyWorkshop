@@ -1,4 +1,4 @@
-package com.hika.mirodaily.ui.ui.fragments.more_dots
+package com.hika.mirodaily.ui.fragments.more_dots
 
 import android.content.Intent
 import android.os.Bundle
