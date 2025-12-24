@@ -105,15 +105,15 @@ class DailyCheckIn(val context: Context, val scope: CoroutineScope, val logger: 
 
         // swipe upward
         ASReceiver.swipe(
-            PointF(width / 2F, height / 2F),
-            PointF(width / 2F, height * 0.2F)
+            width / 2F, height / 2F,
+            width / 2F, height * 0.2F
         )
         delay(500)
 
         // swipe downward
         ASReceiver.swipe(
-            PointF(width / 2F, height / 2F),
-            PointF(width / 2F, height * 0.8F),
+            width / 2F, height / 2F,
+            width / 2F, height * 0.8F,
             50
         )
         delay(500)
@@ -140,8 +140,8 @@ class DailyCheckIn(val context: Context, val scope: CoroutineScope, val logger: 
         }
         // from 10% -> 80%
         ASReceiver.swipe(
-            PointF(width * 0.1F, barHeight),
-            PointF(width * 0.8F, barHeight),
+            width * 0.1F, barHeight,
+            width * 0.8F, barHeight,
             50
         )
         logger("swiped")
@@ -173,8 +173,8 @@ class DailyCheckIn(val context: Context, val scope: CoroutineScope, val logger: 
             logger("swip downward to find check-in button.")
             // swipe downward
             ASReceiver.swipe(
-                PointF(width / 2F, height / 2F),
-                PointF(width / 2F, height * 0.8F),
+                width / 2F, height / 2F,
+                width / 2F, height * 0.8F,
                 80
             )
             delay(500)
@@ -214,15 +214,15 @@ class DailyCheckIn(val context: Context, val scope: CoroutineScope, val logger: 
 
             // swipe up
             ASReceiver.swipe(
-                PointF(width / 2F, height / 2F),
-                PointF(width / 2F, height * 0.2F)
+                width / 2F, height / 2F,
+                width / 2F, height * 0.2F
             )
             delay(500)
 
             // swipe left
             ASReceiver.swipe(
-                PointF(width * 0.8F, barHeight),
-                PointF(width * 0.2F, barHeight)
+                width * 0.8F, barHeight,
+                width * 0.2F, barHeight
             )
             delay(500)
         }

@@ -38,8 +38,8 @@ class ASReceiver: Service(){
         fun click(x: Float, y: Float, duration: Long = 100, startTime: Long = 0)
             = iAccessibilityService?.click(PointF(x, y), startTime, duration)
 
-        fun swipe(pointFrom: PointF, pointTo: PointF, duration: Long = 100, startTime: Long = 0)
-            = iAccessibilityService?.swipe(pointFrom, pointTo, startTime, duration)
+        fun swipe(x1: Float, y1: Float, x2: Float, y2: Float, duration: Long = 100, startTime: Long = 0)
+            = iAccessibilityService?.swipe(PointF(x1, y1), PointF(x2, y2), startTime, duration)
 
         suspend fun swipeWithDelay(x1: Float, y1: Float, x2: Float, y2: Float, duration: Long = 100, startTime: Long = 0){
             delay(startTime)
