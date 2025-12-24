@@ -25,16 +25,20 @@ import kotlinx.coroutines.delay
 // 我们现在没有实现小地图定位，仍旧按照定时前进。
 
 class FinishTask(val fWindowControll: FloatingWindowControll, val logger: Logger): ITask {
+
+    val isTesting = true
+    val num = if (isTesting) 1L else 10L
     suspend fun f1(){
-        delay(1000)
+        delay(100 * num)
         fWindowControll.hide()
-        delay(2000)
+        delay(200 * num)
         fWindowControll.open()
     }
 
     suspend fun f2(){
-        delay(1000)
+        delay(100 * num)
         fWindowControll.hide()
+        delay(100)
     }
 
     override suspend fun start(){
@@ -44,12 +48,14 @@ class FinishTask(val fWindowControll: FloatingWindowControll, val logger: Logger
         f2()
         ASReceiver.click(UIBtn.MAP.x, UIBtn.MAP.y)
         fWindowControll.open()
-        logger("开始探测缩放条位置...")
+        logger("开始探测缩放条加号图标...")
         f1()
-        logger("成功探测到缩放条位置. 滑动.")
+        logger("成功探测到缩放条加号图标. 点击 5 次.")
         f2()
-        ASReceiver.swipe(UIBtn.MAP_ZOOM_BAR.x, UIBtn.MAP_ZOOM_BAR.y, UIBtn.MAP_ZOOM_BAR.x,
-            UIBtn.MAP_ZOOM_BAR.y - UIBtn.MAP_ZOOM_BAR.r)
+        for (i in 1..5){
+            ASReceiver.click(UIBtn.MAP_ZOOM_BAR_ADD.x, UIBtn.MAP_ZOOM_BAR_ADD.y)
+            delay(100)
+        }
         fWindowControll.open()
         logger("开始探测地区选择图标...")
         f1()
@@ -67,13 +73,13 @@ class FinishTask(val fWindowControll: FloatingWindowControll, val logger: Logger
         f1()
         logger("成功探测到冒险家协会图标. 点击.")
         f2()
-        ASReceiver.click(UIBtn.MAP_SUNSETLAKE.x, UIBtn.MAP_SUNSETLAKE.y)
+        ASReceiver.click(UIBtn.MAP_ASSOCIATION.x, UIBtn.MAP_ASSOCIATION.y)
         fWindowControll.open()
         logger("开始探测探测文字：冒险家协会 ...")
         f1()
         logger("成功探测到文字： 冒险家协会 . 点击.")
         f2()
-        ASReceiver.click(UIBtn.MAP_SUNSETLAKE.x, UIBtn.MAP_SUNSETLAKE.y)
+        ASReceiver.click(UIBtn.MAP_TELEPORT_SELECT.x, UIBtn.MAP_TELEPORT_SELECT.y)
         fWindowControll.open()
         logger("开始探测确认传送按钮图标...")
         f1()
@@ -84,32 +90,44 @@ class FinishTask(val fWindowControll: FloatingWindowControll, val logger: Logger
         // 现在在目标点。开始移动。
 
 
-
-        delay(1000)
+        logger("开始向合成台移动...")
+        delay(3000)
         fWindowControll.hide()
-        val p = iAccessibilityService?.screenSize
-        val w = p?.x ?: 2780
-        val h = (p?.y ?: 1264).toFloat()
-        var x1 = w * 0.6f
-        var x2 = w * 0.3f
-        var y1 = h * 0.5f
+        delay(100)
+        var x1 = UIBtn.WASD.x
+        var y1 = (UIBtn.WASD.y - UIBtn.WASD.r * 0.9).toFloat()
+        ASReceiver.click(x1, y1, 5000)
 
-        ASReceiver.swipeWithDelay(x1, y1, x2, y1, 100)
-        x1 = UIBtn.WASD.x
-        y1 = (UIBtn.WASD.y - UIBtn.WASD.r * 0.9).toFloat()
-        ASReceiver.click(x1, y1, 2000)
-        x2 = UIBtn.S.x
-        var y2 = UIBtn.S.y
-        ASReceiver.click(x2, y2)
-        delay(4000)
-        ASReceiver.click(x1, y1, 100)
-        ASReceiver.click(x2, y2)
-        ASReceiver.click(x1, y1, 4000)
-        delay(4000)
-        ASReceiver.click(x1, y1, 100)
-        ASReceiver.click(x1, y1)
-        ASReceiver.click(x1, y1, 4000)
+        delay(5000)
         fWindowControll.open()
+
+
+
+//        delay(1000)
+//        fWindowControll.hide()
+//        val p = iAccessibilityService?.screenSize
+//        val w = p?.x ?: 2780
+//        val h = (p?.y ?: 1264).toFloat()
+//        x1 = w * 0.6f
+//        var x2 = w * 0.3f
+//        y1 = h * 0.5f
+//
+//        ASReceiver.swipeWithDelay(x1, y1, x2, y1, 100)
+//        x1 = UIBtn.WASD.x
+//        y1 = (UIBtn.WASD.y - UIBtn.WASD.r * 0.9).toFloat()
+//        ASReceiver.click(x1, y1, 2000)
+//        x2 = UIBtn.S.x
+//        var y2 = UIBtn.S.y
+//        ASReceiver.click(x2, y2)
+//        delay(4000)
+//        ASReceiver.click(x1, y1, 100)
+//        ASReceiver.click(x2, y2)
+//        ASReceiver.click(x1, y1, 4000)
+//        delay(4000)
+//        ASReceiver.click(x1, y1, 100)
+//        ASReceiver.click(x1, y1)
+//        ASReceiver.click(x1, y1, 4000)
+//        fWindowControll.open()
     }
 
     suspend fun show(){

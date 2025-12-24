@@ -151,7 +151,7 @@ class FloatingWindow(val context: Context,
     override var screenHeight = 1264
 
     val lineWidth get() = (40.0 / 1309 * screenWidth).toInt()
-    val maxLines = (15.0 / 1264 * screenHeight).toInt()
+    val maxLines = (10.0 / 1264 * screenHeight).toInt()
     val indent = 17  // 缩进，但总是对不上
     val logger = object: Logger {
 
