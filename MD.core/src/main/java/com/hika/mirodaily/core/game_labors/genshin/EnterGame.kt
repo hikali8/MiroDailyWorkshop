@@ -2,8 +2,7 @@ package com.hika.mirodaily.core.game_labors.genshin
 
 import android.content.ActivityNotFoundException
 import android.content.Intent
-import android.graphics.Rect
-import androidx.activity.ComponentActivity
+import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.lifecycleScope
 import com.hika.core.interfaces.FloatingWindowControll
 import com.hika.core.interfaces.Level
@@ -17,7 +16,7 @@ import kotlinx.coroutines.launch
 
 // 进入游戏，我们需要找到按钮位置
 
-class EnterGame(val context: ComponentActivity, val fWindowControll: FloatingWindowControll, val logger: Logger) {
+class EnterGame(val context: FragmentActivity, val fWindowControll: FloatingWindowControll, val logger: Logger) {
     val scope = context.lifecycleScope
 
     val packageName = "com.miHoYo.Yuanshen"

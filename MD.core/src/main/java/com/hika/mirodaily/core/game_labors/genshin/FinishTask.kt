@@ -201,11 +201,16 @@ class FinishTask(val fWindowControll: FloatingWindowControll, val logger: Logger
         f2()
         ASReceiver.click(UIBtn.ASSOCIATION_REWARD.x, UIBtn.ASSOCIATION_REWARD.y)
         f3()
-        logger("协会领奖图标已消失. 按下系统返回键 1 次.")
+        logger("协会领奖图标已消失. 探测到剧情按钮图标, 自动跳过剧情...")
+        f2()
+        ASReceiver.click(UIBtn.CONVERSATION.x, UIBtn.CONVERSATION.y)
+        delay(1000)
+        fWindowControll.open()
+        logger("剧情按钮图标已消失. 按下系统返回键 1 次并探测主界面图标")
         iAccessibilityService?.performAction(AccessibilityService.GLOBAL_ACTION_BACK)
         delay(1000)
         f1()
-        logger("成功探测到任务书图标，回到主界面. 任务完成!")
+        logger("成功探测到任务书图标，回到主界面图标. 任务完成!")
 
     }
 

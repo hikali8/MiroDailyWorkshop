@@ -12,7 +12,10 @@ import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.hika.core.toastLine
+import com.hika.mirodaily.core.game_labors.genshin.EnterGame
+import com.hika.mirodaily.core.game_labors.genshin.ITask
 import com.hika.mirodaily.core.iAccessibilityService
+import com.hika.mirodaily.ui.MainActivity
 import com.hika.mirodaily.ui.databinding.FragmentConfigBinding
 import com.hika.mirodaily.ui.scripts.ScriptGroup
 import com.hika.mirodaily.ui.scripts.ScriptPlan
@@ -468,7 +471,14 @@ class ConfigFragment : Fragment() {
                     val f = fileMap[scriptName] ?: continue
                     val scriptText = f.readText()
 
-                    iAccessibilityService?.replayScript(scriptText)
+                    // 需要先打开原神，再执行脚本
+                    val acti = activity as MainActivity
+                    EnterGame(requireActivity(), acti.floatingWindow, acti.floatingWindow.logger)
+                        .launch(object : ITask {
+                            override suspend fun start(){
+                                iAccessibilityService?.replayScript(scriptText)
+                            }
+                        })
 
                     delay(estimateScriptDurationMs(scriptText) + 800)
                 }
