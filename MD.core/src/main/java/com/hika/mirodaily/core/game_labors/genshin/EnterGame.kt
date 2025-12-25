@@ -56,8 +56,16 @@ class EnterGame(val context: FragmentActivity, val fWindowControll: FloatingWind
                     return@launch
                 }
             }
-            // 延时10秒
-            delay(10000)
+            // 延时10秒(9500ms)
+            delay(2000)
+            for (i in 1..3){
+                fWindowControll.open()
+                logger("防卡死")
+                delay(1000)
+                fWindowControll.hide()
+                delay(1500)
+            }
+
             // 找到操作框的位置。计算w,a,s,d的坐标。
             val p = iAccessibilityService?.screenSize ?: return@launch
             UIBtn.updateWH(p.x, p.y)

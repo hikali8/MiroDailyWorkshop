@@ -34,6 +34,6 @@ interface IAccessibilityService {
     oneway void swipe(in PointF pointFrom, in PointF pointTo, long startTime, long duration);
     oneway void performAction(in int action);   //: AccessibilityService.GLOBAL_ACTION_XXX, to press a physical key
 
-    oneway void replayScript(in String script);
+    void replayScript(in String script);
     oneway void stopReplay();
 }

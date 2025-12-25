@@ -99,9 +99,11 @@ class FloatingWindow(val context: Context,
             toastLine("悬浮窗显示（没有初始大小）", context)
             return true
         } catch (e: Exception) {
-            e.printStackTrace()
-            toastLine("悬浮窗显示失败: ${e.message}", context)
-            return false
+//            e.printStackTrace()
+            Log.e("#0x-FW", "悬浮窗显示失败: ${e.message}")
+            throw e
+            //java.lang.NullPointerException: Can't toast on a thread that has not called Looper.prepare()
+//            toastLine("悬浮窗显示失败: ${e.message}", context)
         }
     }
 
@@ -156,7 +158,7 @@ class FloatingWindow(val context: Context,
     val logger = object: Logger {
 
         override fun println(text: String, color: Level) {
-            Log.i("#0x-", text)
+            Log.i("#0x-FW", text)
             // line break
             var text = lineBreak(text, lineWidth, indent)
             // add prefix

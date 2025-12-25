@@ -10,6 +10,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlin.math.roundToInt
 
 abstract class AccessibilityServicePart5_ScriptReplay : AccessibilityServicePart4_ScreenWatching() {
@@ -28,7 +29,7 @@ abstract class AccessibilityServicePart5_ScriptReplay : AccessibilityServicePart
                 Log.d("#0x-AS5", "解开是：" + gestures.toString())
                 val screen = screenSize
                 for (gesture in gestures)
-                    coroutineScope.launch(Dispatchers.IO) {
+                    launch(Dispatchers.IO) {
                         delay(gesture.startTime)
                         val builder = GestureDescription.Builder()
                         var startTime = 0L
@@ -54,6 +55,10 @@ abstract class AccessibilityServicePart5_ScriptReplay : AccessibilityServicePart
                         }
                         dispatchGesture(builder.build(), null, null)
                     }
+            }
+
+            return runBlocking {
+                job?.join()
             }
         }
 

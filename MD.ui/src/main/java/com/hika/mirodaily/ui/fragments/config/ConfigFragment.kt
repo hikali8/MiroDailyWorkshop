@@ -476,11 +476,24 @@ class ConfigFragment : Fragment() {
                     EnterGame(requireActivity(), acti.floatingWindow, acti.floatingWindow.logger)
                         .launch(object : ITask {
                             override suspend fun start(){
+                                acti.runOnUiThread{
+                                    acti.floatingWindow.open()
+                                }
+                                acti.floatingWindow.logger("开始执行脚本.")
+                                delay(1000)
+//                                acti.runOnUiThread{
+//                                    acti.floatingWindow.hide()
+//                                }
                                 iAccessibilityService?.replayScript(scriptText)
+//                                delay(estimateScriptDurationMs(scriptText) + 800)
+//                                acti.runOnUiThread{
+//                                    acti.floatingWindow.open()
+//                                }
+                                acti.floatingWindow.logger("脚本执行完毕.")
+                                delay(1000)
                             }
                         })
 
-                    delay(estimateScriptDurationMs(scriptText) + 800)
                 }
             }
         }
@@ -492,7 +505,8 @@ class ConfigFragment : Fragment() {
             val cols = line.split(',')
             if (cols.isEmpty()) continue
             when (cols[0]) {
-                "wait", "Move", "NEXT" -> total += cols.getOrNull(1)?.toLongOrNull() ?: 0L
+                "wait", "Move" -> total += cols.getOrNull(1)?.toLongOrNull() ?: 0L
+                "NEXT" -> break // next意味着下一根手指，每根手指的时间都可能不同，先这么实现
             }
         }
         return total.coerceAtLeast(0L)
