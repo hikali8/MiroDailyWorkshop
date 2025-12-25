@@ -2,12 +2,14 @@ package com.hika.mirodaily.core.game_labors.genshin
 
 import android.content.ActivityNotFoundException
 import android.content.Intent
+import android.graphics.Rect
 import androidx.activity.ComponentActivity
 import androidx.lifecycle.lifecycleScope
 import com.hika.core.interfaces.FloatingWindowControll
 import com.hika.core.interfaces.Level
 import com.hika.core.interfaces.Logger
 import com.hika.mirodaily.core.ASReceiver
+import com.hika.mirodaily.core.helpers.destructivelyClickOnceAppearsText
 import com.hika.mirodaily.core.iAccessibilityService
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -37,27 +39,31 @@ class EnterGame(val context: ComponentActivity, val fWindowControll: FloatingWin
             logger("原神")
             delay(1000)
             // 进入游戏。
-//            // “点击进入”需要被点击。等待30s
-//            logger("'点击进入' 需要被点击.")
-//            destructivelyClickOnceAppearsText(
-//                "点击进入",
-//                30000,
-//                10000
-//            ).let {
-//                if (it > 0) logger("'点击进入' 已点击消失.")
-//                else if (it == 0) logger("未见 '点击进入'.")
-//                else {
-//                    logger("已点击 '点击进入' ，但未见消失.")
-//                    return@launch
-//                }
-//            }
-//            // 延时10秒
-//            delay(10000)
+            // “点击进入”需要被点击。等待30s
+            logger("'点击进入' 需要被点击.")
+            delay(1000)
+            fWindowControll.hide()
+            destructivelyClickOnceAppearsText(
+                "点击进入",
+                30000,
+                10000
+            ).let {
+                fWindowControll.open()
+                if (it > 0) logger("'点击进入' 已点击消失. 开始探测主界面...")
+                else if (it == 0) logger("未见 '点击进入'. 开始探测主界面...")
+                else {
+                    logger("已点击 '点击进入' ，但未见消失.")
+                    return@launch
+                }
+            }
+            // 延时10秒
+            delay(10000)
             // 找到操作框的位置。计算w,a,s,d的坐标。
             val p = iAccessibilityService?.screenSize ?: return@launch
             UIBtn.updateWH(p.x, p.y)
             fWindowControll.screenWidth = p.x
             // 开始任务。
+            logger("成功探测到主界面. ")
             task.start()
         }
 

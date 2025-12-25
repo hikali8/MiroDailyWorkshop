@@ -2,9 +2,13 @@ package com.hika.accessibility
 
 import android.content.Intent
 import android.graphics.Rect
+import android.util.Log
 import com.google.mlkit.vision.text.Text
 import com.hika.core.aidl.accessibility.DetectedObject
 import com.hika.core.aidl.accessibility.ParcelableText
+import com.hika.core.aidl.accessibility.ParcelableTextBase
+import com.hika.core.getRotation
+import com.hika.core.rotateRectFrom
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
@@ -27,7 +31,6 @@ abstract class AccessibilityServicePart4_ScreenWatching: AccessibilityServicePar
         ): Array<DetectedObject> {
             val deferred = coroutineScope.async {
                 imageHandler?.getRecognizable()?.findOnNCNNDetector(detectorName, region, confidence)
-                null
             }
             detectJobs.add(deferred)
             return runBlocking {
@@ -41,9 +44,16 @@ abstract class AccessibilityServicePart4_ScreenWatching: AccessibilityServicePar
         }
 
         override fun getTextInRegion(region: Rect?): ParcelableText {
-            // we have still to use coroutine, as the screen capturing is limited
             val deferred = coroutineScope.async {
-                imageHandler?.getRecognizable()?.findOnGoogleOCRerInRangeAsync(region)
+                val rotation = getRotation(this@AccessibilityServicePart4_ScreenWatching)
+                val screen = screenSize
+                ParcelableTextBase.setRectRotation(
+                    rotation,
+                    screen.x, screen.y
+                )
+                imageHandler?.getRecognizable()?.findOnGoogleOCRerInRangeAsync(region?.run {
+                    rotateRectFrom(this, zeroW, zeroH, rotation)
+                })
             }
             textJobs.add(deferred)
             return runBlocking {

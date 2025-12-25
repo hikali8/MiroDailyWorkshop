@@ -3,16 +3,14 @@ package com.hika.accessibility
 import android.accessibilityservice.GestureDescription
 import android.graphics.Path
 import android.graphics.PointF
-import android.hardware.display.DisplayManager
 import android.util.Log
-import android.view.Surface
-import com.hika.core.rotateCoordinate
+import com.hika.core.getRotation
+import com.hika.core.rotateXYto
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
-import kotlin.properties.Delegates
 
 abstract class AccessibilityServicePart5_ScriptReplay : AccessibilityServicePart4_ScreenWatching() {
     // 5. Script Replay
@@ -25,10 +23,10 @@ abstract class AccessibilityServicePart5_ScriptReplay : AccessibilityServicePart
             }
 
             job = coroutineScope.launch(Dispatchers.IO) {
-                val rotation = getSystemService(DisplayManager::class.java)
-                    .displays.first().rotation
+                val rotation = getRotation(this@AccessibilityServicePart5_ScriptReplay)
                 val gestures = ScriptReplayer().extractScript(script)
                 Log.d("#0x-AS5", "解开是：" + gestures.toString())
+                val screen = screenSize
                 for (gesture in gestures)
                     coroutineScope.launch(Dispatchers.IO) {
                         delay(gesture.startTime)
@@ -37,12 +35,12 @@ abstract class AccessibilityServicePart5_ScriptReplay : AccessibilityServicePart
                         for (stroke in gesture.strokes){
                             val path = Path()
                             stroke.points.removeFirstOrNull()?.apply {
-                                val rotated = rotateCoordinate(x, y, width, height, rotation)
-                                path.moveTo(rotated.first, rotated.second)
+                                val rotated = rotateXYto(x, y, screen.x, screen.y, rotation)
+                                path.moveTo(rotated.x, rotated.y)
                             } ?: continue
                             for (point in stroke.points){
-                                val rotated = rotateCoordinate(point.x, point.y, width, height, rotation)
-                                path.lineTo(rotated.first, rotated.second)
+                                val rotated = rotateXYto(point.x, point.y, screen.x, screen.y, rotation)
+                                path.lineTo(rotated.x, rotated.y)
                             }
                             builder.addStroke(GestureDescription.StrokeDescription(
                                 path, startTime,

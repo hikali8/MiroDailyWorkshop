@@ -14,12 +14,13 @@ import android.os.Build
 import android.provider.Settings
 import android.util.DisplayMetrics
 import android.util.Log
-import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.window.layout.WindowMetricsCalculator
 import com.hika.accessibility.recognition.ImageHandler
 import com.hika.core.aidl.accessibility.IProjectionSuccess
+import com.hika.core.getRotation
+import com.hika.core.rotateWHto
 import com.hika.core.toastLine
 
 
@@ -123,10 +124,12 @@ abstract class AccessibilityServicePart2_Projection: AccessibilityServicePart1_C
                 projectionToken = null
             }
 
-            override fun onCapturedContentResize(_width: Int, _height: Int) {
-                width = _width
-                height = _height
-                super.onCapturedContentResize(_width, _height)
+            override fun onCapturedContentResize(width: Int, height: Int) {
+                rotateWHto(width, height, getRotation(this@AccessibilityServicePart2_Projection)).apply {
+                    zeroW = x
+                    zeroH = y
+                }
+                super.onCapturedContentResize(width, height)
                 onResize()
             }
         }, null)
@@ -140,23 +143,27 @@ abstract class AccessibilityServicePart2_Projection: AccessibilityServicePart1_C
     var imageHandler: ImageHandler? = null
         private set
 
-    var width = 0
+    var zeroW = 0
         private set
-    var height = 0
+    var zeroH = 0
         private set
 
     private fun getDisplayAndImage(){
         val metrics = WindowMetricsCalculator.getOrCreate()
             .computeCurrentWindowMetrics(this)
-        width = metrics.bounds.width()
-        height = metrics.bounds.height()
+        zeroW = metrics.bounds.width()
+        zeroH = metrics.bounds.height()
+        rotateWHto(zeroW, zeroH, getRotation(this)).apply {
+            zeroW = x
+            zeroH = y
+        }
 
-        imageHandler = ImageHandler(width, height, coroutineScope, this)
+        imageHandler = ImageHandler(zeroW, zeroH, coroutineScope, this)
 
         virtualDisplay = projectionToken!!.createVirtualDisplay(
             "ScreenCapture",
-            width,
-            height,
+            zeroW,
+            zeroH,
             (metrics.density * DisplayMetrics.DENSITY_DEFAULT).toInt(),
             DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
             imageHandler!!.surface,
@@ -194,7 +201,10 @@ abstract class AccessibilityServicePart2_Projection: AccessibilityServicePart1_C
 
         }
 
-        override fun getScreenSize() = Point(width, height)
+        override fun getScreenSize(): Point {
+            val rotation = getRotation(this@AccessibilityServicePart2_Projection)
+            return rotateWHto(zeroW, zeroH, rotation)
+        }
     }
 
     var iProjectionSuccess: IProjectionSuccess? = null

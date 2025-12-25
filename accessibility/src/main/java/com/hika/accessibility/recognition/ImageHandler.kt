@@ -1,14 +1,12 @@
 package com.hika.accessibility.recognition
 
 import android.content.Context
-import android.content.res.AssetManager
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.graphics.PixelFormat
 import android.graphics.Rect
 import android.media.ImageReader
 import android.util.Log
 import android.view.Surface
+import com.google.mlkit.vision.text.Text
 import com.hika.accessibility.recognition.means.object_detection.NCNNDetector
 import com.hika.accessibility.recognition.means.ocr.GoogleOCRer
 import com.hika.core.aidl.accessibility.DetectedObject
@@ -41,10 +39,10 @@ class ImageHandler(width: Int, height: Int, val scope: CoroutineScope, val conte
             frameUpdatingJob = scope.launch {
                 imageReader.acquireLatestImage()?.apply {
                     recognizableTmp = Recognizable(
-                            this.planes[0].buffer,
-                            this.width,
-                            this.height,
-                            this.planes[0].rowStride
+                            planes[0].buffer,
+                            width,
+                            height,
+                            planes[0].rowStride
                         )
                     expirationTime = System.currentTimeMillis() + interval
                     close()
@@ -97,29 +95,29 @@ class ImageHandler(width: Int, height: Int, val scope: CoroutineScope, val conte
         fun findOnNCNNDetector(detectorName: String, region: Rect?, confidence: Float): Array<DetectedObject>
             = ncnnDetector.detect(this, confidence) // now we just recognize what we've captured.
 
-        suspend fun findOnGoogleOCRerInRangeAsync(region: Rect?)
-            = (region?.run {
-                    val cropWidth = this.width()
-                    val cropHeight = this.height()
-                    googleOCRer.initiateNV21Recognition(
-                        cropNV21(
-                            imageNV21_Array,
-                            width,
-                            height,
-                            this.left,
-                            this.top,
-                            cropWidth,
-                            cropHeight
-                        ),
-                        cropWidth,
-                        cropHeight
-                    )
-                } ?: googleOCRer.initiateNV21Recognition(
-                        imageNV21_Array,
-                        width,
-                        height
-                    )
+        suspend fun findOnGoogleOCRerInRangeAsync(region: Rect?): Text? {
+//            Log.i("#0x-IH", "原宽 $width 高 $height，目标 $region 进入谷歌")
+            var w = width
+            var h = height
+            val buffer = region?.run{
+                w = this.width()
+                h = this.height()
+                cropNV21(
+                    imageNV21_Array,
+                    width,
+                    height,
+                    this.left,
+                    this.top,
+                    this.width(),
+                    this.height()
+                )
+            } ?: imageNV21_Array
+            return googleOCRer.initiateNV21Recognition(
+                buffer,
+                w,
+                h
             ).await()
+        }
 
         val imageNV21_Array by lazy {
             convertRGBAtoNV21_Array(imageBuffer, rowStride, width, height)

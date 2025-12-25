@@ -28,6 +28,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.ByteArrayOutputStream
 import kotlin.experimental.and
+import androidx.core.graphics.scale
 
 
 class TestFloatingViewActivity : ComponentActivity() {
@@ -204,17 +205,19 @@ class TestFloatingViewActivity : ComponentActivity() {
             val matrix = Matrix()
 
             // 计算缩放比例
-            val scale = calculateScale(bitmap.width, bitmap.height,
-                canvas.width, canvas.height)
 
             // 方法1: 等比例缩放并居中
-            matrix.setScale(scale, scale)
+            matrix.setScale(1f, 1f)
             matrix.postTranslate(
-                (canvas.width - bitmap.width * scale) / 2,
-                (canvas.height - bitmap.height * scale) / 2
+                0f,
+                0f
             )
 
-            it.drawBitmap(bitmap, matrix, null)
+            val scaledWidth = bitmap.width / 2
+            val scaledHeight = bitmap.height / 2
+
+
+            it.drawBitmap(bitmap.scale(scaledWidth, scaledHeight), matrix, null)
             binding.textureView.unlockCanvasAndPost(it)
         }
     }

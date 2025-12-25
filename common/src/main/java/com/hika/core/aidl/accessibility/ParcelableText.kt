@@ -4,7 +4,9 @@ import android.graphics.Point
 import android.graphics.Rect
 import android.os.Parcel
 import android.os.Parcelable
+import android.view.Surface
 import com.google.mlkit.vision.text.Text
+import com.hika.core.rotateRectTo
 import kotlin.lazy
 
 
@@ -204,12 +206,21 @@ class ParcelableSymbol : ParcelableTextBase {
 
 
 // 包装TextBase
-open class ParcelableTextBase(
-    val text: String,
-    val boundingBox: Rect?,
-    val cornerPoints: Array<Point>?,
+open class ParcelableTextBase: Parcelable {
+    val text: String
+    val boundingBox: Rect?
+    val cornerPoints: Array<Point>?
     val recognizedLanguage: String
-) : Parcelable {
+
+    constructor(_text: String,
+                _boundingBox: Rect?,
+                _cornerPoints: Array<Point>?,
+                _recognizedLanguage: String){
+        text = _text
+        boundingBox = _boundingBox?.run { rotateRectTo(this, screenW, screenH, rotation) }
+        cornerPoints = _cornerPoints
+        recognizedLanguage = _recognizedLanguage
+    }
     constructor(parcel: Parcel): this(
         parcel.readString() ?: "",
         parcel.readParcelable(Rect::class.java.classLoader),
@@ -226,9 +237,22 @@ open class ParcelableTextBase(
 
     override fun describeContents() = 0
 
-    companion object CREATOR : Parcelable.Creator<ParcelableSymbol> {
-        override fun createFromParcel(parcel: Parcel) = ParcelableSymbol(parcel)
-        override fun newArray(size: Int) = arrayOfNulls<ParcelableSymbol>(size)
+    companion object {
+        @JvmField
+        val CREATOR = object: Parcelable.Creator<ParcelableSymbol> {
+            override fun createFromParcel(parcel: Parcel) = ParcelableSymbol(parcel)
+            override fun newArray(size: Int) = arrayOfNulls<ParcelableSymbol>(size)
+        }
+
+        var rotation = Surface.ROTATION_0
+        var screenW = -1
+        var screenH = -1
+
+        fun setRectRotation(_rotation: Int, _width: Int, _height: Int){
+            rotation = _rotation
+            screenW = _width
+            screenH = _height
+        }
     }
 
     override fun toString() = text

@@ -30,6 +30,8 @@ class FloatingWindow(val context: Context,
                      inflater: LayoutInflater,
                      val onOverlaySettingResult: ActivityResultLauncher<Intent>
 ): FloatingWindowControll {
+    override var screenWidth = 2780
+    override var screenHeight = 1264
 
 
     // 1. set window manager and window layout params
@@ -147,8 +149,6 @@ class FloatingWindow(val context: Context,
 
 
     // 4. println for floating window
-    override var screenWidth = 2780
-    override var screenHeight = 1264
 
     val lineWidth get() = (40.0 / 1309 * screenWidth).toInt()
     val maxLines = (10.0 / 1264 * screenHeight).toInt()
@@ -156,6 +156,7 @@ class FloatingWindow(val context: Context,
     val logger = object: Logger {
 
         override fun println(text: String, color: Level) {
+            Log.i("#0x-", text)
             // line break
             var text = lineBreak(text, lineWidth, indent)
             // add prefix
