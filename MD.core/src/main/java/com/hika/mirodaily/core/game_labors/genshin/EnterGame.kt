@@ -35,6 +35,7 @@ class EnterGame(val context: FragmentActivity, val fWindowControll: FloatingWind
             iAccessibilityService?.clearClassNameListeners()
             if(!ASReceiver.listenToActivityClassNameAsync(className))
                 logger("Failed to hear class name, suppose it's already entered.")
+            fWindowControll.open()
             logger("原神")
             delay(1000)
             // 进入游戏。
