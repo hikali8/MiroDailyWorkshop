@@ -63,13 +63,6 @@ MiroDailyWorkshop · 米洛日常工坊，一个意图基于计算机视觉技�
 本项目仅作学习用途。
 
 
-## 演示视频 / Demo Video:
-
-通过网盘分享的文件：MiroDaily演示视频
-链接: https://pan.baidu.com/s/13B4N3GZzd_KT5JFtCzP1Xw?pwd=4mr9 提取码: 4mr9 
---来自百度网盘超级会员v3的分享
-
-
 ## 附文 / Appendix：
 ### 1. 项目开发文档（部分）
 MiroDailyWorkshop（米洛日常工坊）项目开发文档
@@ -656,3 +649,10 @@ VU	VU Interleaved Plane	NV21 色度平面的交错排列方式：V 在前、U �
 完整内容请见于doc文件夹。
 
 
+
+
+## 演示视频 / Demo Video:
+
+通过网盘分享的文件：MiroDaily演示视频
+链接: https://pan.baidu.com/s/13B4N3GZzd_KT5JFtCzP1Xw?pwd=4mr9 提取码: 4mr9 
+--来自百度网盘超级会员v3的分享
